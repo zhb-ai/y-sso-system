@@ -1,0 +1,96 @@
+/* 字体排版样式 */
+
+/* 基础字体样式 */
+body {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size);
+  color: var(--font-color);
+  line-height: var(--p-line-height);
+}
+
+/* 标题样式 */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--font-title-color);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: var(--spacing-medium);
+}
+
+h1 {
+  font-size: var(--h1-font-size);
+}
+
+h2 {
+  font-size: var(--h2-font-size);
+}
+
+h3 {
+  font-size: var(--h3-font-size);
+}
+
+h4 {
+  font-size: var(--h4-font-size);
+}
+
+h5 {
+  font-size: var(--h5-font-size);
+}
+
+h6 {
+  font-size: var(--h6-font-size);
+}
+
+/* 段落样式 */
+p {
+  font-size: var(--p-font-size);
+  line-height: var(--p-line-height);
+  margin-bottom: var(--spacing-medium);
+}
+
+/* 链接样式 */
+a {
+  color: var(--link-color);
+  transition: var(--app-transition);
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* 文本样式 */
+.text-muted {
+  color: var(--font-light-color);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* 字体权重 */
+.font-weight-light {
+  font-weight: 300;
+}
+
+.font-weight-normal {
+  font-weight: 400;
+}
+
+.font-weight-medium {
+  font-weight: 500;
+}
+
+.font-weight-semibold {
+  font-weight: 600;
+}
+
+.font-weight-bold {
+  font-weight: 700;
+}

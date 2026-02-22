@@ -1,0 +1,153 @@
+/* 按钮样式 */
+
+/* 基础按钮样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: var(--btn-font-size);
+  font-weight: 500;
+  line-height: 1.5;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--app-transition);
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* 按钮尺寸 */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+  border-radius: var(--border-radius-lg);
+}
+
+/* 按钮变体 */
+.btn-primary {
+  color: var(--white);
+  background-color: rgba(var(--primary), 1);
+  border-color: rgba(var(--primary), 1);
+}
+
+.btn-primary:hover {
+  background-color: rgba(var(--primary), 0.9);
+  border-color: rgba(var(--primary), 0.9);
+}
+
+.btn-secondary {
+  color: var(--white);
+  background-color: rgba(var(--secondary), 1);
+  border-color: rgba(var(--secondary), 1);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(var(--secondary), 0.9);
+  border-color: rgba(var(--secondary), 0.9);
+}
+
+.btn-success {
+  color: var(--white);
+  background-color: rgba(var(--success), 1);
+  border-color: rgba(var(--success), 1);
+}
+
+.btn-success:hover {
+  background-color: rgba(var(--success), 0.9);
+  border-color: rgba(var(--success), 0.9);
+}
+
+.btn-danger {
+  color: var(--white);
+  background-color: rgba(var(--danger), 1);
+  border-color: rgba(var(--danger), 1);
+}
+
+.btn-danger:hover {
+  background-color: rgba(var(--danger), 0.9);
+  border-color: rgba(var(--danger), 0.9);
+}
+
+.btn-warning {
+  color: var(--white);
+  background-color: rgba(var(--warning), 1);
+  border-color: rgba(var(--warning), 1);
+}
+
+.btn-warning:hover {
+  background-color: rgba(var(--warning), 0.9);
+  border-color: rgba(var(--warning), 0.9);
+}
+
+.btn-info {
+  color: var(--white);
+  background-color: rgba(var(--info), 1);
+  border-color: rgba(var(--info), 1);
+}
+
+.btn-info:hover {
+  background-color: rgba(var(--info), 0.9);
+  border-color: rgba(var(--info), 0.9);
+}
+
+/* 轮廓按钮 */
+.btn-outline-primary {
+  color: rgba(var(--primary), 1);
+  border-color: rgba(var(--primary), 1);
+  background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+  color: var(--white);
+  background-color: rgba(var(--primary), 1);
+}
+
+.btn-outline-secondary {
+  color: rgba(var(--secondary), 1);
+  border-color: rgba(var(--secondary), 1);
+  background-color: transparent;
+}
+
+.btn-outline-secondary:hover {
+  color: var(--white);
+  background-color: rgba(var(--secondary), 1);
+}
+
+/* 轻按钮 */
+.btn-light {
+  color: var(--font-color);
+  background-color: var(--light-gray);
+  border-color: var(--light-gray);
+}
+
+.btn-light:hover {
+  background-color: var(--border_color);
+  border-color: var(--border_color);
+}
+
+/* 链接按钮 */
+.btn-link {
+  color: var(--link-color);
+  text-decoration: none;
+  background-color: transparent;
+  border: none;
+}
+
+.btn-link:hover {
+  color: var(--link-color);
+  text-decoration: underline;
+}

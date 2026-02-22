@@ -1,0 +1,150 @@
+/*
+ * 卡片组件样式 - 统一样式定义
+ * 包含通用卡片和 Element Plus 卡片样式
+ */
+
+/* ===== 基础卡片样式 ===== */
+.card {
+  background-color: var(--white);
+  border-radius: var(--app-border-radius);
+  box-shadow: var(--box-shadow);
+  transition: var(--app-transition);
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border_color);
+  overflow: hidden;
+}
+
+.card:hover {
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-2px);
+}
+
+/* 卡片结构 */
+.card-header {
+  padding: 1rem 1.5rem;
+  margin-bottom: 0;
+  background-color: var(--light-gray);
+  border-bottom: 1px solid var(--border_color);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-footer {
+  padding: 1rem 1.5rem;
+  background-color: var(--light-gray);
+  border-top: 1px solid var(--border_color);
+}
+
+/* ===== Element Plus 卡片样式 ===== */
+.el-card {
+  border: 1px solid var(--border_color) !important;
+  border-radius: var(--app-border-radius) !important;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: var(--box-shadow);
+}
+
+.el-card:hover {
+  box-shadow: var(--hover-shadow);
+  border-color: rgba(var(--primary), 0.2) !important;
+}
+
+/* ===== 数据卡片样式 ===== */
+
+
+/* 数据卡片内的按钮样式 */
+.data-card :deep(.el-button) {
+  border-radius: var(--bs-border-radius);
+  font-weight: 500;
+  transition: var(--app-transition);
+  border: none;
+  box-shadow: var(--box-shadow);
+}
+
+.data-card :deep(.el-button--primary) {
+  background: rgba(var(--primary), 1);
+}
+
+.data-card :deep(.el-button--primary:hover) {
+  background: rgba(var(--primary), 0.9);
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-2px);
+}
+
+.data-card :deep(.el-button--warning) {
+  background: rgba(var(--warning), 1);
+}
+
+.data-card :deep(.el-button--warning:hover) {
+  background: rgba(var(--warning), 0.9);
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-2px);
+}
+
+.data-card :deep(.el-button--danger) {
+  background: rgba(var(--danger), 1);
+}
+
+.data-card :deep(.el-button--danger:hover) {
+  background: rgba(var(--danger), 0.9);
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-2px);
+}
+
+/* ===== 应用信息卡片样式 ===== */
+.app-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-logo {
+  background: rgba(var(--primary), 0.1);
+  color: rgba(var(--primary), 1);
+  box-shadow: none;
+  flex-shrink: 0;
+  transition: var(--app-transition);
+}
+
+.app-logo:hover {
+  box-shadow: var(--box-shadow);
+}
+
+.app-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-name {
+  font-weight: 500;
+  color: var(--font-title-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-desc {
+  font-size: 13px;
+  color: var(--font-light-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.client-id {
+  color: var(--font-color);
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+}
+
+.secret-input {
+  font-family: 'Courier New', monospace;
+}
+
+.time-text {
+  color: var(--font-light-color);
+  font-size: 13px;
+}

@@ -1,0 +1,60 @@
+/* 消息提示和通知样式优化 */
+
+/* 消息提示样式优化 */
+:deep(.el-message) {
+  border-radius: var(--bs-border-radius) !important;
+  box-shadow: var(--box-shadow) !important;
+  border: none !important;
+  min-height: 50px;
+}
+
+:deep(.el-message--success) {
+  background: linear-gradient(135deg, rgba(var(--success), 0.1), rgba(var(--success), 0.2)) !important;
+  color: rgba(var(--success), 1) !important;
+}
+
+:deep(.el-message--warning) {
+  background: linear-gradient(135deg, rgba(var(--warning), 0.1), rgba(var(--warning), 0.2)) !important;
+  color: rgba(var(--warning), 1) !important;
+}
+
+:deep(.el-message--error) {
+  background: linear-gradient(135deg, rgba(var(--danger), 0.1), rgba(var(--danger), 0.2)) !important;
+  color: rgba(var(--danger), 1) !important;
+}
+
+:deep(.el-message--info) {
+  background: linear-gradient(135deg, rgba(var(--info), 0.1), rgba(var(--info), 0.2)) !important;
+  color: rgba(var(--info), 1) !important;
+}
+
+/* 通知样式优化 */
+:deep(.el-notification) {
+  border-radius: var(--app-border-radius) !important;
+  box-shadow: var(--box-shadow) !important;
+  border: none !important;
+}
+
+/* 页面内帮助提示图标（问号/叹号） */
+.hint-icon {
+  color: var(--font-light-color);
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 6px;
+  transition: var(--app-transition);
+  vertical-align: middle;
+}
+
+.hint-icon:hover {
+  color: rgba(var(--primary), 1);
+}
+
+/* 紧凑提示条（用于页面说明/弹窗说明） */
+.compact-hint-alert .el-alert__icon {
+  font-size: 14px;
+}
+
+.compact-hint-alert .el-alert__description {
+  font-size: 12px;
+  line-height: 1.5;
+}

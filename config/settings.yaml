@@ -1,0 +1,74 @@
+# 是否启用控制台日志输出
+# 在开发环境中建议设置为 true 以便查看详细日志
+# 在生产环境中建议设置为 false 以减少控制台输出
+enable_console_logging: true
+
+# 数据库配置
+database:
+  url: sqlite:///./app/db/y_sso.db
+  echo: false
+  pool_size: 5
+  max_overflow: 10
+
+# Redis配置
+redis:
+  url: redis://localhost:6379/0
+
+# JWT配置
+jwt:
+  secret_key: "your-secret-key-change-this-in-production"
+  algorithm: HS256
+  access_token_expire_minutes: 1        # Access Token 有效期（分钟）- 测试用，正式环境改回 30
+  refresh_token_expire_days: 7          # Refresh Token 基础有效期（天）
+  refresh_token_sliding_days: 2         # Refresh Token 滑动过期阈值（天），剩余时间少于此值时自动续期
+
+# 日志配置
+logging:
+  level: DEBUG
+  file_path: logs/app_{date}.log
+  # 文件日志处理器配置
+  file_max_bytes: 10MB  # 文件最大大小，支持 B, KB, MB, GB, TB 单位
+  file_backup_count: 30
+  file_encoding: utf-8
+  file_when: midnight
+  file_interval: 1
+  
+  # SQL 日志配置（调试用）
+  sql_log_enabled: true  # 是否启用 SQL 日志，开启后会将 SQLAlchemy 生成的 SQL 语句记录到单独的日志文件
+  sql_log_file_path: logs/sql_{date}.log  # SQL 日志文件路径
+  sql_log_level: DEBUG  # SQL 日志级别
+  sql_log_max_bytes: 50MB  # SQL 日志文件最大大小
+  sql_log_backup_count: 10  # SQL 日志保留的备份文件数量
+
+# 中间件配置
+middleware:
+  # 请求日志中间件配置
+  request_log_max_body_size: 10KB  # 请求体最大大小
+  request_log_skip_paths:  # 跳过详细日志记录的路径
+    - "/api/upload"
+    - "/static/"
+
+# IP 访问控制配置
+ip_access:
+  enabled: false                   # 是否启用 IP 访问控制（开发环境建议关闭）
+  default_policy: allow            # 默认策略：allow（放行）/ deny（拒绝）
+  trusted_proxies:                 # 受信任代理 IP（用于从 X-Forwarded-For 提取真实 IP）
+    - "127.0.0.1"
+  # deny_status_code: 403         # 拒绝时的 HTTP 状态码（默认 403）
+  # deny_message: "IP 访问被拒绝"   # 拒绝时的响应消息
+  rules: []                        # 规则列表（示例见下方注释）
+  # rules:
+  #   - paths: ["/api/v1/dashboard/*", "/api/v1/users/*", "/api/v1/roles/*"]
+  #     allow_ips: ["192.168.0.0/16", "10.0.0.0/8"]
+  #     description: "管理后台仅允许内网访问"
+  #   - paths: ["/api/v1/oauth2/*"]
+  #     allow_ips: ["*"]
+  #     description: "OAuth2 端点对外开放"
+
+# 分页配置
+pagination:
+  max_page_size: 1000  # 分页查询允许的最大页大小
+  default_page_size: 10  # 默认每页数量
+
+# 基础URL
+base_url: "http://localhost:8000"

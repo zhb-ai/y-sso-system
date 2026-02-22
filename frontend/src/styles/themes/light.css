@@ -1,0 +1,57 @@
+/* 亮色主题 */
+
+:root {
+  /* 基础颜色 - 亮色主题 */
+  --body-bg: #f9f9f9;
+  --body-color: #15264b;
+  --card-bg: #ffffff;
+  --card-border: #ebedf0;
+  
+  /* 头部 */
+  --header-bg: #ffffff;
+  --header-border: #ebedf0;
+  --header-color: #15264b;
+  
+  /* 侧边栏 */
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #ebedf0;
+  --sidebar-color: #15264b;
+  --sidebar-hover-bg: #f4f7f8;
+  --sidebar-active-bg: rgba(72, 190, 206, 0.1);
+  --sidebar-active-color: #48bec6;
+  
+  /* 底部 */
+  --footer-bg: #ffffff;
+  --footer-border: #ebedf0;
+  --footer-color: #a0a0b0;
+  
+  /* 表格 */
+  --table-bg: #ffffff;
+  --table-border: #ebedf0;
+  --table-stripe: #f5f7fa;
+  --table-hover: #f4f7f8;
+  
+  /* 输入框 */
+  --input-bg: #ffffff;
+  --input-border: #ebedf0;
+  --input-color: #15264b;
+  --input-placeholder: #a0a0b0;
+  --input-focus-border: rgba(72, 190, 206, 0.5);
+  --input-focus-shadow: rgba(72, 190, 206, 0.25);
+  
+  /* 按钮 */
+  --btn-primary-bg: rgba(72, 190, 206, 1);
+  --btn-primary-border: rgba(72, 190, 206, 1);
+  --btn-primary-color: #ffffff;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* 文本颜色 */
+  --text-primary: #15264b;
+  --text-secondary: #22242c;
+  --text-muted: #a0a0b0;
+  --text-link: rgba(72, 190, 206, 1);
+}

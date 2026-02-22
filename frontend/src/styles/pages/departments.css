@@ -1,0 +1,190 @@
+/* 部门管理页面样式 */
+
+/* 部门筛选表单 */
+.department-filter-form {
+  width: 100%;
+}
+
+.department-filter-form .el-form-item {
+  margin-right: 15px;
+  margin-bottom: 10px;
+}
+
+.department-filter-form .el-input {
+  width: 200px;
+}
+
+/* 部门树状图样式 */
+.department-tree {
+  background: transparent;
+  border: none;
+}
+
+.department-tree .el-tree-node {
+  margin-bottom: 4px;
+}
+
+.department-tree .el-tree-node__content {
+  height: 42px;
+  padding: 0 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.department-tree .el-tree-node__content:hover {
+  background-color: var(--el-fill-color-light);
+}
+
+.department-tree .el-tree-node__content:focus {
+  background-color: var(--el-color-primary-light-9);
+}
+
+.department-tree .el-tree-node.is-current > .el-tree-node__content {
+  background-color: var(--el-color-primary-light-8);
+  color: var(--el-color-primary);
+}
+
+/* 树节点内容 */
+.tree-node-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+.tree-node-content:hover {
+  background-color: var(--el-fill-color-lighter);
+  border-radius: 4px;
+}
+
+.department-name {
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+  font-size: 14px;
+}
+
+/* 部门操作按钮 */
+.department-actions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tree-node-content:hover .department-actions {
+  opacity: 1;
+}
+
+.department-actions .el-button {
+  min-width: 60px;
+}
+
+/* 右键菜单 */
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  background: white;
+  border: 1px solid var(--el-border-color-light);
+}
+
+.context-menu .el-menu {
+  border: none;
+  background: transparent;
+}
+
+.context-menu .el-menu-item {
+  height: 36px;
+  line-height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+  color: var(--el-text-color-regular);
+}
+
+.context-menu .el-menu-item:hover {
+  background-color: var(--el-fill-color-light);
+  color: var(--el-color-primary);
+}
+
+/* 部门对话框 */
+.department-dialog {
+  border-radius: 8px;
+}
+
+.department-dialog .el-dialog__header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--el-border-color-light);
+  margin-right: 0;
+}
+
+.department-dialog .el-dialog__title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+}
+
+.department-dialog .el-dialog__body {
+  padding: 24px;
+  color: var(--el-text-color-regular);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.department-dialog .el-dialog__footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--el-border-color-light);
+}
+
+/* 响应式设计 */
+@media screen and (max-width: 768px) {
+  .department-filter-form .el-form-item {
+    display: block;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+  
+  .department-filter-form .el-input {
+    width: 100%;
+  }
+  
+  .tree-node-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .department-actions {
+    opacity: 1;
+    margin-top: 8px;
+  }
+  
+  .department-actions .el-button {
+    min-width: auto;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .context-menu {
+    max-width: 200px;
+  }
+  
+  .department-dialog {
+    width: 90% !important;
+    margin: 0 auto;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .department-actions {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .department-actions .el-button {
+    flex: 1;
+    min-width: 50px;
+  }
+}

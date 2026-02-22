@@ -1,0 +1,66 @@
+/* 头部布局样式 */
+
+.header {
+  background-color: var(--white);
+  box-shadow: var(--box-shadow);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-medium) var(--spacing-large);
+  height: 60px;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--font-title-color);
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-medium);
+}
+
+.header-nav-item {
+  padding: var(--spacing-small) var(--spacing-medium);
+  border-radius: var(--border-radius);
+  transition: var(--app-transition);
+  color: var(--font-color);
+}
+
+.header-nav-item:hover {
+  background-color: var(--light-gray);
+  color: var(--link-color);
+}
+
+.header-nav-item.active {
+  background-color: rgba(var(--primary), 0.1);
+  color: rgba(var(--primary), 1);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-small);
+}
+
+.header-action-btn {
+  padding: var(--spacing-small);
+  border-radius: var(--border-radius);
+  transition: var(--app-transition);
+  color: var(--font-color);
+}
+
+.header-action-btn:hover {
+  background-color: var(--light-gray);
+  color: var(--link-color);
+}

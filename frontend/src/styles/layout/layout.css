@@ -1,0 +1,318 @@
+/*  01 整体布局 */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bodybg-color);
+  position: relative;
+}
+
+/*  02 侧边栏样式 */
+.sidebar {
+  width: 260px;
+  background-color: var(--white);
+  color: var(--font-color);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: var(--app-transition);
+  overflow: hidden;
+  z-index: var(--z-fixed);
+  box-shadow: var(--box-shadow);
+  border-right: 1px solid var(--border_color);
+}
+
+.sidebar-collapse {
+  width: 64px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  height: 64px;
+  border-bottom: 1px solid var(--border_color);
+  background-color: var(--white);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  transition: var(--app-transition);
+}
+
+.logo-icon {
+  font-size: 24px;
+  margin-right: 0.5rem;
+  color: rgba(var(--primary), 1);
+  transition: var(--app-transition);
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: var(--app-transition);
+  color: var(--font-title-color);
+}
+
+.collapse-btn {
+  color: var(--font-color);
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--app-transition);
+  background-color: var(--light-gray);
+  border: 1px solid var(--border_color);
+}
+
+
+/*  03 主内容区域 */
+.main-content {
+  flex: 1;
+  margin-left: 260px;
+  transition: var(--app-transition);
+  background-color: var(--bodybg-color);
+  padding-top: 64px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+/*  04 顶部导航 */
+.top-header {
+  height: 64px;
+  background-color: var(--white);
+  box-shadow: var(--box-shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-sticky);
+  margin-left: 250px;
+  transition: var(--app-transition);
+  border-bottom: 1px solid var(--border_color);
+}
+
+.sidebar-collapse + .main-content {
+  margin-left: 64px;
+}
+
+.sidebar-collapse + .main-content .top-header {
+  margin-left: 64px;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-btn {
+  color: var(--font-color);
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--app-transition);
+  background-color: var(--light-gray);
+  border: 1px solid var(--border_color);
+  cursor: pointer;
+}
+
+.header-btn:hover {
+  background-color: var(--border_color);
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
+}
+
+/*  05 内容区域 */
+.content-wrapper {
+  padding: 1.5rem;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+/*  06 登录页面 */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bodybg-color);
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.login-box {
+  width: 420px;
+  background: var(--white);
+  border-radius: var(--app-border-radius);
+  box-shadow: var(--box-shadow);
+  padding: var(--spacing-large);
+  position: relative;
+  z-index: 1;
+  border: 1px solid var(--border_color);
+  transition: var(--app-transition);
+}
+
+.login-box:hover {
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-2px);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: var(--spacing-medium);
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: var(--h3-font-size);
+  color: var(--font-title-color);
+  font-weight: 600;
+}
+
+.login-header p {
+  margin: 8px 0 0 0;
+  color: var(--font-light-color);
+  font-size: var(--p-font-size);
+}
+
+.login-form {
+  margin-bottom: var(--spacing-medium);
+}
+
+.login-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-medium);
+}
+
+.login-footer {
+  text-align: center;
+}
+
+.other-login {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/*  07 仪表盘页面 - 移除冲突样式，使用全局样式 */
+
+/*  08 响应式设计 */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: var(--box-shadow);
+  }
+  
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .top-header {
+    margin-left: 0;
+  }
+}
+
+/*  09 页面容器和页面头部样式 */
+.page-container {
+  padding: 0;
+  background-color: var(--bodybg-color);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: var(--white);
+  border-radius: var(--app-border-radius);
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border_color);
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--font-title-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+}
+
+/*  10 移动优先响应式设计 using breakpoints from variables */
+@media (max-width: var(--breakpoint-md)) {
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: var(--box-shadow);
+  }
+  
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .top-header {
+    margin-left: 0;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: var(--breakpoint-sm)) {
+  .login-box {
+    max-width: 100%;
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .content-wrapper {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,55 @@
+/* 底部布局样式 */
+
+.footer {
+  background-color: var(--white);
+  border-top: 1px solid var(--border_color);
+  padding: var(--spacing-medium) var(--spacing-large);
+  margin-top: auto;
+}
+
+.footer-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-medium);
+}
+
+.footer-copyright {
+  color: var(--font-light-color);
+  font-size: 0.875rem;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-medium);
+}
+
+.footer-link {
+  color: var(--font-light-color);
+  font-size: 0.875rem;
+  transition: var(--app-transition);
+}
+
+.footer-link:hover {
+  color: var(--link-color);
+}
+
+.footer-version {
+  color: var(--font-light-color);
+  font-size: 0.75rem;
+  font-family: var(--font-family-mono);
+}
+
+/* 响应式底部 */
+@media (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .footer-links {
+    justify-content: center;
+  }
+}

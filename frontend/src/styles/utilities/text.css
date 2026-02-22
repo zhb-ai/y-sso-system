@@ -1,0 +1,213 @@
+/* 文本工具类 */
+
+/* 文本对齐 */
+.text-left {
+  text-align: left !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-justify {
+  text-align: justify !important;
+}
+
+/* 文本换行 */
+.text-nowrap {
+  white-space: nowrap !important;
+}
+
+.text-wrap {
+  white-space: normal !important;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 文本转换 */
+.text-lowercase {
+  text-transform: lowercase !important;
+}
+
+.text-uppercase {
+  text-transform: uppercase !important;
+}
+
+.text-capitalize {
+  text-transform: capitalize !important;
+}
+
+/* 字体大小 */
+.text-xs {
+  font-size: 0.75rem !important;
+}
+
+.text-sm {
+  font-size: 0.875rem !important;
+}
+
+.text-base {
+  font-size: 1rem !important;
+}
+
+.text-lg {
+  font-size: 1.125rem !important;
+}
+
+.text-xl {
+  font-size: 1.25rem !important;
+}
+
+.text-2xl {
+  font-size: 1.5rem !important;
+}
+
+.text-3xl {
+  font-size: 1.875rem !important;
+}
+
+/* 字体粗细 */
+.text-light {
+  font-weight: 300 !important;
+}
+
+.text-normal {
+  font-weight: 400 !important;
+}
+
+.text-medium {
+  font-weight: 500 !important;
+}
+
+.text-semibold {
+  font-weight: 600 !important;
+}
+
+.text-bold {
+  font-weight: 700 !important;
+}
+
+/* 行高 */
+.text-leading-none {
+  line-height: 1 !important;
+}
+
+.text-leading-tight {
+  line-height: 1.25 !important;
+}
+
+.text-leading-snug {
+  line-height: 1.375 !important;
+}
+
+.text-leading-normal {
+  line-height: 1.5 !important;
+}
+
+.text-leading-relaxed {
+  line-height: 1.625 !important;
+}
+
+.text-leading-loose {
+  line-height: 2 !important;
+}
+
+/* 装饰 */
+.text-underline {
+  text-decoration: underline !important;
+}
+
+.text-line-through {
+  text-decoration: line-through !important;
+}
+
+.text-no-underline {
+  text-decoration: none !important;
+}
+
+/* 字体样式 */
+.text-italic {
+  font-style: italic !important;
+}
+
+.text-not-italic {
+  font-style: normal !important;
+}
+
+/* 字母间距 */
+.text-tracking-tighter {
+  letter-spacing: -0.05em !important;
+}
+
+.text-tracking-tight {
+  letter-spacing: -0.025em !important;
+}
+
+.text-tracking-normal {
+  letter-spacing: 0 !important;
+}
+
+.text-tracking-wide {
+  letter-spacing: 0.025em !important;
+}
+
+.text-tracking-wider {
+  letter-spacing: 0.05em !important;
+}
+
+/* 响应式文本对齐 */
+@media (min-width: 576px) {
+  .text-sm-left {
+    text-align: left !important;
+  }
+  .text-sm-center {
+    text-align: center !important;
+  }
+  .text-sm-right {
+    text-align: right !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .text-md-left {
+    text-align: left !important;
+  }
+  .text-md-center {
+    text-align: center !important;
+  }
+  .text-md-right {
+    text-align: right !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .text-lg-left {
+    text-align: left !important;
+  }
+  .text-lg-center {
+    text-align: center !important;
+  }
+  .text-lg-right {
+    text-align: right !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .text-xl-left {
+    text-align: left !important;
+  }
+  .text-xl-center {
+    text-align: center !important;
+  }
+  .text-xl-right {
+    text-align: right !important;
+  }
+}

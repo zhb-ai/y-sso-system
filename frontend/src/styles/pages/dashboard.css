@@ -1,0 +1,50 @@
+/* Dashboard 页面特定样式 */
+
+.page-container {
+  padding: 1.5rem;
+}
+
+/* 统计卡片布局 */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-cards .stat-card {
+  border-radius: var(--app-border-radius);
+  border: 1px solid var(--border_color);
+  transition: all 0.2s ease;
+  background: var(--white);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.stats-cards .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
+  border-color: rgba(var(--primary), 0.2);
+}
+
+.stat-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+}
+
+.stat-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--font-title-color);
+  line-height: 1.2;
+}
+
+.stat-info p {
+  margin: 0;
+  color: var(--font-light-color);
+  font-size: 13px;
+  font-weight: 500;
+}

@@ -1,0 +1,157 @@
+/* 颜色工具类 */
+
+/* 背景颜色 */
+.bg-primary {
+  background-color: rgba(var(--primary), 1) !important;
+}
+
+.bg-secondary {
+  background-color: rgba(var(--secondary), 1) !important;
+}
+
+.bg-success {
+  background-color: rgba(var(--success), 1) !important;
+}
+
+.bg-danger {
+  background-color: rgba(var(--danger), 1) !important;
+}
+
+.bg-warning {
+  background-color: rgba(var(--warning), 1) !important;
+}
+
+.bg-info {
+  background-color: rgba(var(--info), 1) !important;
+}
+
+.bg-light {
+  background-color: var(--light-gray) !important;
+}
+
+.bg-dark {
+  background-color: rgba(var(--dark), 1) !important;
+}
+
+.bg-white {
+  background-color: var(--white) !important;
+}
+
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+/* 文本颜色 */
+.text-primary {
+  color: rgba(var(--primary), 1) !important;
+}
+
+.text-secondary {
+  color: rgba(var(--secondary), 1) !important;
+}
+
+.text-success {
+  color: rgba(var(--success), 1) !important;
+}
+
+.text-danger {
+  color: rgba(var(--danger), 1) !important;
+}
+
+.text-warning {
+  color: rgba(var(--warning), 1) !important;
+}
+
+.text-info {
+  color: rgba(var(--info), 1) !important;
+}
+
+.text-light {
+  color: var(--light-gray) !important;
+}
+
+.text-dark {
+  color: rgba(var(--dark), 1) !important;
+}
+
+.text-white {
+  color: var(--white) !important;
+}
+
+.text-muted {
+  color: var(--font-light-color) !important;
+}
+
+.text-body {
+  color: var(--font-color) !important;
+}
+
+/* 边框颜色 */
+.border-primary {
+  border-color: rgba(var(--primary), 1) !important;
+}
+
+.border-secondary {
+  border-color: rgba(var(--secondary), 1) !important;
+}
+
+.border-success {
+  border-color: rgba(var(--success), 1) !important;
+}
+
+.border-danger {
+  border-color: rgba(var(--danger), 1) !important;
+}
+
+.border-warning {
+  border-color: rgba(var(--warning), 1) !important;
+}
+
+.border-info {
+  border-color: rgba(var(--info), 1) !important;
+}
+
+.border-light {
+  border-color: var(--light-gray) !important;
+}
+
+.border-dark {
+  border-color: rgba(var(--dark), 1) !important;
+}
+
+.border-white {
+  border-color: var(--white) !important;
+}
+
+/* 主题颜色工具类 */
+.bg-theme-body {
+  background-color: var(--body-bg) !important;
+}
+
+.bg-theme-card {
+  background-color: var(--card-bg) !important;
+}
+
+.bg-theme-header {
+  background-color: var(--header-bg) !important;
+}
+
+.bg-theme-sidebar {
+  background-color: var(--sidebar-bg) !important;
+}
+
+.text-theme-primary {
+  color: var(--text-primary) !important;
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.text-theme-muted {
+  color: var(--text-muted) !important;
+}
+
+.border-theme {
+  border-color: var(--card-border) !important;
+}

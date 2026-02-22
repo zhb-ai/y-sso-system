@@ -1,0 +1,500 @@
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <h2>角色管理</h2>
+      <el-button type="primary" class="btn-modern" @click="handleCreate">
+        <el-icon><Plus /></el-icon> 新建角色
+      </el-button>
+    </div>
+
+    <!-- 数据表格 -->
+    <el-card class="data-card" shadow="hover">
+      <el-table
+        v-loading="loading"
+        :data="roles"
+        style="width: 100%"
+        row-key="id"
+      >
+        <el-table-column prop="id" label="ID" width="80" align="center">
+          <template #default="scope">
+            <el-tag type="info" size="small" effect="plain">#{{ scope.row.id }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="角色名称" min-width="120" />
+        <el-table-column prop="code" label="角色编码" min-width="120">
+          <template #default="scope">
+            <el-tag type="primary" size="small" effect="light">{{ scope.row.code }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="角色描述" min-width="180" />
+        <el-table-column prop="created_at" label="创建时间" width="180" align="center">
+          <template #default="scope">
+            <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="340" align="center" fixed="right" class-name="table-cell-flex-center">
+          <template #default="scope">
+            <el-button type="primary" size="small" link @click="handleEdit(scope.row)">
+              <el-icon><Edit /></el-icon> 编辑
+            </el-button>
+            <el-button type="success" size="small" link @click="handlePermissions(scope.row)">
+              <el-icon><Key /></el-icon> 权限
+            </el-button>
+            <el-button type="warning" size="small" link @click="handleViewUsers(scope.row)">
+              <el-icon><User /></el-icon> 用户
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              link
+              :disabled="isSystemRole(scope.row.code)"
+              @click="handleDelete(scope.row)"
+            >
+              <el-icon><Delete /></el-icon> 删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+
+    <!-- 创建/编辑角色对话框 -->
+    <el-dialog
+      v-model="formDialogVisible"
+      :title="isEdit ? '编辑角色' : '新建角色'"
+      width="500px"
+      destroy-on-close
+    >
+      <div class="section-blocks" style="gap: 0;">
+        <div class="section-block">
+          <div class="section-block__header">
+            <div class="section-block__title">
+              <el-icon><Medal /></el-icon>
+              <span>基本信息</span>
+            </div>
+          </div>
+          <div class="section-block__content">
+            <el-form :model="roleForm" :rules="roleRules" ref="roleFormRef" label-width="80px">
+              <el-form-item label="角色编码" prop="code">
+                <el-input
+                  v-model="roleForm.code"
+                  placeholder="如 admin, editor"
+                  :disabled="isEdit"
+                />
+              </el-form-item>
+              <el-form-item label="角色名称" prop="name">
+                <el-input v-model="roleForm.name" placeholder="如 管理员" />
+              </el-form-item>
+              <el-form-item label="描述" prop="description">
+                <el-input v-model="roleForm.description" type="textarea" :rows="3" placeholder="角色描述（选填）" />
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="formDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="formLoading" @click="handleFormSubmit">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 角色用户列表对话框 -->
+    <el-dialog
+      v-model="usersDialogVisible"
+      :title="`${currentRole?.name}（${currentRole?.code}）- 关联用户`"
+      width="800px"
+      destroy-on-close
+    >
+      <div class="section-blocks" style="gap: 0;">
+        <div class="section-block">
+          <div class="section-block__header">
+            <div class="section-block__title">
+              <el-icon><User /></el-icon>
+              <span>用户列表</span>
+            </div>
+          </div>
+          <div class="section-block__table">
+            <el-table v-loading="usersLoading" :data="roleUsers" size="small">
+              <el-table-column prop="id" label="ID" width="70" align="center" />
+              <el-table-column prop="username" label="用户名" min-width="110" />
+              <el-table-column prop="name" label="姓名" min-width="90" />
+              <el-table-column prop="email" label="邮箱" min-width="160" show-overflow-tooltip />
+              <el-table-column label="所有角色" min-width="160">
+                <template #default="scope">
+                  <el-tag
+                    v-for="role in scope.row.roles"
+                    :key="role"
+                    size="small"
+                    :type="role === currentRole?.code ? 'warning' : 'primary'"
+                    effect="light"
+                    style="margin-right: 4px"
+                  >{{ role }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="80" align="center">
+                <template #default="scope">
+                  <el-button
+                    type="danger"
+                    size="small"
+                    link
+                    @click="handleRemoveUserRole(scope.row)"
+                  >
+                    <el-icon><Remove /></el-icon> 移除
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="usersDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 权限分配对话框 -->
+    <el-dialog
+      v-model="permDialogVisible"
+      :title="`${permRole?.name}（${permRole?.code}）- 分配权限`"
+      width="560px"
+      destroy-on-close
+    >
+      <div class="section-blocks" style="gap: 0;">
+        <!-- 操作栏 -->
+        <div class="section-block" style="margin-bottom: 16px;">
+          <div class="section-block__content" style="padding: 12px 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <el-button size="small" type="primary" plain :loading="scanLoading" @click="handleScan">
+                <el-icon><Refresh /></el-icon> 扫描路由更新权限
+              </el-button>
+              <el-text v-if="permRole?.code === 'admin'" type="info" size="small">
+                admin 角色自动拥有所有权限，无需手动分配
+              </el-text>
+            </div>
+          </div>
+        </div>
+
+        <!-- 权限列表 -->
+        <div class="section-block">
+          <div class="section-block__header">
+            <div class="section-block__title">
+              <el-icon><Key /></el-icon>
+              <span>权限列表</span>
+            </div>
+          </div>
+          <div class="section-block__content" v-loading="permLoading" style="min-height: 120px;">
+            <template v-if="permTree.length > 0">
+              <el-checkbox
+                v-model="checkAll"
+                :indeterminate="isIndeterminate"
+                @change="handleCheckAllChange"
+                style="margin-bottom: 12px"
+              >全选</el-checkbox>
+              <el-divider style="margin: 4px 0 12px" />
+              <div v-for="group in permTree" :key="group.module" class="perm-group">
+                <div class="perm-group-title">{{ group.module }}</div>
+                <el-checkbox-group v-model="checkedPermIds">
+                  <el-checkbox
+                    v-for="perm in group.permissions"
+                    :key="perm.id"
+                    :value="perm.id"
+                    :label="perm.name"
+                    :disabled="permRole?.code === 'admin'"
+                    style="margin-bottom: 4px; display: block"
+                  >
+                    <span>{{ perm.name }}</span>
+                    <el-text type="info" size="small" style="margin-left: 8px">{{ perm.code }}</el-text>
+                  </el-checkbox>
+                </el-checkbox-group>
+              </div>
+            </template>
+            <div v-else class="section-block__empty">
+              <el-empty description="暂无权限数据，请先点击「扫描路由更新权限」" :image-size="60" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <el-button @click="permDialogVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          :loading="permSaving"
+          :disabled="permRole?.code === 'admin'"
+          @click="handleSavePermissions"
+        >保存</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { roleApi, permissionApi } from '../../api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
+import { Plus, Edit, Delete, User, Key, Refresh, Remove, Medal } from '@element-plus/icons-vue'
+import '../../styles/components/ui/tables.css'
+
+// ==================== 角色列表 ====================
+
+const roles = ref([])
+const loading = ref(false)
+
+const getRoles = async () => {
+  loading.value = true
+  try {
+    const response = await roleApi.list()
+    roles.value = response.data || []
+  } catch (error) {
+    handleApiError(error, getDefaultErrorMessage('get'))
+    roles.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+// 系统内置角色不可删除
+const isSystemRole = (code) => ['admin', 'user', 'external'].includes(code)
+
+// ==================== 创建 / 编辑 ====================
+
+const formDialogVisible = ref(false)
+const formLoading = ref(false)
+const isEdit = ref(false)
+const roleFormRef = ref(null)
+
+const roleForm = reactive({
+  code: '',
+  name: '',
+  description: '',
+})
+
+const roleRules = {
+  code: [
+    { required: true, message: '请输入角色编码', trigger: 'blur' },
+    { pattern: /^[a-z][a-z0-9_]*$/, message: '编码只能包含小写字母、数字和下划线，且以字母开头', trigger: 'blur' },
+  ],
+  name: [
+    { required: true, message: '请输入角色名称', trigger: 'blur' },
+  ],
+}
+
+const handleCreate = () => {
+  isEdit.value = false
+  roleForm.code = ''
+  roleForm.name = ''
+  roleForm.description = ''
+  formDialogVisible.value = true
+}
+
+const handleEdit = (row) => {
+  isEdit.value = true
+  roleForm.code = row.code
+  roleForm.name = row.name
+  roleForm.description = row.description || ''
+  formDialogVisible.value = true
+}
+
+const handleFormSubmit = async () => {
+  if (!roleFormRef.value) return
+  try {
+    await roleFormRef.value.validate()
+    formLoading.value = true
+
+    if (isEdit.value) {
+      await roleApi.update(roleForm.code, {
+        name: roleForm.name,
+        description: roleForm.description,
+      })
+      ElMessage.success('角色更新成功')
+    } else {
+      await roleApi.create({
+        code: roleForm.code,
+        name: roleForm.name,
+        description: roleForm.description,
+      })
+      ElMessage.success('角色创建成功')
+    }
+
+    formDialogVisible.value = false
+    getRoles()
+  } catch (error) {
+    handleApiError(error, isEdit.value ? '更新失败' : '创建失败')
+  } finally {
+    formLoading.value = false
+  }
+}
+
+// ==================== 删除 ====================
+
+const handleDelete = async (row) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除角色「${row.name}」(${row.code}) 吗？此操作不可恢复。`,
+      '确认删除',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+    )
+    await roleApi.delete(row.code)
+    ElMessage.success('删除成功')
+    getRoles()
+  } catch (error) {
+    if (error !== 'cancel') {
+      handleApiError(error, getDefaultErrorMessage('delete'))
+    }
+  }
+}
+
+// ==================== 查看角色用户 ====================
+
+const usersDialogVisible = ref(false)
+const usersLoading = ref(false)
+const currentRole = ref(null)
+const roleUsers = ref([])
+
+const handleViewUsers = async (row) => {
+  currentRole.value = row
+  usersDialogVisible.value = true
+  usersLoading.value = true
+  try {
+    const response = await roleApi.users(row.code)
+    roleUsers.value = response.data || []
+  } catch (error) {
+    handleApiError(error, '获取用户列表失败')
+    roleUsers.value = []
+  } finally {
+    usersLoading.value = false
+  }
+}
+
+const handleRemoveUserRole = async (user) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要将用户「${user.username}」从角色「${currentRole.value.name}」中移除吗？`,
+      '确认移除',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+    )
+    await roleApi.unassignRole({
+      user_id: user.id,
+      role_code: currentRole.value.code,
+    })
+    ElMessage.success('已移除')
+    // 刷新当前弹窗的用户列表
+    const response = await roleApi.users(currentRole.value.code)
+    roleUsers.value = response.data || []
+  } catch (error) {
+    if (error !== 'cancel') {
+      handleApiError(error, '移除失败')
+    }
+  }
+}
+
+// ==================== 权限分配 ====================
+
+const permDialogVisible = ref(false)
+const permLoading = ref(false)
+const permSaving = ref(false)
+const scanLoading = ref(false)
+const permRole = ref(null)
+const permTree = ref([])           // [{module, permissions: [{id, code, name, ...}]}]
+const checkedPermIds = ref([])     // 当前勾选的权限 ID 列表
+const allPermIds = computed(() => permTree.value.flatMap(g => g.permissions.map(p => p.id)))
+
+// 全选 / 半选状态
+const checkAll = computed({
+  get: () => allPermIds.value.length > 0 && checkedPermIds.value.length === allPermIds.value.length,
+  set: () => {},
+})
+const isIndeterminate = computed(() =>
+  checkedPermIds.value.length > 0 && checkedPermIds.value.length < allPermIds.value.length
+)
+
+const handleCheckAllChange = (val) => {
+  checkedPermIds.value = val ? [...allPermIds.value] : []
+}
+
+// 打开权限分配对话框
+const handlePermissions = async (row) => {
+  permRole.value = row
+  permDialogVisible.value = true
+  permLoading.value = true
+  try {
+    // 并行加载：权限树 + 角色已分配权限
+    const [treeRes, rolePermRes] = await Promise.all([
+      permissionApi.tree(),
+      permissionApi.getRolePermissions(row.code),
+    ])
+    permTree.value = treeRes.data || []
+    const assignedIds = (rolePermRes.data || []).map(p => p.id)
+    checkedPermIds.value = assignedIds
+  } catch (error) {
+    handleApiError(error, '加载权限数据失败')
+  } finally {
+    permLoading.value = false
+  }
+}
+
+// 扫描路由
+const handleScan = async () => {
+  scanLoading.value = true
+  try {
+    const res = await permissionApi.scan()
+    ElMessage.success(res.message || '扫描完成')
+    // 刷新权限树
+    const treeRes = await permissionApi.tree()
+    permTree.value = treeRes.data || []
+  } catch (error) {
+    handleApiError(error, '扫描失败')
+  } finally {
+    scanLoading.value = false
+  }
+}
+
+// 保存权限
+const handleSavePermissions = async () => {
+  permSaving.value = true
+  try {
+    await permissionApi.setRolePermissions(permRole.value.code, checkedPermIds.value)
+    ElMessage.success('权限保存成功')
+    permDialogVisible.value = false
+  } catch (error) {
+    handleApiError(error, '保存失败')
+  } finally {
+    permSaving.value = false
+  }
+}
+
+// ==================== 工具方法 ====================
+
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  })
+}
+
+// ==================== 初始化 ====================
+
+onMounted(() => {
+  getRoles()
+})
+</script>
+
+<style scoped>
+@import '../../styles/components/ui/tables.css';
+@import '../../styles/components/ui/filters.css';
+
+.perm-group {
+  margin-bottom: 16px;
+}
+
+.perm-group-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--el-text-color-primary);
+  border-left: 3px solid var(--el-color-primary);
+  padding-left: 8px;
+}
+</style>

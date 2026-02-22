@@ -1,0 +1,148 @@
+/* 组织管理页面样式 */
+
+/* 页面容器样式 */
+.page-container {
+  padding: 0 20px 20px;
+  position: relative;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* 组织信息卡片样式 */
+.organization-card {
+  margin-bottom: 20px;
+}
+
+.organization-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.organization-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.organization-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+}
+
+.info-item label {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #606266;
+}
+
+.info-item span {
+  color: #303133;
+}
+
+/* 部门管理卡片样式 */
+.department-card {
+  margin-bottom: 20px;
+}
+
+.department-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.department-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.department-tree {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.tree-node-content {
+  display: flex;
+  align-items: center;
+}
+
+.department-count {
+  margin-left: 8px;
+  color: #909399;
+  font-size: 12px;
+}
+
+/* 员工数据卡片样式 */
+.data-card {
+  margin-bottom: 20px;
+}
+
+.employee-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.employee-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 分页容器样式 */
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* 右键菜单样式 */
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+/* 同步对话框内容样式 */
+.sync-dialog-content {
+  padding: 20px 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0 10px 10px;
+  }
+  
+  .organization-info {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .department-tree {
+    max-height: 300px;
+  }
+  
+  .pagination-container {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,172 @@
+/* 分区块样式 - 用于多分区页面 */
+
+/* 分区块容器 */
+.section-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 信息展示区域 - 简洁的头部信息 */
+.section-block__info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  padding: 20px 24px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid var(--border_color);
+  box-shadow: var(--box-shadow);
+}
+
+.section-block__info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-block__info-label {
+  font-size: 13px;
+  color: var(--font-medium-color);
+  font-weight: 400;
+}
+
+.section-block__info-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--font-color);
+}
+
+/* 单个分区块 - 使用 el-card 风格 */
+.section-block {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid var(--border_color);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.section-block:hover {
+  border-color: rgba(var(--primary), 0.2);
+  box-shadow: var(--hover-shadow);
+}
+
+/* 分区块头部 - 简洁的标题栏 */
+.section-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border_color);
+}
+
+.section-block__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--font-title-color);
+}
+
+.section-block__title .el-icon {
+  font-size: 18px;
+  color: rgba(var(--primary), 1);
+}
+
+.section-block__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 分区块内容 */
+.section-block__content {
+  padding: 24px;
+  background: #ffffff;
+}
+
+/* 表格区域 - 与 data-card 中的表格保持一致 */
+.section-block__table {
+  padding: 0;
+}
+
+.section-block__table .el-table {
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.section-block__table .el-table__header th {
+  background-color: var(--light-gray);
+  border-bottom: 1px solid var(--border_color);
+  color: var(--font-color);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 12px 16px;
+}
+
+.section-block__table .el-table__body td {
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border_color);
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+.section-block__table .el-table__body tr:hover td {
+  background-color: rgba(var(--primary), 0.02);
+}
+
+/* 空状态 */
+.section-block__empty {
+  padding: 48px 24px;
+  text-align: center;
+  background: #ffffff;
+}
+
+/* 添加表单区域 - 简洁的底部表单 */
+.section-block__add {
+  padding: 20px 24px;
+  background: #ffffff;
+}
+
+.section-block__add-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.section-block__add-form .el-form-item {
+  margin-bottom: 0;
+}
+
+/* 两栏布局 */
+.section-blocks--two-col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 992px) {
+  .section-blocks--two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 紧凑模式 */
+.section-block--compact .section-block__header {
+  padding: 12px 20px;
+}
+
+.section-block--compact .section-block__content {
+  padding: 20px;
+}
+
+.section-block--compact .section-block__info {
+  padding: 16px 20px;
+}
+
+.section-block--compact .section-block__add {
+  padding: 16px 20px;
+}

@@ -1,0 +1,77 @@
+/* 统计卡片图标样式 */
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.stat-icon.application {
+  background: rgba(var(--primary), 0.1);
+  color: rgba(var(--primary), 1);
+}
+
+.stat-icon.user {
+  background: rgba(var(--success), 0.1);
+  color: rgba(var(--success), 1);
+}
+
+.stat-icon.role {
+  background: rgba(var(--warning), 0.1);
+  color: rgba(var(--warning), 1);
+}
+
+.stat-icon.department {
+  background: rgba(var(--info), 0.1);
+  color: rgba(var(--info), 1);
+}
+
+/* 统计卡片响应式设计 */
+@media (max-width: 1200px) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-cards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stat-content {
+    padding: 1rem;
+  }
+  
+  .stat-info h3 {
+    font-size: 28px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-info h3 {
+    font-size: 24px;
+  }
+  
+  .stat-info p {
+    font-size: 12px;
+  }
+  
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+}

@@ -1,0 +1,69 @@
+/* 暗色主题 */
+
+[data-theme="dark"] {
+  /* 基础颜色 - 暗色主题 */
+  --body-bg: #1a1a1a;
+  --body-color: #e0e0e0;
+  --card-bg: #2d2d2d;
+  --card-border: #404040;
+  
+  /* 头部 */
+  --header-bg: #2d2d2d;
+  --header-border: #404040;
+  --header-color: #e0e0e0;
+  
+  /* 侧边栏 */
+  --sidebar-bg: #2d2d2d;
+  --sidebar-border: #404040;
+  --sidebar-color: #e0e0e0;
+  --sidebar-hover-bg: #404040;
+  --sidebar-active-bg: rgba(72, 190, 206, 0.2);
+  --sidebar-active-color: #48bec6;
+  
+  /* 底部 */
+  --footer-bg: #2d2d2d;
+  --footer-border: #404040;
+  --footer-color: #a0a0b0;
+  
+  /* 表格 */
+  --table-bg: #2d2d2d;
+  --table-border: #404040;
+  --table-stripe: #404040;
+  --table-hover: #404040;
+  
+  /* 输入框 */
+  --input-bg: #2d2d2d;
+  --input-border: #404040;
+  --input-color: #e0e0e0;
+  --input-placeholder: #a0a0b0;
+  --input-focus-border: rgba(72, 190, 206, 0.5);
+  --input-focus-shadow: rgba(72, 190, 206, 0.25);
+  
+  /* 按钮 */
+  --btn-primary-bg: rgba(72, 190, 206, 1);
+  --btn-primary-border: rgba(72, 190, 206, 1);
+  --btn-primary-color: #ffffff;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  
+  /* 文本颜色 */
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #808080;
+  --text-link: rgba(72, 190, 206, 1);
+  
+  /* 覆盖基础变量 */
+  --font-color: #e0e0e0;
+  --font-title-color: #ffffff;
+  --font-secondary-color: #b0b0b0;
+  --font-light-color: #808080;
+  --body-color: #1a1a1a;
+  --bodybg-color: #1a1a1a;
+  --light-gray: #2d2d2d;
+  --light-gray-alt: #404040;
+  --border_color: #404040;
+  --white: #2d2d2d;
+}

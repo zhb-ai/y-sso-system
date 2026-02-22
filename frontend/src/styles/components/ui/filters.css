@@ -1,0 +1,73 @@
+/* 筛选卡片样式 */
+.filter-card {
+  margin-bottom: 1rem;
+  border: 1px solid var(--border_color);
+  border-radius: var(--app-border-radius);
+  box-shadow: var(--box-shadow);
+  background: var(--white);
+  transition: all 0.2s ease;
+  padding: 1rem;
+}
+
+.filter-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
+  border-color: rgba(var(--primary), 0.2);
+}
+
+.filter-form {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin: 0 !important;
+  flex: 0 0 auto;
+}
+
+/* 输入框和选择框固定宽度 */
+.filter-form :deep(.el-input),
+.filter-form :deep(.el-select) {
+  width: 180px; /* 固定宽度 */
+  min-width: 180px;
+  border-radius: var(--bs-border-radius);
+  border-color: var(--border_color);
+  transition: var(--app-transition);
+}
+
+.filter-form :deep(.el-input:hover),
+.filter-form :deep(.el-select:hover) {
+  border-color: rgba(var(--primary), 0.5);
+  box-shadow: var(--box-shadow);
+}
+
+/* 按钮项特殊处理，不固定宽度 */
+.filter-form :deep(.el-form-item:last-child) {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .filter-card {
+    padding: 1rem;
+  }
+  
+  .filter-form {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filter-form :deep(.el-input),
+  .filter-form :deep(.el-select) {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .filter-form :deep(.el-form-item) {
+    width: 100%;
+  }
+}
