@@ -127,7 +127,6 @@ ENV/
 env.bak/
 venv.bak/
 node_modules/
-.cursor/
 # Spyder project settings
 .spyderproject
 .spyproject
