@@ -22,6 +22,7 @@ from app.api.middleware import (
     get_user_info_from_token,
     api_logger,
 )
+import os
 
 logger = get_logger()
 
@@ -109,18 +110,30 @@ from app.api.routes import register_all_routes
 register_all_routes(app)
 
 
+# ==================== 静态文件服务 ====================
+
+
+# 静态文件目录路径
+static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "web")
+
+
+
+
 # ==================== 基础端点 ====================
 
 
 @app.get("/")
 def root():
     """根路径"""
-    return {
-        "message": "欢迎使用单点登录系统API",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "redoc": "/redoc",
-    }
+    # return {
+    #     "message": "欢迎使用单点登录系统API",
+    #     "version": "1.0.0",
+    #     "docs": "/docs",
+    #     "redoc": "/redoc",
+    # }
+
+    # 返回前端页面
+    return FileResponse(os.path.join(static_dir, "index.html"))
 
 
 @app.get("/health")
@@ -131,6 +144,28 @@ def health_check():
         "status": "healthy",
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
+
+
+# ==================== 前端单页应用路由 ====================
+
+from fastapi.responses import FileResponse
+
+@app.get("/{full_path:path}")
+def serve_frontend(full_path: str):
+    """处理前端单页应用路由和静态文件"""
+    # API 路由不应该走到这里（因为已经注册了），但为了安全起见
+    if full_path.startswith("api/"):
+        return {"status": "error", "message": "Not Found"}
+    
+    # 构建文件路径
+    file_path = os.path.join(static_dir, full_path)
+    
+    # 如果文件存在，返回文件（处理静态资源如 JS、CSS、图片等）
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return FileResponse(file_path)
+    
+    # 否则返回 index.html，让前端路由处理（处理前端路由如 /sso/login）
+    return FileResponse(os.path.join(static_dir, "index.html"))
 
 
 # ==================== 调试启动 ====================
