@@ -279,7 +279,7 @@
 }
 
 /*  10 移动优先响应式设计 using breakpoints from variables */
-@media (max-width: var(--breakpoint-md)) {
+@media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
     box-shadow: var(--box-shadow);
@@ -305,7 +305,7 @@
   }
 }
 
-@media (max-width: var(--breakpoint-sm)) {
+@media (max-width: 576px) {
   .login-box {
     max-width: 100%;
     margin: 1rem;

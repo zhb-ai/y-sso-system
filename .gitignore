@@ -126,7 +126,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+node_modules/
+.cursor/
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -177,3 +178,6 @@ config/local_settings.yaml
 # OS files
 .DS_Store
 Thumbs.db
+
+# 前端文件夹
+web/

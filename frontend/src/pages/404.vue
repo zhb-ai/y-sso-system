@@ -10,7 +10,7 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
@@ -61,7 +61,7 @@ const goHome = () => {
   line-height: 1.5;
 }
 
-:deep(.el-button--primary) {
+:v-deep(.el-button--primary) {
   background-color: rgba(var(--primary), 1);
   border-color: rgba(var(--primary), 1);
   border-radius: var(--border-radius);
@@ -72,7 +72,7 @@ const goHome = () => {
   font-weight: 500;
 }
 
-:deep(.el-button--primary:hover) {
+:v-deep(.el-button--primary:hover) {
   background-color: rgba(var(--primary), 0.9);
   border-color: rgba(var(--primary), 0.9);
   box-shadow: var(--hover-shadow);

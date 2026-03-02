@@ -55,7 +55,7 @@
 
 
 /* 数据卡片内的按钮样式 */
-.data-card :deep(.el-button) {
+.data-card :v-deep(.el-button) {
   border-radius: var(--bs-border-radius);
   font-weight: 500;
   transition: var(--app-transition);
@@ -63,31 +63,31 @@
   box-shadow: var(--box-shadow);
 }
 
-.data-card :deep(.el-button--primary) {
+.data-card :v-deep(.el-button--primary) {
   background: rgba(var(--primary), 1);
 }
 
-.data-card :deep(.el-button--primary:hover) {
+.data-card :v-deep(.el-button--primary:hover) {
   background: rgba(var(--primary), 0.9);
   box-shadow: var(--hover-shadow);
   transform: translateY(-2px);
 }
 
-.data-card :deep(.el-button--warning) {
+.data-card :v-deep(.el-button--warning) {
   background: rgba(var(--warning), 1);
 }
 
-.data-card :deep(.el-button--warning:hover) {
+.data-card :v-deep(.el-button--warning:hover) {
   background: rgba(var(--warning), 0.9);
   box-shadow: var(--hover-shadow);
   transform: translateY(-2px);
 }
 
-.data-card :deep(.el-button--danger) {
+.data-card :v-deep(.el-button--danger) {
   background: rgba(var(--danger), 1);
 }
 
-.data-card :deep(.el-button--danger:hover) {
+.data-card :v-deep(.el-button--danger:hover) {
   background: rgba(var(--danger), 0.9);
   box-shadow: var(--hover-shadow);
   transform: translateY(-2px);

@@ -3,7 +3,8 @@ import { useAuthStore } from '../stores/auth'
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
@@ -241,7 +242,7 @@ export const organizationApi = {
 // 部门 API
 export const departmentApi = {
   list: (orgId) => api.get('/v1/org/dept/list', { params: { org_id: orgId } }),
-  tree: (orgId) => api.get('/v1/org/dept/tree', { params: { org_id: orgId } }),
+  tree: (orgId) => api.get('/v1/org/dept/tree', { params: { org_id: orgId, include: 'employee_count' } }),
   get: (deptId) => api.get('/v1/org/dept/get', { params: { dept_id: deptId } }),
   create: (data) => api.post('/v1/org/dept/create', data),
   update: (deptId, data) => api.post('/v1/org/dept/update', data, { params: { dept_id: deptId } }),

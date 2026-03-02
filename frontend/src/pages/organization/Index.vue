@@ -1227,7 +1227,7 @@ onMounted(() => {
 }
 
 /* 员工列表卡片内部样式 */
-.employee-list-card :deep(.el-card__body) {
+.employee-list-card :v-deep(.el-card__body) {
   padding: 16px;
   background-color: var(--bodybg-color);
 }
@@ -1259,12 +1259,12 @@ onMounted(() => {
   margin-bottom: 0;
 }
 
-.list-filter .filter-form :deep(.el-form-item) {
+.list-filter .filter-form :v-deep(.el-form-item) {
   margin-bottom: 0;
   margin-right: 16px;
 }
 
-.list-filter .filter-form :deep(.el-form-item__label) {
+.list-filter .filter-form :v-deep(.el-form-item__label) {
   font-size: 12px;
 }
 

@@ -9,14 +9,14 @@
 }
 
 /* 对话框样式优化 - 通过对话框类控制 */
-:deep(.el-dialog) {
+:v-deep(.el-dialog) {
   border-radius: var(--app-border-radius) !important;
   overflow: hidden;
   box-shadow: var(--box-shadow) !important;
 }
 
 /* 对话框底部样式 - 通过对话框类控制 */
-:deep(.el-dialog) {
+:v-deep(.el-dialog) {
   border-radius: var(--app-border-radius) !important;
   overflow: hidden;
   box-shadow: var(--box-shadow) !important;
@@ -29,50 +29,50 @@
 }
 
 /* 抽屉组件样式优化 - 通过抽屉类控制 */
-:deep(.el-drawer) {
+:v-deep(.el-drawer) {
   border-radius: 0 var(--app-border-radius) var(--app-border-radius) 0 !important;
   box-shadow: var(--box-shadow) !important;
 }
 
 /* 加载遮罩样式优化 */
-:deep(.el-loading-mask) {
+:v-deep(.el-loading-mask) {
   background-color: rgba(var(--white), 0.8) !important;
 }
 
 /* 分页器样式优化 */
-:deep(.el-pagination) {
+:v-deep(.el-pagination) {
   padding: var(--spacing-medium) 0 !important;
 }
 
 /* 下拉菜单样式优化 */
-:deep(.el-dropdown-menu) {
+:v-deep(.el-dropdown-menu) {
   border-radius: 8px !important;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
   padding: var(--spacing-small) 0 !important;
 }
 
 /* 下拉菜单样式 - 通过下拉菜单类控制 */
-:deep(.el-dropdown-menu) {
+:v-deep(.el-dropdown-menu) {
   padding: var(--spacing-small) 0 !important;
 }
 
 /* 标签页样式优化 - 通过标签页类控制 */
-:deep(.el-tabs) {
+:v-deep(.el-tabs) {
   height: 48px;
   line-height: 48px;
 }
 
-:deep(.el-tabs__active-bar) {
+:v-deep(.el-tabs__active-bar) {
   height: 3px !important;
   border-radius: 3px;
 }
 
 /* 进度条样式优化 - 通过进度条类控制 */
-:deep(.el-progress) {
+:v-deep(.el-progress) {
   transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
 }
 
-:deep(.el-progress--circle .el-progress__text) {
+:v-deep(.el-progress--circle .el-progress__text) {
   font-weight: 600;
 }
 
@@ -81,7 +81,7 @@
 /* 
  * 开关样式
  */
-.data-card :deep(.el-switch) {
+.data-card :v-deep(.el-switch) {
   --el-switch-on-color: rgba(var(--success), 1);
   --el-switch-off-color: rgba(var(--danger), 1);
 }
@@ -94,7 +94,7 @@
   gap: 0.25rem;
 }
 
-.action-buttons :deep(.el-button) {
+.action-buttons :v-deep(.el-button) {
   border-radius: var(--border-radius-base);
   font-size: 13px;
   padding: 0.375rem 0.75rem;
@@ -194,7 +194,7 @@ input:-internal-autofill-selected {
 }
 
 /* Element Plus 标签样式优化 */
-:deep(.el-tag) {
+:v-deep(.el-tag) {
   border-radius: var(--border-radius);
   padding: 2px 8px;
   font-weight: 500;
@@ -203,12 +203,12 @@ input:-internal-autofill-selected {
   transition: all 0.2s ease;
 }
 
-:deep(.el-tag.el-tag--success) {
+:v-deep(.el-tag.el-tag--success) {
   background: rgba(var(--success), 0.1);
   color: rgba(var(--success), 1);
 }
 
-:deep(.el-tag.el-tag--danger) {
+:v-deep(.el-tag.el-tag--danger) {
   background: rgba(var(--danger), 0.1);
   color: rgba(var(--danger), 1);
 }
