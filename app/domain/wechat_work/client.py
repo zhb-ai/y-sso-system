@@ -17,6 +17,7 @@ AccessToken 由 wechatpy 内部管理，通过内存 Session 缓存。
 
 from typing import Optional, List, Dict, Any
 
+from wechatpy.enterprise.crypto import WeChatCrypto
 from yweb.log import get_logger
 
 logger = get_logger()
@@ -89,7 +90,7 @@ class WechatWorkClient:
         if callback_token and callback_aes_key:
             from wechatpy.enterprise.crypto import WeChatCrypto
 
-            self.crypto = WeChatCrypto(
+            self.crypto = EnterpriseWechatCryptoJson(
                 callback_token, callback_aes_key, corp_id
             )
 
@@ -107,7 +108,7 @@ class WechatWorkClient:
             部门数据列表
         """
         try:
-            result = self.client.department.list(id=dept_id)
+            result = self.client.department.get(id=dept_id)
             logger.debug(f"获取部门列表成功: 共 {len(result)} 个部门")
             return result
         except Exception as e:
@@ -142,7 +143,7 @@ class WechatWorkClient:
             成员详情列表
         """
         try:
-            result = self.client.department.get_users_detail(
+            result = self.client.department.get_users(
                 dept_id, fetch_child=0
             )
             logger.debug(
@@ -168,6 +169,26 @@ class WechatWorkClient:
         except Exception as e:
             logger.error(f"获取成员详情失败: user_id={user_id}, {e}")
             raise ValueError(f"获取企业微信成员详情失败: {e}")
+    
+    def convert_userid_to_openid(self, user_id: str) -> str:
+        """将企业微信 userid 转换为 openid
+
+        Args:
+            user_id: 企业微信成员 userid
+
+        Returns:
+            转换后的 openid
+        """
+        try:
+            result = self.client.user.convert_to_openid(user_id)
+            openid = result.get('openid')
+            if not openid:
+                raise ValueError("转换失败，未返回 openid")
+            logger.debug(f"userid 转 openid 成功: userid={user_id}, openid={openid}")
+            return openid
+        except Exception as e:
+            logger.error(f"userid 转 openid 失败: user_id={user_id}, {e}")
+            raise ValueError(f"企业微信 userid 转 openid 失败: {e}")
 
     # ==================== 回调相关 ====================
 
@@ -196,7 +217,7 @@ class WechatWorkClient:
             raise ValueError("未配置回调 Token 和 EncodingAESKey，无法解密消息")
 
         try:
-            return self.crypto.decrypt_message(
+            return self.crypto.decrypt_message_json(
                 msg_encrypt, msg_signature, timestamp, nonce
             )
         except Exception as e:
@@ -268,3 +289,25 @@ class WechatWorkClient:
             callback_token=wechat_config.get("callback_token"),
             callback_aes_key=wechat_config.get("callback_aes_key"),
         )
+
+
+class EnterpriseWechatCryptoJson(WeChatCrypto):
+    def __init__(self, token, encoding_aes_key, corp_id):
+        super().__init__(token, encoding_aes_key, corp_id)
+        self.corp_id = corp_id
+
+    def decrypt_message_json(self, msg, signature, timestamp, nonce):
+        if isinstance(msg, str):
+            encrypt = msg
+            from wechatpy.crypto import _get_signature
+            from wechatpy.exceptions import InvalidSignatureException
+            from wechatpy.crypto import PrpCrypto
+            _signature = _get_signature(self.token, timestamp, nonce, encrypt)
+            if _signature != signature:
+
+                raise InvalidSignatureException()
+
+            pc = PrpCrypto(self.key)
+            return pc.decrypt(encrypt, self._id)
+        else:
+            return self.decrypt_message(msg, signature, timestamp, nonce)

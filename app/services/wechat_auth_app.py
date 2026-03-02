@@ -165,6 +165,39 @@ class WechatAuthAppService:
 
         raise ValueError("未找到配置了企微扫码登录的组织（需配置 login_agent_id 和 login_secret）")
 
+    def _get_wechat_login_org_by_corp_id(self, corp_id: str):
+        """根据 corp_id 获取已配置企微登录的组织
+
+        Args:
+            corp_id: 企业微信 corp_id
+
+        Returns:
+            (Organization, wechat_config_dict) 元组
+
+        Raises:
+            ValueError: 未找到配置了企微扫码登录的组织
+        """
+        from yweb.organization import ExternalSource
+
+        if not self.org_models:
+            raise ValueError("未配置组织架构模块")
+
+        Organization = self.org_models.Organization
+        org = Organization.query.filter(
+            Organization.external_source == ExternalSource.WECHAT_WORK.value,
+            Organization.external_corp_id == corp_id,
+        ).first()
+
+        if not org:
+            raise ValueError(f"未找到配置了企微扫码登录的组织（corp_id: {corp_id}）")
+
+        config = org.get_external_config_dict()
+        wechat_config = config.get("wechat_work", {})
+        if not (wechat_config.get("login_agent_id") and wechat_config.get("login_secret")):
+            raise ValueError(f"组织 {org.name} 未配置企微登录参数（需配置 login_agent_id 和 login_secret）")
+
+        return org, wechat_config
+
     def _exchange_code_for_userid(
         self, corp_id: str, login_secret: str, code: str,
     ) -> str:
@@ -180,7 +213,7 @@ class WechatAuthAppService:
 
         client = WeChatClient(corp_id, login_secret)
         try:
-            user_info = client.user.get_user_info(code)
+            user_info = client.oauth.get_user_info(code)
         except Exception as e:
             logger.error(f"企微授权码换取用户身份失败: {e}")
             raise ValueError("授权码无效或已过期，请重新扫码")

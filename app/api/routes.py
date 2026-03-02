@@ -18,7 +18,7 @@ from yweb.organization import setup_organization
 from yweb.log import get_logger
 
 from app.config import settings
-from app.models_registry import User, LoginRecord, EmployeeUserMixin, set_app_org_models
+from app.models_registry import User, LoginRecord, EmployeeUserMixin, set_app_org_models, EmployeeOrgRelMixin
 from app.domain.auth.impl.auth_service_impl import AuthServiceImpl
 from app.domain.permission.permission_service import PermissionRegistry, PermissionService
 
@@ -32,6 +32,20 @@ def _build_login_response(user, access_token, refresh_token):
     """自定义登录响应：在默认响应基础上附带用户角色列表和 SSO 角色"""
     from app.domain.sso_role.entities import UserSSORole
 
+    # 安全地获取角色信息，避免 DetachedInstanceError
+    roles = []
+    if hasattr(user, 'role_codes'):
+        try:
+            roles = list(user.role_codes)
+        except Exception as e:
+            logger.warning(f"无法加载用户角色: {e}")
+    
+    sso_roles = []
+    try:
+        sso_roles = UserSSORole.get_user_sso_role_codes(user.id)
+    except Exception as e:
+        logger.warning(f"无法加载 SSO 角色: {e}")
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -42,8 +56,8 @@ def _build_login_response(user, access_token, refresh_token):
             "email": user.email,
             "phone": user.phone,
             "is_active": user.is_active,
-            "roles": list(user.role_codes) if hasattr(user, 'role_codes') else [],
-            "sso_roles": UserSSORole.get_user_sso_role_codes(user.id),
+            "roles": roles,
+            "sso_roles": sso_roles,
             "must_change_password": getattr(user, 'must_change_password', False),
         },
     }
@@ -143,6 +157,7 @@ def register_all_routes(app):
         api_prefix="/api/v1",
         tags=["组织架构"],
         employee_mixin=EmployeeUserMixin,
+        emp_org_rel_mixin=EmployeeOrgRelMixin,
         dependencies=[Depends(require_permission('organization:manage'))],
     )
     set_app_org_models(org)  # 供 AuthServiceImpl 等复用，避免 ensure_dynamic_models 重复创建模型

@@ -31,11 +31,22 @@ from app.domain.config.entities import SystemConfig                             
 # ======================== 2. 共享配置（各入口复用） ========================
 
 from yweb.orm import fields
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+from typing import Optional
 
 
 class EmployeeUserMixin:
     """员工关联用户账号 — 所有入口共享此定义"""
     user = fields.OneToOne(User, on_delete=fields.DO_NOTHING, nullable=True)
+    
+    enterprise_wechat_user_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment="企业微信用户ID")
+    enterprise_wechat_openid: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment="企业微信OpenID")
+
+
+class EmployeeOrgRelMixin:
+    """员工-组织关联扩展 — 企业微信相关字段"""
+    enterprise_wechat_openid: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment="企业微信OpenID")
 
 
 # ======================== 3. 应用级组织模型（Web 场景复用 setup_organization 的产出） ========================
@@ -94,7 +105,10 @@ def ensure_dynamic_models() -> _DynamicModelsRegistry:
 
     # 组织架构 6 张表
     from yweb.organization import create_org_models
-    org = create_org_models(employee_mixin=EmployeeUserMixin)
+    org = create_org_models(
+        employee_mixin=EmployeeUserMixin,
+        emp_org_rel_mixin=EmployeeOrgRelMixin,
+    )
 
     _cached_registry = _DynamicModelsRegistry(auth, org)
     return _cached_registry

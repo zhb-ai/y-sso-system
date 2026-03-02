@@ -8,6 +8,7 @@
 from typing import Type, List
 
 from yweb.log import get_logger
+from yweb.orm import transaction_manager as tm
 
 logger = get_logger()
 
@@ -125,13 +126,15 @@ class RoleService:
         ).all()
         return users
 
+    @tm.transactional()
     def assign_role(self, user_id: int, role_code: str) -> None:
         """给用户分配角色
 
         Raises:
             ValueError: 用户不存在 / 角色不存在 / 用户已拥有该角色
         """
-        user = self.user_model.get(user_id)
+        # 在事务中重新查询用户，确保会话有效
+        user = self.user_model.query.filter_by(id=user_id).first()
         if not user:
             raise ValueError(f"用户不存在: ID={user_id}")
 
@@ -141,16 +144,17 @@ class RoleService:
             raise ValueError(f"用户已拥有角色: {role_code}")
 
         user.add_role(role)
-        user.save(commit=True)
         logger.info(f"角色分配成功: user={user.username}, role={role.code}")
 
+    @tm.transactional()
     def unassign_role(self, user_id: int, role_code: str) -> None:
         """移除用户角色
 
         Raises:
             ValueError: 用户不存在 / 角色不存在 / 用户未拥有该角色
         """
-        user = self.user_model.get(user_id)
+        # 在事务中重新查询用户，确保会话有效
+        user = self.user_model.query.filter_by(id=user_id).first()
         if not user:
             raise ValueError(f"用户不存在: ID={user_id}")
 
@@ -164,7 +168,6 @@ class RoleService:
             raise ValueError(f"用户未拥有角色: {role_code}")
 
         user.remove_role(role)
-        user.save(commit=True)
         logger.info(f"角色移除成功: user={user.username}, role={role.code}")
 
     def list_user_roles(self, user_id: int) -> list:
