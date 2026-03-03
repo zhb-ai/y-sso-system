@@ -9,7 +9,7 @@ export default defineConfig({
     port: 5200,
     strictPort: true,
     // 跨域配置
-    allowedHosts: ['localhost', '127.0.0.1'],
+    allowedHosts: ['localhost', '127.0.0.1', '0.0.0.0'],
     // 本地dev配置
     proxy: {
       '/api': {

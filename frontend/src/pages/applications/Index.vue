@@ -93,10 +93,11 @@
             <el-switch
               v-model="scope.row.is_active"
               @change="handleStatusChange(scope.row)"
-              :active-icon="Check"
-              :inactive-icon="Close"
+              :active-action-icon="Check"
+              :inactive-action-icon="Close"
               active-text="启用"
               inactive-text="禁用"
+              inline-prompt
             />
           </template>
         </el-table-column>
