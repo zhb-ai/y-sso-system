@@ -104,9 +104,10 @@ class SSORoleService:
             ValueError: 角色不存在
         """
         role = self.get_role(code)
+        role_code = role.code
         role.soft_delete()
         role.save(commit=True)
-        logger.info(f"SSO 角色已删除: {role.code}")
+        logger.info(f"SSO 角色已删除: {role_code}")
 
     # ==================== 用户 SSO 角色管理 ====================
 

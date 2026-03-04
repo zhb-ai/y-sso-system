@@ -124,9 +124,10 @@ class ApplicationService:
             ValueError: 应用不存在
         """
         app = self.get_application(app_id)
+        app_name = app.name  # 在 commit 前获取 name
         app.soft_delete()
         app.save(commit=True)
-        logger.info(f"删除应用: {app.name} (id={app_id})")
+        logger.info(f"删除应用: {app_name} (id={app_id})")
 
     def list_applications(
         self,
