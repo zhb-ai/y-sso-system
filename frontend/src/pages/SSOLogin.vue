@@ -42,24 +42,39 @@
         </div>
 
         <!-- 未登录：显示登录表单 -->
-        <el-form v-else :model="loginForm" :rules="loginRules" ref="loginFormRef" class="login-form">
-          <el-form-item prop="username">
-            <el-input v-model="loginForm.username" placeholder="请输入用户名" size="large" @keyup.enter="focusPassword">
-              <template #prefix><el-icon><UserFilled /></el-icon></template>
-            </el-input>
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password size="large"
-              ref="passwordInputRef" @keyup.enter="handleLogin">
-              <template #prefix><el-icon><Lock /></el-icon></template>
-            </el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" :loading="loading" @click="handleLogin" size="large" style="width: 100%">
-              登录并授权
-            </el-button>
-          </el-form-item>
-        </el-form>
+        <template v-else>
+          <el-form :model="loginForm" :rules="loginRules" ref="loginFormRef" class="login-form">
+            <el-form-item prop="username">
+              <el-input v-model="loginForm.username" placeholder="请输入用户名" size="large" @keyup.enter="focusPassword">
+                <template #prefix><el-icon><UserFilled /></el-icon></template>
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password size="large"
+                ref="passwordInputRef" @keyup.enter="handleLogin">
+                <template #prefix><el-icon><Lock /></el-icon></template>
+              </el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" :loading="loading" @click="handleLogin" size="large" style="width: 100%">
+                登录并授权
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <!-- 企业微信登录 -->
+          <div class="login-footer" v-if="wechatLoginEnabled">
+            <el-divider>其他登录方式</el-divider>
+            <div class="other-login">
+              <el-button @click="showWechatQrCode" :loading="wechatLoading" size="large" style="width: 100%">
+                <svg viewBox="0 0 1024 1024" width="18" height="18" style="margin-right: 6px; vertical-align: middle">
+                  <path d="M688.6 323.2c-15.6-2-31.6-3.2-47.8-3.2-141.4 0-262.2 88.4-310.4 213-10.4-0.8-20.8-1.4-31.4-1.4C142.6 531.6 16 641.4 16 776.6c0 75.4 37.2 142.6 95.4 188.4l-23.8 71.6 83.2-41.6c30.6 10 62.8 15.6 96.2 15.6 15.8 0 31.2-1.2 46.4-3.4 48.2 124.4 169 213 310.4 213 26.2 0 51.6-3.4 75.8-9.6l104.2 52-29.8-89.6C844.6 1129 896 1054.2 896 966.6c0-64.8-30.4-123-78-165" fill="#07C160"/>
+                </svg>
+                企业微信登录
+              </el-button>
+            </div>
+          </div>
+        </template>
       </template>
 
       <!-- ==================== 门户模式：直接访问，展示应用列表 ==================== -->
@@ -121,24 +136,39 @@
         </div>
 
         <!-- 未登录：显示登录表单 -->
-        <el-form v-else :model="loginForm" :rules="loginRules" ref="loginFormRef" class="login-form">
-          <el-form-item prop="username">
-            <el-input v-model="loginForm.username" placeholder="请输入用户名" size="large" @keyup.enter="focusPassword">
-              <template #prefix><el-icon><UserFilled /></el-icon></template>
-            </el-input>
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password size="large"
-              ref="passwordInputRef" @keyup.enter="handlePortalLogin">
-              <template #prefix><el-icon><Lock /></el-icon></template>
-            </el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" :loading="loading" @click="handlePortalLogin" size="large" style="width: 100%">
-              登录
-            </el-button>
-          </el-form-item>
-        </el-form>
+        <template v-else>
+          <el-form :model="loginForm" :rules="loginRules" ref="loginFormRef" class="login-form">
+            <el-form-item prop="username">
+              <el-input v-model="loginForm.username" placeholder="请输入用户名" size="large" @keyup.enter="focusPassword">
+                <template #prefix><el-icon><UserFilled /></el-icon></template>
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password size="large"
+                ref="passwordInputRef" @keyup.enter="handlePortalLogin">
+                <template #prefix><el-icon><Lock /></el-icon></template>
+              </el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" :loading="loading" @click="handlePortalLogin" size="large" style="width: 100%">
+                登录
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <!-- 企业微信登录 -->
+          <div class="login-footer" v-if="wechatLoginEnabled">
+            <el-divider>其他登录方式</el-divider>
+            <div class="other-login">
+              <el-button @click="showWechatQrCode" :loading="wechatLoading" size="large" style="width: 100%">
+                <svg viewBox="0 0 1024 1024" width="18" height="18" style="margin-right: 6px; vertical-align: middle">
+                  <path d="M688.6 323.2c-15.6-2-31.6-3.2-47.8-3.2-141.4 0-262.2 88.4-310.4 213-10.4-0.8-20.8-1.4-31.4-1.4C142.6 531.6 16 641.4 16 776.6c0 75.4 37.2 142.6 95.4 188.4l-23.8 71.6 83.2-41.6c30.6 10 62.8 15.6 96.2 15.6 15.8 0 31.2-1.2 46.4-3.4 48.2 124.4 169 213 310.4 213 26.2 0 51.6-3.4 75.8-9.6l104.2 52-29.8-89.6C844.6 1129 896 1054.2 896 966.6c0-64.8-30.4-123-78-165" fill="#07C160"/>
+                </svg>
+                企业微信登录
+              </el-button>
+            </div>
+          </div>
+        </template>
       </template>
 
     </div>
@@ -182,6 +212,7 @@ import { api, oauth2Api } from '../api'
 import { ElMessage } from 'element-plus'
 import { UserFilled, Lock, Monitor, ArrowRight, Loading } from '@element-plus/icons-vue'
 import { handleApiError } from '../utils/errorHandler'
+import { useWechatWorkLogin } from '../composables/useWechatWorkLogin'
 
 import { useSiteStore } from '../stores/site'
 
@@ -193,6 +224,22 @@ const loginFormRef = ref(null)
 const passwordInputRef = ref(null)
 const loading = ref(false)
 const authorizing = ref(false)
+
+// 企业微信登录
+const {
+  wechatLoginEnabled,
+  wechatLoading,
+  showWechatQrCode,
+  initWechatWorkLogin,
+} = useWechatWorkLogin({
+  redirectPath: '/sso/login',
+  onLoginSuccess: async () => {
+    // 如果是 OAuth2 模式，自动授权跳转
+    if (isOAuth2Mode.value) {
+      await doAuthorize()
+    }
+  },
+})
 
 // ==================== OAuth2 参数 ====================
 
@@ -330,8 +377,11 @@ async function handleChangePassword() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   authStore.restoreAuthState()
+
+  // 初始化企业微信登录
+  await initWechatWorkLogin()
 })
 
 // ==================== OAuth2 模式操作 ====================
@@ -628,5 +678,16 @@ async function handlePortalLogin() {
   justify-content: center;
   align-items: center;
   gap: 24px;
+}
+
+/* ==================== 企业微信登录 ==================== */
+
+.login-footer {
+  margin-top: 20px;
+}
+
+.other-login {
+  display: flex;
+  justify-content: center;
 }
 </style>
