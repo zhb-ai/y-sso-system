@@ -100,7 +100,7 @@
     <!-- 角色用户列表对话框 -->
     <el-dialog
       v-model="usersDialogVisible"
-      :title="`${currentRole?.name}（${currentRole?.code}）- 关联用户`"
+      :title="`${currentRole && currentRole.name}（${currentRole && currentRole.code}）- 关联用户`"
       width="800px"
       destroy-on-close
     >
@@ -124,7 +124,7 @@
                     v-for="role in scope.row.roles"
                     :key="role"
                     size="small"
-                    :type="role === currentRole?.code ? 'warning' : 'primary'"
+                    :type="role === (currentRole && currentRole.code) ? 'warning' : 'primary'"
                     effect="light"
                     style="margin-right: 4px"
                   >{{ role }}</el-tag>
@@ -154,7 +154,7 @@
     <!-- 权限分配对话框 -->
     <el-dialog
       v-model="permDialogVisible"
-      :title="`${permRole?.name}（${permRole?.code}）- 分配权限`"
+      :title="`${permRole && permRole.name}（${permRole && permRole.code}）- 分配权限`"
       width="560px"
       destroy-on-close
     >
@@ -166,7 +166,7 @@
               <el-button size="small" type="primary" plain :loading="scanLoading" @click="handleScan">
                 <el-icon><Refresh /></el-icon> 扫描路由更新权限
               </el-button>
-              <el-text v-if="permRole?.code === 'admin'" type="info" size="small">
+              <el-text v-if="permRole && permRole.code === 'admin'" type="info" size="small">
                 admin 角色自动拥有所有权限，无需手动分配
               </el-text>
             </div>
@@ -198,7 +198,7 @@
                     :key="perm.id"
                     :value="perm.id"
                     :label="perm.name"
-                    :disabled="permRole?.code === 'admin'"
+                    :disabled="permRole && permRole.code === 'admin'"
                     style="margin-bottom: 4px; display: block"
                   >
                     <span>{{ perm.name }}</span>
@@ -219,7 +219,7 @@
         <el-button
           type="primary"
           :loading="permSaving"
-          :disabled="permRole?.code === 'admin'"
+          :disabled="permRole && permRole.code === 'admin'"
           @click="handleSavePermissions"
         >保存</el-button>
       </template>
@@ -397,7 +397,15 @@ const scanLoading = ref(false)
 const permRole = ref(null)
 const permTree = ref([])           // [{module, permissions: [{id, code, name, ...}]}]
 const checkedPermIds = ref([])     // 当前勾选的权限 ID 列表
-const allPermIds = computed(() => permTree.value.flatMap(g => g.permissions.map(p => p.id)))
+const allPermIds = computed(() => {
+  const ids = []
+  for (const g of permTree.value) {
+    for (const p of g.permissions) {
+      ids.push(p.id)
+    }
+  }
+  return ids
+})
 
 // 全选 / 半选状态
 const checkAll = computed({

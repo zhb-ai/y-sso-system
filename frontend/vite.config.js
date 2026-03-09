@@ -24,6 +24,8 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, '../web'),
     assetsDir: 'assets',
+    minify: false,
+    emptyOutDir: true,  // 构建前清空输出目录
   },
   // 后端将静态文件挂载在根路径，资源使用相对路径加载
   base: './'
