@@ -32,20 +32,6 @@ def _build_login_response(user, access_token, refresh_token):
     """自定义登录响应：在默认响应基础上附带用户角色列表和 SSO 角色"""
     from app.domain.sso_role.entities import UserSSORole
 
-    # 安全地获取角色信息，避免 DetachedInstanceError
-    roles = []
-    if hasattr(user, 'role_codes'):
-        try:
-            roles = list(user.role_codes)
-        except Exception as e:
-            logger.warning(f"无法加载用户角色: {e}")
-    
-    sso_roles = []
-    try:
-        sso_roles = UserSSORole.get_user_sso_role_codes(user.id)
-    except Exception as e:
-        logger.warning(f"无法加载 SSO 角色: {e}")
-
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -56,8 +42,8 @@ def _build_login_response(user, access_token, refresh_token):
             "email": user.email,
             "phone": user.phone,
             "is_active": user.is_active,
-            "roles": roles,
-            "sso_roles": sso_roles,
+            "roles": list(user.role_codes) if hasattr(user, 'role_codes') else [],
+            "sso_roles": UserSSORole.get_user_sso_role_codes(user.id),
             "must_change_password": getattr(user, 'must_change_password', False),
         },
     }

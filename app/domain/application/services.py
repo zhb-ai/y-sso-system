@@ -437,23 +437,17 @@ class OAuth2ProviderService:
         auth_code.mark_used()
 
         # 7. 获取用户信息并创建 JWT
-        # 在事务中重新查询用户，确保会话有效
-        from app.models_registry import User
-        user = User.get(auth_code.user_id)
+        #    直接在当前事务 Session 内查询，避免 user_getter 返回 detached 实例
+        #    导致 lazy load roles 失败
+        from app.domain.auth.model.user import User
+        user = User.query.filter_by(id=auth_code.user_id, is_active=True).first()
         if not user:
             raise ValueError("用户不存在或已禁用")
 
         from yweb.auth.schemas import TokenPayload
-        
-        # 在事务中预加载角色信息，避免 DetachedInstanceError
         roles = []
         if hasattr(user, 'roles'):
-            # 强制加载角色数据到内存
-            try:
-                roles = [r.code if hasattr(r, 'code') else str(r) for r in list(user.roles)]
-            except Exception as e:
-                logger.warning(f"无法加载用户角色: {e}")
-                roles = []
+            roles = [r.code if hasattr(r, 'code') else str(r) for r in user.roles]
 
         payload = TokenPayload(
             sub=user.username,
@@ -514,7 +508,6 @@ class OAuth2ProviderService:
 
         return response
 
-    @tm.transactional()
     def get_userinfo(self, access_token: str) -> dict:
         """通过 access_token 获取用户信息
 
@@ -534,9 +527,8 @@ class OAuth2ProviderService:
         if token_data.token_type != "access":
             raise ValueError("无效的令牌类型")
 
-        # 在事务中重新查询用户，确保会话有效
-        from app.models_registry import User
-        user = User.get(token_data.user_id)
+        from app.domain.auth.model.user import User
+        user = User.query.filter_by(id=token_data.user_id, is_active=True).first()
         if not user:
             raise ValueError("用户不存在或已禁用")
 
@@ -550,21 +542,14 @@ class OAuth2ProviderService:
             "active": getattr(user, 'is_active', True),
         }
 
-        # 系统内部角色 - 使用 try-except 避免 DetachedInstanceError
-        roles = []
+        # 系统内部角色
         if hasattr(user, 'roles'):
-            try:
-                roles = [r.code if hasattr(r, 'code') else str(r) for r in list(user.roles)]
-            except Exception as e:
-                logger.warning(f"无法加载用户角色: {e}")
-        userinfo["roles"] = roles
+            userinfo["roles"] = [
+                r.code if hasattr(r, 'code') else str(r) for r in user.roles
+            ]
 
         # SSO 角色（供外部系统使用）
         from app.domain.sso_role.entities import UserSSORole
-        try:
-            userinfo["sso_roles"] = UserSSORole.get_user_sso_role_codes(user.id)
-        except Exception as e:
-            logger.warning(f"无法加载 SSO 角色: {e}")
-            userinfo["sso_roles"] = []
+        userinfo["sso_roles"] = UserSSORole.get_user_sso_role_codes(user.id)
 
         return userinfo

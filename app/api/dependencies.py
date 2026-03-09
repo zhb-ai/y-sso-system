@@ -81,29 +81,13 @@ def get_require_admin():
         app.include_router(router, dependencies=[Depends(require_admin)])
     """
     async def _require_admin(user=Depends(auth.get_current_user)):
-        # 重新查询用户，确保数据库会话有效
-        from app.models_registry import User
-        from yweb.orm import transaction_manager as tm
-        
-        @tm.transactional()
-        def get_user_with_roles(user_id):
-            """在事务中重新查询用户，预加载角色"""
-            return User.query.filter_by(id=user_id).first()
-        
-        fresh_user = get_user_with_roles(user.id)
-        if not fresh_user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="用户不存在或已禁用",
-            )
-        
-        if not hasattr(fresh_user, 'has_role') or not fresh_user.has_role('admin'):
+        if not hasattr(user, 'has_role') or not user.has_role('admin'):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="权限不足：仅管理员可访问",
             )
-        return fresh_user
-    
+        return user
+
     return _require_admin
 
 
@@ -125,48 +109,32 @@ def get_require_permission(*permission_codes: str):
         )
     """
     from app.domain.permission.entities import RolePermission
-    
+
     async def _require_permission(user=Depends(auth.get_current_user)):
-        # 重新查询用户，确保数据库会话有效
-        from app.models_registry import User
-        from yweb.orm import transaction_manager as tm
-        
-        @tm.transactional()
-        def get_user_with_roles(user_id):
-            """在事务中重新查询用户，预加载角色"""
-            return User.query.filter_by(id=user_id).first()
-        
-        fresh_user = get_user_with_roles(user.id)
-        if not fresh_user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="用户不存在或已禁用",
-            )
-        
         # admin 直接放行
-        if hasattr(fresh_user, 'has_role') and fresh_user.has_role('admin'):
-            return fresh_user
-        
+        if hasattr(user, 'has_role') and user.has_role('admin'):
+            return user
+
         # 获取用户所有角色 ID
-        roles = getattr(fresh_user, 'roles', []) or []
+        roles = getattr(user, 'roles', []) or []
         role_ids = [r.id for r in roles]
-        
+
         if not role_ids:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="权限不足：未分配任何角色",
             )
-        
+
         # 查询用户所有角色的权限合集
         user_perms = RolePermission.get_permissions_by_role_ids(role_ids)
-        
+
         # 检查是否拥有任一所需权限
         if not user_perms.intersection(set(permission_codes)):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"权限不足：需要 {', '.join(permission_codes)}",
             )
-        
-        return fresh_user
-    
+
+        return user
+
     return _require_permission
