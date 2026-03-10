@@ -12,6 +12,7 @@ from yweb.auth import PasswordHelper
 from yweb.log import get_logger
 
 from app.domain.auth.model.user import User, UserRoleEnum
+from app.utils.infrastructure_utils import generate_strong_password
 
 logger = get_logger()
 
@@ -135,7 +136,7 @@ class EmployeeAccountService:
             raise ValueError(f"用户名已存在: {username}")
 
         # 4. 使用默认密码（跳过强度验证，因为是临时密码）
-        raw_password = DEFAULT_PASSWORD
+        raw_password = generate_strong_password()
         password_hash = PasswordHelper.hash(raw_password, validate=False)
 
         # 5. 创建用户并分配"内部员工"角色（同步员工姓名）
@@ -166,6 +167,7 @@ class EmployeeAccountService:
             "username": user.username,
             "employee_id": employee_id,
             "employee_name": employee.name,
+            "raw_password": raw_password
         }
 
     def _resolve_username(self, employee) -> str:

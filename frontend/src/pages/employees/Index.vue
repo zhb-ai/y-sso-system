@@ -477,7 +477,7 @@
       :close-on-click-modal="false"
     >
       <el-alert
-        title="账号已创建，默认密码 000000，首次登录时需强制修改密码"
+        :title="'账号已创建，默认密码 ' + accountResult.raw_password + '，首次登录时需强制修改密码'"
         type="success"
         :closable="false"
         show-icon
@@ -489,7 +489,7 @@
           <el-tag >{{ accountResult.username }}</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="默认密码">
-          <code >000000</code>
+          <code >{{accountResult.raw_password}}</code>
           <el-tag size="small" style="margin-left: 8px">首次登录需修改</el-tag>
         </el-descriptions-item>
       </el-descriptions>
@@ -533,7 +533,7 @@ const form = reactive({
 
 // 账号创建结果
 const accountResultVisible = ref(false)
-const accountResult = reactive({ employee_name: '', username: '' })
+const accountResult = reactive({ employee_name: '', username: '', raw_password: '' })
 const addOrgForm = reactive({ org_id: null, emp_no: '', position: '', set_primary: false })
 const addDeptForm = reactive({ dept_id: null, set_primary: false })
 const selectedOrgForDept = ref(null)  // 管理部门时选择的组织
@@ -718,6 +718,7 @@ const submitForm = async () => {
           Object.assign(accountResult, {
             employee_name: data.employee_name,
             username: data.username,
+            raw_password: data.raw_password
           })
           accountResultVisible.value = true
         } catch (accountErr) {
@@ -749,6 +750,7 @@ const handleCreateAccount = async (row) => {
     Object.assign(accountResult, {
       employee_name: data.employee_name,
       username: data.username,
+      raw_password: data.raw_password
     })
     accountResultVisible.value = true
     loadEmployees()
