@@ -92,6 +92,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="handleProfile">个人资料</el-dropdown-item>
+                <el-dropdown-item @click="handleAppAuthorization">应用授权</el-dropdown-item>
                 <el-dropdown-item v-if="isAdmin" @click="handleSettings">系统设置</el-dropdown-item>
                 <el-divider />
                 <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
@@ -297,6 +298,11 @@ const handleProfile = () => {
 // 设置
 const handleSettings = () => {
   router.push('/settings')
+}
+
+// 应用授权
+const handleAppAuthorization = () => {
+  router.push('/sso/login')
 }
 
 // 初始化

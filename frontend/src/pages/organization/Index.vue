@@ -24,7 +24,7 @@
           <el-tag type="info">编码: {{ currentOrg.code }}</el-tag>
         </el-form-item>
         <el-form-item>
-          <el-button type="warning"   @click="handleEditOrg" v-if="currentOrg">
+          <el-button type="warning" @click="handleEditOrg" v-if="currentOrg">
             <el-icon><Edit /></el-icon> 编辑组织
           </el-button>
         </el-form-item>
@@ -33,7 +33,6 @@
           <el-tooltip content="同步通讯录功能，需要绑定企业微信，才能使用" :disabled="wechatBound">
             <el-button
               type="primary"
-               
               :disabled="!wechatBound"
               @click="handleWechatSync"
               :loading="wechatSyncLoading"
@@ -43,7 +42,7 @@
           </el-tooltip>
           <template v-if="wechatBound">
             <el-tag type="success" style="margin-right: 8px">已绑定企业微信</el-tag>
-            <el-button type="info"   @click="showWechatConfigDialog">
+            <el-button type="info" @click="showWechatConfigDialog">
               查看配置
             </el-button>
             <el-tooltip content="解除组织与企业微信的绑定，不再接收通讯录变更通知，已同步的数据会保留">
@@ -53,7 +52,7 @@
             </el-tooltip>
           </template>
           <template v-else>
-            <el-button type="success"   @click="showWechatBindDialog">
+            <el-button type="success" @click="showWechatBindDialog">
               绑定企业微信
             </el-button>
           </template>

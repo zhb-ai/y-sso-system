@@ -300,7 +300,7 @@ async function handleAppClick(app) {
     })
     const redirectUrl = response.data?.redirect_url || response.redirect_url
     if (redirectUrl) {
-      window.location.href = redirectUrl
+      window.open(redirectUrl, '_blank')
     } else {
       ElMessage.error('授权失败：未获取到重定向地址')
     }
