@@ -15,6 +15,8 @@ from app.domain.auth.model.user import User
 from yweb.log import get_logger
 from yweb.auth import PasswordHelper, UsernameValidator, PasswordValidator
 
+from app.utils.infrastructure_utils import generate_strong_password
+
 logger = get_logger()
 
 
@@ -108,7 +110,7 @@ class AuthApplicationService:
         user = User.get(user_id)
         if not user:
             raise ValueError(f"用户不存在: ID={user_id}")
-
+        temp_password = generate_strong_password()
         user.password_hash = PasswordHelper.hash(temp_password, validate=False)
         if hasattr(user, 'must_change_password'):
             user.must_change_password = True

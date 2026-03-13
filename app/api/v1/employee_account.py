@@ -44,6 +44,7 @@ def create_employee_account_router(employee_model: Type) -> APIRouter:
         username: str = ""
         employee_id: int = 0
         employee_name: str = ""
+        raw_password: str = ""
 
     # ==================== 端点 ====================
 
@@ -71,8 +72,9 @@ def create_employee_account_router(employee_model: Type) -> APIRouter:
                     username=user_info["username"],
                     employee_id=user_info["employee_id"],
                     employee_name=user_info["employee_name"],
+                    raw_password=user_info["raw_password"],
                 ),
-                message="账号创建成功，默认密码 000000，首次登录需修改",
+                message=f"账号创建成功，默认密码 {user_info['raw_password']}，首次登录需修改",
             )
         except ValueError as e:
             return Resp.BadRequest(message=str(e))

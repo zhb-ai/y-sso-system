@@ -220,6 +220,8 @@ class WechatWorkSyncService(BaseSyncService):
                         "position": u.get("position"),
                         "status": self._map_status(u.get("status", 1)),
                         "department_ids": user_dept_ids,
+                        "main_department": u.get("main_department"),
+                        "enterprise_wechat_user_id": u.get("userid"),
                     }
                 else:
                     # 合并多部门归属
@@ -373,6 +375,8 @@ class WechatWorkSyncService(BaseSyncService):
             "position": user_detail.get("position"),
             "status": self._map_status(user_detail.get("status", 1)),
             "department_ids": dept_ids,
+            "main_department": user_detail.get("main_department"),
+            "enterprise_wechat_user_id": user_detail.get("userid", None),
         }
 
         # 创建员工 + 组织关联
@@ -425,6 +429,8 @@ class WechatWorkSyncService(BaseSyncService):
             "position": user_detail.get("position"),
             "status": self._map_status(user_detail.get("status", 1)),
             "department_ids": dept_ids,
+            "main_department": user_detail.get("main_department"),
+            "enterprise_wechat_user_id": user_detail.get("userid", None),
         }
 
         # 更新员工 + 组织关联
@@ -509,11 +515,74 @@ class WechatWorkSyncService(BaseSyncService):
             dept.update_path_and_level()
             dept.save(commit=True)
 
+    def _create_employee_from_external(self, org, data: Dict[str, Any]) -> Any:
+        # 创建员工
+        employee = self.employee_model(
+            name=data.get('name', ''),
+            mobile=data.get('mobile'),
+            email=data.get('email'),
+            avatar=data.get('avatar'),
+            gender=data.get('gender', 0),
+            enterprise_wechat_user_id=data.get('enterprise_wechat_user_id'),
+        )
+        employee.save(commit=True)
+        
+        # 尝试转换 userid 为 openid
+        enterprise_wechat_user_id = data.get('enterprise_wechat_user_id')
+        if enterprise_wechat_user_id:
+            try:
+                openid = self.client.convert_userid_to_openid(enterprise_wechat_user_id)
+                employee.enterprise_wechat_openid = openid
+                employee.save(commit=True)
+            except Exception as e:
+                logger.warning(f"转换 userid 为 openid 失败，将在后续同步时重试: userid={enterprise_wechat_user_id}, {e}")
+        
+        # 创建员工-组织关联
+        rel = self.emp_org_rel_model(
+            employee_id=employee.id,
+            org_id=org.id,
+            emp_no=data.get('emp_no'),
+            position=data.get('position'),
+            external_user_id=str(data.get('enterprise_wechat_user_id', '')),
+            enterprise_wechat_openid=employee.enterprise_wechat_openid,
+        )
+        rel.save(commit=True)
+        
+        return employee
+    
+    def _update_employee_from_external(self, employee, rel, data: Dict[str, Any]):
+        """根据外部数据更新员工，添加 wechat_user_id 和 wechat_openid 字段处理"""
+        employee.name = data.get('name', employee.name)
+        employee.mobile = data.get('mobile', employee.mobile)
+        employee.email = data.get('email', employee.email)
+        employee.avatar = data.get('avatar', employee.avatar)
+        employee.gender = data.get('gender', employee.gender)
+        
+        # 更新 enterprise_wechat_user_id
+        new_wechat_user_id = data.get('enterprise_wechat_user_id')
+        if new_wechat_user_id != employee.enterprise_wechat_user_id:
+            employee.enterprise_wechat_user_id = new_wechat_user_id
+            # 如果 userid 变化，重新转换 openid
+            if new_wechat_user_id:
+                try:
+                    openid = self.client.convert_userid_to_openid(new_wechat_user_id)
+                    employee.enterprise_wechat_openid = openid
+                except Exception as e:
+                    logger.warning(f"转换 userid 为 openid 失败，将在后续同步时重试: userid={new_wechat_user_id}, {e}")
+        
+        employee.save(commit=True)
+        
+        rel.emp_no = data.get('emp_no', rel.emp_no)
+        rel.position = data.get('position', rel.position)
+        rel.enterprise_wechat_openid = employee.enterprise_wechat_openid
+        rel.save(commit=True)
+    
     def _sync_single_employee_dept_rels(
         self, org, employee, data: Dict[str, Any]
     ):
         """同步单个员工的部门关联关系"""
         ext_dept_ids = data.get("department_ids", [])
+        main_dept_id = data.get("main_department")
 
         # 建立外部部门ID → 内部部门ID 的映射
         depts = self.dept_model.query.filter(
@@ -553,11 +622,21 @@ class WechatWorkSyncService(BaseSyncService):
                 self.emp_dept_rel_model.dept_id == dept_id,
             ).delete()
 
-        # 设置主部门（按 ID 排序取最小值，确保确定性）
+        # 设置主部门（优先使用企业微信返回的 main_department）
         if target_dept_ids:
-            first_dept_id = min(target_dept_ids)
-            if employee.primary_dept_id != first_dept_id:
-                employee.primary_dept_id = first_dept_id
+            # 尝试使用企业微信返回的主部门
+            primary_dept_id = None
+            if main_dept_id:
+                main_dept_id_str = str(main_dept_id)
+                if main_dept_id_str in ext_to_dept_id:
+                    primary_dept_id = ext_to_dept_id[main_dept_id_str]
+            
+            # 如果没有主部门或主部门不存在，使用第一个部门
+            if primary_dept_id is None and target_dept_ids:
+                primary_dept_id = min(target_dept_ids)
+            
+            if primary_dept_id and employee.primary_dept_id != primary_dept_id:
+                employee.primary_dept_id = primary_dept_id
                 employee.save(commit=True)
 
     # ==================== 生命周期钩子 ====================

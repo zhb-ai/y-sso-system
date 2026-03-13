@@ -10,15 +10,15 @@
   box-shadow: var(--box-shadow);
 }
 
-:deep(.el-tree) {
+:v-deep(.el-tree) {
   color: var(--font-color);
 }
 
-:deep(.el-tree-node__content:hover) {
+:v-deep(.el-tree-node__content:hover) {
   background-color: rgba(var(--primary), 0.05);
 }
 
-:deep(.el-tree-node__content) {
+:v-deep(.el-tree-node__content) {
   padding: 0.375rem 0;
   border-radius: var(--border-radius);
   transition: all 0.2s ease;

@@ -23,14 +23,14 @@
   align-items: center;
 }
 
-.filter-form :deep(.el-form-item) {
+.filter-form :v-deep(.el-form-item) {
   margin: 0 !important;
   flex: 0 0 auto;
 }
 
 /* 输入框和选择框固定宽度 */
-.filter-form :deep(.el-input),
-.filter-form :deep(.el-select) {
+.filter-form :v-deep(.el-input),
+.filter-form :v-deep(.el-select) {
   width: 180px; /* 固定宽度 */
   min-width: 180px;
   border-radius: var(--bs-border-radius);
@@ -38,14 +38,14 @@
   transition: var(--app-transition);
 }
 
-.filter-form :deep(.el-input:hover),
-.filter-form :deep(.el-select:hover) {
+.filter-form :v-deep(.el-input:hover),
+.filter-form :v-deep(.el-select:hover) {
   border-color: rgba(var(--primary), 0.5);
   box-shadow: var(--box-shadow);
 }
 
 /* 按钮项特殊处理，不固定宽度 */
-.filter-form :deep(.el-form-item:last-child) {
+.filter-form :v-deep(.el-form-item:last-child) {
   flex: 0 0 auto;
   width: auto;
 }
@@ -61,13 +61,13 @@
     gap: 12px;
   }
   
-  .filter-form :deep(.el-input),
-  .filter-form :deep(.el-select) {
+  .filter-form :v-deep(.el-input),
+  .filter-form :v-deep(.el-select) {
     width: 100%;
     min-width: 100%;
   }
   
-  .filter-form :deep(.el-form-item) {
+  .filter-form :v-deep(.el-form-item) {
     width: 100%;
   }
 }

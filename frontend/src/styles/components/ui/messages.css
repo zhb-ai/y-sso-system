@@ -1,35 +1,35 @@
 /* 消息提示和通知样式优化 */
 
 /* 消息提示样式优化 */
-:deep(.el-message) {
+:v-deep(.el-message) {
   border-radius: var(--bs-border-radius) !important;
   box-shadow: var(--box-shadow) !important;
   border: none !important;
   min-height: 50px;
 }
 
-:deep(.el-message--success) {
+:v-deep(.el-message--success) {
   background: linear-gradient(135deg, rgba(var(--success), 0.1), rgba(var(--success), 0.2)) !important;
   color: rgba(var(--success), 1) !important;
 }
 
-:deep(.el-message--warning) {
+:v-deep(.el-message--warning) {
   background: linear-gradient(135deg, rgba(var(--warning), 0.1), rgba(var(--warning), 0.2)) !important;
   color: rgba(var(--warning), 1) !important;
 }
 
-:deep(.el-message--error) {
+:v-deep(.el-message--error) {
   background: linear-gradient(135deg, rgba(var(--danger), 0.1), rgba(var(--danger), 0.2)) !important;
   color: rgba(var(--danger), 1) !important;
 }
 
-:deep(.el-message--info) {
+:v-deep(.el-message--info) {
   background: linear-gradient(135deg, rgba(var(--info), 0.1), rgba(var(--info), 0.2)) !important;
   color: rgba(var(--info), 1) !important;
 }
 
 /* 通知样式优化 */
-:deep(.el-notification) {
+:v-deep(.el-notification) {
   border-radius: var(--app-border-radius) !important;
   box-shadow: var(--box-shadow) !important;
   border: none !important;

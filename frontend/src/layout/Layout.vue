@@ -92,6 +92,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="handleProfile">个人资料</el-dropdown-item>
+                <el-dropdown-item @click="handleAppAuthorization">应用授权</el-dropdown-item>
                 <el-dropdown-item v-if="isAdmin" @click="handleSettings">系统设置</el-dropdown-item>
                 <el-divider />
                 <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
@@ -299,6 +300,11 @@ const handleSettings = () => {
   router.push('/settings')
 }
 
+// 应用授权
+const handleAppAuthorization = () => {
+  router.push('/sso/login')
+}
+
 // 初始化
 onMounted(async () => {
   // 添加窗口大小监听
@@ -373,12 +379,12 @@ onUnmounted(() => {
   background-color: rgba(var(--secondary), 0.5);
 }
 
-:deep(.el-menu) {
+::v-deep(.el-menu) {
   border-right: none;
   color: #fff ;
 }
 
-:deep(.el-menu-item) {
+::v-deep(.el-menu-item) {
   height: 50px;
   line-height: 50px;
   margin: 4px 0.5rem;
@@ -393,22 +399,22 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
-:deep(.el-menu-item:hover),
-:deep(.el-sub-menu__title:hover) {
+::v-deep(.el-menu-item:hover),
+::v-deep(.el-sub-menu__title:hover) {
   background-color: rgba(var(--primary), 0.05) !important;
   color: rgba(var(--primary), 1) !important;
 }
 
-:deep(.el-menu-item.is-active) {
+::v-deep(.el-menu-item.is-active) {
   background-color: rgba(var(--primary), 1) !important;
   color: #ffffff !important;
   box-shadow: var(--hover-shadow);
 }
 
-:deep(.el-menu-item .el-menu-tooltip__trigger) {
+::v-deep(.el-menu-item .el-menu-tooltip__trigger) {
   padding: 0;
 }
-:deep(.el-sub-menu__title) {
+::v-deep(.el-sub-menu__title) {
   height: 50px;
   line-height: 50px;
   margin: 4px 0.5rem;
@@ -422,7 +428,7 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
-:deep(.el-sub-menu .el-menu-item) {
+::v-deep(.el-sub-menu .el-menu-item) {
   margin: 0 0.5rem;
   padding-left: 2.5rem !important;
   height: 44px;
@@ -434,19 +440,19 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-:deep(.el-sub-menu .el-menu-item:hover) {
+::v-deep(.el-sub-menu .el-menu-item:hover) {
   background-color: rgba(var(--primary), 0.05) !important;
   color: rgba(var(--primary), 1) !important;
 }
 
-:deep(.el-sub-menu .el-menu-item.is-active) {
+::v-deep(.el-sub-menu .el-menu-item.is-active) {
   background-color: rgba(var(--primary), 0.1) !important;
   color: rgba(var(--primary), 1) !important;
   font-weight: 500;
 }
 
-:deep(.el-menu-item .el-icon),
-:deep(.el-sub-menu__title .el-icon) {
+::v-deep(.el-menu-item .el-icon),
+::v-deep(.el-sub-menu__title .el-icon) {
   width: 20px;
   height: 20px;
   margin-right: 0.75rem;
@@ -459,26 +465,26 @@ onUnmounted(() => {
   color: inherit;
 }
 
-:deep(.el-menu--collapse) {
+::v-deep(.el-menu--collapse) {
   width: 68px;
 }
 
-:deep(.el-menu--collapse .el-menu-item),
-:deep(.el-menu--collapse .el-sub-menu__title) {
+::v-deep(.el-menu--collapse .el-menu-item),
+::v-deep(.el-menu--collapse .el-sub-menu__title) {
   margin: 4px 8px;
   text-align: center;
   padding: 0 !important;
   justify-content: center;
 }
 
-:deep(.el-menu--collapse .el-menu-item .el-icon),
-:deep(.el-menu--collapse .el-sub-menu__title .el-icon) {
+::v-deep(.el-menu--collapse .el-menu-item .el-icon),
+::v-deep(.el-menu--collapse .el-sub-menu__title .el-icon) {
   margin-right: 0;
   margin: 0 auto;
 }
 
-:deep(.el-menu--collapse .el-menu-item span),
-:deep(.el-menu--collapse .el-sub-menu__title span) {
+::v-deep(.el-menu--collapse .el-menu-item span),
+::v-deep(.el-menu--collapse .el-sub-menu__title span) {
   height: 0;
   width: 0;
   overflow: hidden;
@@ -486,8 +492,8 @@ onUnmounted(() => {
 }
 
 /* 展开时的菜单项 */
-:deep(.el-menu--vertical:not(.el-menu--collapse) .el-menu-item span),
-:deep(.el-menu--vertical:not(.el-menu--collapse) .el-sub-menu__title span) {
+::v-deep(.el-menu--vertical:not(.el-menu--collapse) .el-menu-item span),
+::v-deep(.el-menu--vertical:not(.el-menu--collapse) .el-sub-menu__title span) {
   height: auto;
   width: auto;
   overflow: visible;

@@ -175,7 +175,13 @@ class OAuth2Token(BaseModel):
         """检查令牌是否过期"""
         if self.expires_at is None:
             return True
-        return datetime.now(timezone.utc) > self.expires_at
+        now = datetime.now(timezone.utc)
+        # 确保 expires_at 是带时区的 datetime 对象
+        if self.expires_at.tzinfo is None:
+            expires_at = self.expires_at.replace(tzinfo=timezone.utc)
+        else:
+            expires_at = self.expires_at
+        return now > expires_at
 
 
 class AuthorizationCode(BaseModel):
@@ -246,7 +252,13 @@ class AuthorizationCode(BaseModel):
         """检查授权码是否过期"""
         if self.expires_at is None:
             return True
-        return datetime.now(timezone.utc) > self.expires_at
+        now = datetime.now(timezone.utc)
+        # 确保 expires_at 是带时区的 datetime 对象
+        if self.expires_at.tzinfo is None:
+            expires_at = self.expires_at.replace(tzinfo=timezone.utc)
+        else:
+            expires_at = self.expires_at
+        return now > expires_at
 
     def mark_used(self) -> None:
         """标记授权码为已使用"""

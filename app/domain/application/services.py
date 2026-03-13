@@ -124,9 +124,10 @@ class ApplicationService:
             ValueError: 应用不存在
         """
         app = self.get_application(app_id)
+        app_name = app.name  # 在 commit 前获取 name
         app.soft_delete()
         app.save(commit=True)
-        logger.info(f"删除应用: {app.name} (id={app_id})")
+        logger.info(f"删除应用: {app_name} (id={app_id})")
 
     def list_applications(
         self,
@@ -436,7 +437,10 @@ class OAuth2ProviderService:
         auth_code.mark_used()
 
         # 7. 获取用户信息并创建 JWT
-        user = self.user_getter(auth_code.user_id)
+        #    直接在当前事务 Session 内查询，避免 user_getter 返回 detached 实例
+        #    导致 lazy load roles 失败
+        from app.domain.auth.model.user import User
+        user = User.query.filter_by(id=auth_code.user_id, is_active=True).first()
         if not user:
             raise ValueError("用户不存在或已禁用")
 
@@ -523,7 +527,8 @@ class OAuth2ProviderService:
         if token_data.token_type != "access":
             raise ValueError("无效的令牌类型")
 
-        user = self.user_getter(token_data.user_id)
+        from app.domain.auth.model.user import User
+        user = User.query.filter_by(id=token_data.user_id, is_active=True).first()
         if not user:
             raise ValueError("用户不存在或已禁用")
 

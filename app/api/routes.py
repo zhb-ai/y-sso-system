@@ -18,7 +18,7 @@ from yweb.organization import setup_organization
 from yweb.log import get_logger
 
 from app.config import settings
-from app.models_registry import User, LoginRecord, EmployeeUserMixin, set_app_org_models
+from app.models_registry import User, LoginRecord, EmployeeUserMixin, set_app_org_models, EmployeeOrgRelMixin
 from app.domain.auth.impl.auth_service_impl import AuthServiceImpl
 from app.domain.permission.permission_service import PermissionRegistry, PermissionService
 
@@ -143,6 +143,7 @@ def register_all_routes(app):
         api_prefix="/api/v1",
         tags=["组织架构"],
         employee_mixin=EmployeeUserMixin,
+        emp_org_rel_mixin=EmployeeOrgRelMixin,
         dependencies=[Depends(require_permission('organization:manage'))],
     )
     set_app_org_models(org)  # 供 AuthServiceImpl 等复用，避免 ensure_dynamic_models 重复创建模型

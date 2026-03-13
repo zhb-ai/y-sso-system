@@ -91,12 +91,12 @@
   padding: var(--spacing-small);
   
   /* 平板样式 */
-  @media (min-width: var(--breakpoint-md)) {
+  @media (min-width: 768px) {
     padding: var(--spacing-medium);
   }
   
   /* 桌面样式 */
-  @media (min-width: var(--breakpoint-lg)) {
+  @media (min-width: 992px) {
     padding: var(--spacing-large);
   }
 }
@@ -147,12 +147,12 @@
 
 /* 1. 覆盖 Element Plus 样式 */
 .my-custom-table {
-  /* 使用 :deep() 来深度作用样式 */
-  :deep(.el-table__header-wrapper) {
+  /* 使用 :v-deep() 来深度作用样式 */
+  :v-deep(.el-table__header-wrapper) {
     background-color: var(--light-gray);
   }
   
-  :deep(.el-table__row:hover) {
+  :v-deep(.el-table__row:hover) {
     background-color: rgba(var(--primary), 0.05);
   }
 }
