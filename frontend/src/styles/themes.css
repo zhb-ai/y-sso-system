@@ -195,12 +195,7 @@
   --el-button-outline-color: var(--el-color-primary-light-5);
   --el-button-hover-link-text-color: var(--el-text-color-secondary);
   --el-button-active-color: var(--el-text-color-primary); */
-  /* transition:
-    transform var(--el-transition-duration),
-    color var(--el-transition-duration),
-    background-color var(--el-transition-duration),
-    border-color var(--el-transition-duration),
-    box-shadow var(--el-transition-duration); */
+
 
 }
 .el-button:hover {
