@@ -140,11 +140,7 @@
   cursor: pointer;
 }
 
-.header-btn:hover {
-  background-color: var(--border_color);
-  transform: translateY(-2px);
-  box-shadow: var(--hover-shadow);
-}
+
 
 /*  05 内容区域 */
 .content-wrapper {

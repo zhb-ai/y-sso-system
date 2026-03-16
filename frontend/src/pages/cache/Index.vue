@@ -63,13 +63,13 @@
 
     <el-card class="filter-card" shadow="hover">
       <el-form :inline="true" class="filter-form">
-        <el-form-item label="函数名">
-          <el-tooltip
+        <el-form-item >
+         <template #label>函数名<el-tooltip
             content="用于筛选并查看某个缓存函数的统计与条目详情。"
             placement="top"
           >
             <el-icon class="hint-icon form-item-hint"><QuestionFilled /></el-icon>
-          </el-tooltip>
+          </el-tooltip> </template>
           <el-select
             v-model="selectedFunctionName"
             filterable
@@ -122,7 +122,7 @@
             </span>
           </template>
           <template #default="scope">
-            <span>{{ getFunctionHits(scope.row.name) }}/{{ getFunctionMisses(scope.row.name) }}</span>
+            <span>{{ getFunctionHits(scope.row) }}/{{ getFunctionMisses(scope.row) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" align="center" class-name="table-cell-flex-center">
@@ -336,13 +336,20 @@ const formatSize = (size) => {
 
 const getBackendTagType = (backend) => CACHE_BACKEND_TAG_TYPE[backend] || 'info'
 
-const getFunctionHits = (name) => perFunctionStats.value?.[name]?.hits ?? 0
-const getFunctionMisses = (name) => perFunctionStats.value?.[name]?.misses ?? 0
+const getFunctionHits = (item) => { 
+  let key = item.module +'.'+ item.name
+  return perFunctionStats.value?.[key]?.hits ?? 0
+  }
+const getFunctionMisses = (item) => {
+  let key = item.module +'.'+ item.name
+  return perFunctionStats.value?.[key]?.misses ?? 0
+}
 
 const loadFunctions = async () => {
   const res = await cacheApi.listFunctions()
   const data = res?.data || {}
   functions.value = data.functions || []
+
 }
 
 const loadStats = async () => {
@@ -354,6 +361,7 @@ const loadStats = async () => {
   summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_MISSES] = data.total_misses || 0
   summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE] = data.total_hit_rate || 0
   perFunctionStats.value = data.functions || {}
+  console.log(perFunctionStats.value)
 }
 
 const loadRegistrations = async () => {

@@ -149,7 +149,47 @@ src/
   4. 视觉属性（color, background, border 等）
   5. 其他属性
 
-### 3.5 组件示例
+### 3.5 Element 组件使用规范
+- **Button 组件**：当按钮中只有图标没有文案时，推荐使用 `circle` 类型，以获得更好的视觉效果和用户体验。
+  ```vue
+  <!-- 推荐用法 -->
+  <el-button circle class="collapse-btn" @click="toggleCollapse">
+    <el-icon>
+      <component :is="isCollapse ? ArrowRight : ArrowLeft" />
+    </el-icon>
+  </el-button>
+  ```
+- **Form 组件**：当需要为表单字段添加提示信息时，推荐使用 `el-form-item` 的 `label` 插槽来实现，将提示图标与标签放在一起，提高用户体验。
+  ```vue
+  <!-- 推荐用法 -->
+  <el-form-item>
+    <template #label>
+      函数名
+      <el-tooltip
+        content="用于筛选并查看某个缓存函数的统计与条目详情。"
+        placement="top"
+      >
+        <el-icon class="hint-icon form-item-hint"><QuestionFilled /></el-icon>
+      </el-tooltip>
+    </template>
+    <el-select
+      v-model="selectedFunctionName"
+      filterable
+      clearable
+      placeholder="请选择缓存函数"
+      style="min-width: 260px"
+    >
+      <el-option
+        v-for="item in functions"
+        :key="item[CACHE_FUNCTION_COLUMNS.NAME]"
+        :label="item[CACHE_FUNCTION_COLUMNS.NAME]"
+        :value="item[CACHE_FUNCTION_COLUMNS.NAME]"
+      />
+    </el-select>
+  </el-form-item>
+  ```
+
+### 3.6 组件示例
 ```vue
 <template>
   <div class="user-profile">
