@@ -15,7 +15,7 @@
           <span v-if="!isCollapse" class="logo-text">SSO系统</span>
         </div>
         <el-button
-          type="text"
+          circle
           class="collapse-btn"
           @click="toggleCollapse"
         >
@@ -69,7 +69,7 @@
       <header class="top-header">
         <div class="header-left">
           <el-button
-            type="text"
+            circle
             class="header-btn"
             @click="toggleCollapse"
           >

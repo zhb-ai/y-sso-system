@@ -63,13 +63,13 @@
 
     <el-card class="filter-card" shadow="hover">
       <el-form :inline="true" class="filter-form">
-        <el-form-item label="函数名">
-          <el-tooltip
+        <el-form-item >
+         <template #label>函数名<el-tooltip
             content="用于筛选并查看某个缓存函数的统计与条目详情。"
             placement="top"
           >
             <el-icon class="hint-icon form-item-hint"><QuestionFilled /></el-icon>
-          </el-tooltip>
+          </el-tooltip> </template>
           <el-select
             v-model="selectedFunctionName"
             filterable

@@ -45,6 +45,13 @@
   --border-radius-lg: 0.5rem;
   --border-radius-sm: 0.25rem;
   --border-radius-xl: 1rem;
+
+   /* borader-radius */
+  --el-border-radius-base: var(--border-radius-lg);
+  --el-border-radius-small: var(--border-radius-sm);
+  --el-border-radius-round: 2.5rem;
+  --el-border-radius-circle: 100%;
+
   --spacing-small: 0.5rem;
   --spacing-medium: 1rem;
   --spacing-large: 1.5rem;
@@ -131,19 +138,22 @@
   --el-color-error-light-9: rgba(var(--danger), 0.05);
   --el-color-error-dark-2: rgba(var(--danger), 0.99);
 
-  --el-color-info: rgba(var(--info), 1);
+  /* --el-color-info: rgba(var(--info), 1);
   --el-color-info-light-3: rgba(var(--info), 0.95);
   --el-color-info-light-5: rgba(var(--info), 0.8);
   --el-color-info-light-7: rgba(var(--info), 0.4);
   --el-color-info-light-8: rgba(var(--info), 0.1);
   --el-color-info-light-9: rgba(var(--info), 0.05);
-  --el-color-info-dark-2: rgba(var(--info), 0.99);
+  --el-color-info-dark-2: rgba(var(--info), 0.99); */
+  --el-color-info: #909399;
+  --el-color-info-light-3: rgb(177, 179, 184);
+  --el-color-info-light-5: rgb(200, 201, 204);
+  --el-color-info-light-7: rgb(222, 223, 224);
+  --el-color-info-light-8: rgb(233, 233, 235);
+  --el-color-info-light-9: rgb(244, 244, 245);
+  --el-color-info-dark-2: 
 
-  /* borader-radius */
-  --el-border-radius-base: 0.5rem;
-  --el-border-radius-small: 0.25rem;
-  --el-border-radius-round: 2.5rem;
-  --el-border-radius-circle: 100%;
+ 
 
   /* menu 菜单 样式*/
   --el-menu-active-color: var(--el-color-primary);
@@ -167,6 +177,7 @@
 
 /* 统一移入交互效果 */
 .el-button {
+  --el-border-radius-base: var(--border-radius-lg);
   /* --el-button-font-weight: var(--el-font-weight-primary);
   --el-button-border-color: var(--el-border-color);
   --el-button-bg-color: var(--el-fill-color-blank);
@@ -190,6 +201,7 @@
     background-color var(--el-transition-duration),
     border-color var(--el-transition-duration),
     box-shadow var(--el-transition-duration); */
+
 }
 .el-button:hover {
   transform: translateY(-2px);
@@ -202,6 +214,7 @@
 }
 /* 圆形按钮 */
 .el-button.is-circle {
+  --el-button-hover-bg-color: var(--border_color);
   --el-button-bg-color: var(--light-gray);
 }
 
@@ -225,6 +238,7 @@
 
 /* form 表单 */
 .el-input {
+  --el-border-radius-base: var(--border-radius-lg);
   --el-border-color-hover: rgba(var(--primary), 0.5);
 }
 .el-select {
@@ -247,11 +261,15 @@
 
 /* -18px 抵消 el-form-item 底部 margin-bottom */
 .el-form.el-form--inline {
-  margin-bottom: -18px;
+  gap: 24px;
 }
 /* 行内表单间距设置 */
 .el-form--inline .el-form-item {
-  margin-right: 24px;
+  margin-right: 0;
+  margin-bottom: 0;
+}
+.el-form.el-form--inline .el-form-item__label{
+  align-items: center;
 }
 
 /*
@@ -262,6 +280,9 @@
   margin-right: 4px;
 }
 /* 圆角按钮图标样式无需边距 */
+.el-button.is-circle{
+  width: auto;
+}
 .el-button.is-circle .el-icon {
   margin-right: 0px;
 }
