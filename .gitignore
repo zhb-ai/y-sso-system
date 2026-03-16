@@ -178,5 +178,4 @@ config/local_settings.yaml
 .DS_Store
 Thumbs.db
 
-# 前端文件夹
-web/
+
