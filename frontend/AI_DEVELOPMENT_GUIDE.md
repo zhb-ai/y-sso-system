@@ -16,6 +16,7 @@ src/
 │   ├── common/            # 基础组件
 │   ├── layout/            # 布局组件
 │   └── business/          # 业务组件
+├── composables/            # 组合式函数 存放封装好的逻辑脚本
 ├── pages/                  # 页面组件（核心目录）
 ├── styles/                 # 样式文件（核心目录）
 ├── utils/                  # 工具函数
