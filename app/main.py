@@ -67,10 +67,19 @@ app = FastAPI(
 register_exception_handlers(app)
 
 
-# ==================== 中间件（添加顺序的逆序执行） ====================
+# ==================== 中间件（最后添加 → 最先执行） ====================
+#
+# Starlette 中间件执行顺序：最后 add_middleware 的最先执行（洋葱模型外层）。
+# 正确顺序（从外到内）：
+#   RequestID → IPAccess → CORS → Performance → Logging → 路由
+#
+# RequestIDMiddleware 必须最外层：
+#   1. 为每个请求分配 request_id（scoped_session 的作用域键）
+#   2. finally 块在请求结束后清理 session，归还连接到连接池
+#   3. 所有内层中间件的 DB 查询都使用同一个 request_id，确保统一清理
 
 
-# 第 1 个添加 → 最后执行：请求日志
+# 第 1 个添加 → 最内层（最后执行）：请求日志
 app.add_middleware(
     RequestLoggingMiddleware,
     config=settings.middleware,
@@ -82,18 +91,7 @@ app.add_middleware(
 # 第 2 个添加：性能监控
 app.add_middleware(PerformanceMonitoringMiddleware)
 
-# 第 3 个添加 → 最先执行：生成请求 ID
-app.add_middleware(RequestIDMiddleware)
-
-# IP 访问控制中间件（最先执行，在所有中间件之前拦截非法 IP）
-ip_access_config = getattr(settings, 'ip_access', None)
-if ip_access_config:
-    from yweb.middleware import IPAccessMiddleware
-    mw_kwargs = IPAccessMiddleware.from_settings(ip_access_config)
-    if mw_kwargs.get("rules"):
-        app.add_middleware(IPAccessMiddleware, **mw_kwargs)
-
-# 动态 CORS：从已注册应用的 redirect_uris 自动提取允许的 Origin
+# 第 3 个添加：动态 CORS
 from app.domain.application.entities import Application as ApplicationModel
 app.add_middleware(
     DynamicCORSMiddleware,
@@ -101,6 +99,17 @@ app.add_middleware(
     cache_ttl=300,                  # 5 分钟缓存
     allow_localhost=True,           # 开发环境：允许 localhost / 127.0.0.1 任意端口
 )
+
+# 第 4 个添加：IP 访问控制
+ip_access_config = getattr(settings, 'ip_access', None)
+if ip_access_config:
+    from yweb.middleware import IPAccessMiddleware
+    mw_kwargs = IPAccessMiddleware.from_settings(ip_access_config)
+    if mw_kwargs.get("rules"):
+        app.add_middleware(IPAccessMiddleware, **mw_kwargs)
+
+# 最后添加 → 最先执行（最外层）：生成请求 ID + 清理 session
+app.add_middleware(RequestIDMiddleware)
 
 
 # ==================== 路由注册（一站式） ====================

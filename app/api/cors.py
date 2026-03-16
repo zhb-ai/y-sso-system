@@ -31,12 +31,9 @@
 
 import re
 import time
+import threading
 from typing import Set, List, Optional
 from urllib.parse import urlparse
-
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-from starlette.responses import Response
 
 from yweb.log import get_logger
 
@@ -46,11 +43,14 @@ logger = get_logger()
 _LOCALHOST_RE = re.compile(r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$")
 
 
-class DynamicCORSMiddleware(BaseHTTPMiddleware):
-    """动态 CORS 中间件
+class DynamicCORSMiddleware:
+    """动态 CORS 中间件（纯 ASGI 实现）
 
     从已注册应用的 redirect_uris 中提取允许的 Origin（scheme://host[:port]），
     仅放行匹配的跨域请求。
+
+    使用纯 ASGI 而非 BaseHTTPMiddleware，避免 call_next 创建新任务上下文
+    导致 ContextVar 隔离，进而引发 scoped_session 连接泄漏。
 
     特性：
     - TTL 缓存：默认 5 分钟刷新一次，应用增删后最多等一个缓存周期即可生效
@@ -76,13 +76,14 @@ class DynamicCORSMiddleware(BaseHTTPMiddleware):
             always_allow: 始终允许的 Origin 列表（如 ["https://admin.example.com"]）
             allow_localhost: 是否允许 localhost / 127.0.0.1 任意端口（开发环境设为 True）
         """
-        super().__init__(app)
+        self.app = app
         self.application_model = application_model
         self.cache_ttl = cache_ttl
         self.always_allow: Set[str] = set(always_allow or [])
         self.allow_localhost = allow_localhost
         self._cached_origins: Set[str] = set()
         self._cache_time: float = 0
+        self._refresh_lock = threading.Lock()
 
     def _extract_origin(self, uri: str) -> Optional[str]:
         """从 URI 中提取 origin（scheme://host[:port]）"""
@@ -95,72 +96,102 @@ class DynamicCORSMiddleware(BaseHTTPMiddleware):
         return None
 
     def _get_allowed_origins(self) -> Set[str]:
-        """获取当前允许的 Origin 集合（带 TTL 缓存）"""
+        """获取当前允许的 Origin 集合（带 TTL 缓存）
+
+        使用锁防止缓存过期时多个并发请求同时查询数据库。
+        """
         now = time.time()
         if now - self._cache_time < self.cache_ttl and self._cached_origins:
             return self._cached_origins
 
-        origins = set(self.always_allow)
-        try:
-            apps = self.application_model.query.filter_by(is_active=True).all()
-            for app_entity in apps:
-                for uri in app_entity.get_redirect_uris():
-                    origin = self._extract_origin(uri)
-                    if origin:
-                        origins.add(origin)
+        if not self._refresh_lock.acquire(blocking=False):
+            return self._cached_origins or self.always_allow
 
-            self._cached_origins = origins
-            self._cache_time = now
-            logger.debug(f"CORS 允许的 Origins 已刷新: {origins}")
-        except Exception as e:
-            # 数据库查询失败时回退到上次缓存
-            logger.warning(f"动态 CORS 查询失败，使用缓存: {e}")
-            if self._cached_origins:
+        try:
+            if now - self._cache_time < self.cache_ttl and self._cached_origins:
                 return self._cached_origins
 
-        return origins
+            origins = set(self.always_allow)
+            try:
+                apps = self.application_model.query.filter_by(is_active=True).all()
+                for app_entity in apps:
+                    for uri in app_entity.get_redirect_uris():
+                        origin = self._extract_origin(uri)
+                        if origin:
+                            origins.add(origin)
+
+                self._cached_origins = origins
+                self._cache_time = now
+                logger.debug(f"CORS 允许的 Origins 已刷新: {origins}")
+            except Exception as e:
+                logger.warning(f"动态 CORS 查询失败，使用缓存: {e}")
+                if self._cached_origins:
+                    return self._cached_origins
+
+            return origins
+        finally:
+            self._refresh_lock.release()
 
     def _is_origin_allowed(self, origin: str) -> bool:
         """判断 origin 是否被允许"""
-        # 1. localhost 开发模式：任意端口放行
         if self.allow_localhost and _LOCALHOST_RE.match(origin):
             return True
-        # 2. 精确匹配 always_allow + 数据库来源
         return origin in self._get_allowed_origins()
 
-    def _cors_headers(self, origin: str) -> dict:
-        """构造 CORS 响应头"""
-        return {
-            "Access-Control-Allow-Origin": origin,
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Requested-With",
-            "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Max-Age": "600",
-        }
+    def _cors_headers_raw(self, origin: str) -> list:
+        """构造 CORS 响应头（ASGI raw 格式）"""
+        return [
+            (b"access-control-allow-origin", origin.encode()),
+            (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS"),
+            (b"access-control-allow-headers", b"Authorization, Content-Type, X-Requested-With"),
+            (b"access-control-allow-credentials", b"true"),
+            (b"access-control-max-age", b"600"),
+        ]
 
-    async def dispatch(self, request: Request, call_next):
-        origin = request.headers.get("origin")
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
 
-        # 无 Origin 头 — 非跨域请求，直接放行
+        origin = None
+        for key, value in scope.get("headers", []):
+            if key == b"origin":
+                origin = value.decode("latin-1")
+                break
+
         if not origin:
-            return await call_next(request)
+            await self.app(scope, receive, send)
+            return
 
         is_allowed = self._is_origin_allowed(origin)
 
-        # 预检请求（OPTIONS）— 统一由中间件拦截，绝不透传到路由
-        if request.method == "OPTIONS":
+        # 预检请求（OPTIONS）— 统一拦截，不透传到路由
+        method = scope.get("method", "")
+        if method == "OPTIONS":
             if is_allowed:
-                return Response(status_code=200, headers=self._cors_headers(origin))
+                headers = self._cors_headers_raw(origin)
             else:
-                # Origin 不允许：返回 204 无 CORS 头，浏览器会自动阻止后续请求
-                return Response(status_code=204)
+                headers = []
+            status = 200 if is_allowed else 204
+            await send({
+                "type": "http.response.start",
+                "status": status,
+                "headers": headers,
+            })
+            await send({"type": "http.response.body", "body": b""})
+            return
 
-        # 正常请求
-        response = await call_next(request)
-
-        # 添加 CORS 响应头
+        # 正常请求：如果 origin 被允许，注入 CORS 响应头
         if is_allowed:
-            for key, value in self._cors_headers(origin).items():
-                response.headers[key] = value
+            cors_headers = self._cors_headers_raw(origin)
 
-        return response
+            async def send_with_cors(message):
+                if message["type"] == "http.response.start":
+                    headers = list(message.get("headers", []))
+                    headers.extend(cors_headers)
+                    message = {**message, "headers": headers}
+                await send(message)
+
+            await self.app(scope, receive, send_with_cors)
+        else:
+            await self.app(scope, receive, send)
