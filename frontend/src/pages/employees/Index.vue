@@ -512,7 +512,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, ArrowDown, OfficeBuilding, Folder, User, Key, Edit, Delete } from '@element-plus/icons-vue'
-import { employeeApi, organizationApi, departmentApi } from '../../api'
+import { employeeApi, organizationApi, departmentApi } from '@/api'
 
 // 数据
 const employees = ref([])
@@ -1007,7 +1007,7 @@ onMounted(() => {
   gap: 8px;
 }
 .employee-info span {
-  font-weight: 500;
+  font-weight: var(--el-font-weight-bold);
 }
 .avatar {
   background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.7));
@@ -1019,7 +1019,7 @@ onMounted(() => {
   cursor: pointer;
 }
 .status-arrow {
-  font-size: 12px;
-  color: #909399;
+  font-size: var(--el-font-size-xs);
+  color: var(--el-text-color-secondary);
 }
 </style>

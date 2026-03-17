@@ -124,8 +124,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '@/stores/auth'
 // 导入图标组件
 import {
   DataAnalysis,
@@ -149,7 +149,7 @@ import {
   Grid
 } from '@element-plus/icons-vue'
 
-import { useSiteStore } from '../stores/site'
+import { useSiteStore } from '@/stores/site'
 
 const router = useRouter()
 const route = useRoute()
@@ -395,8 +395,8 @@ onUnmounted(() => {
   align-items: center;
   padding: 0 1rem !important;
   color: var(--font-color) !important;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--el-font-weight-bold);
+  font-size: var(--el-font-size-base);
 }
 
 ::v-deep(.el-menu-item:hover),
@@ -436,8 +436,8 @@ onUnmounted(() => {
   border-radius: 0.375rem;
   background-color: var(--light-gray) !important;
   color: var(--font-color) !important;
-  font-weight: 400;
-  font-size: 13px;
+  font-weight: var(--el-font-weight-medium);
+  font-size: var(--el-font-size-sm);
 }
 
 ::v-deep(.el-sub-menu .el-menu-item:hover) {
@@ -448,7 +448,7 @@ onUnmounted(() => {
 ::v-deep(.el-sub-menu .el-menu-item.is-active) {
   background-color: rgba(var(--primary), 0.1) !important;
   color: rgba(var(--primary), 1) !important;
-  font-weight: 500;
+  font-weight: var(--el-font-weight-bold);
 }
 
 ::v-deep(.el-menu-item .el-icon),
@@ -458,7 +458,7 @@ onUnmounted(() => {
   margin-right: 0.75rem;
   vertical-align: middle;
   flex-shrink: 0;
-  font-size: 18px;
+  font-size: var(--el-font-size-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -500,7 +500,7 @@ onUnmounted(() => {
   visibility: visible;
   flex-grow: 1;
   text-align: left;
-  font-weight: 500;
+  font-weight: var(--el-font-weight-bold);
 }
 
 /* 侧边栏折叠样式 */

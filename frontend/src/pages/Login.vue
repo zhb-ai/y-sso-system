@@ -114,12 +114,12 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { handleApiError } from '../utils/errorHandler'
-import { wechatWorkApi } from '../api'
-import { useSiteStore } from '../stores/site'
+import { wechatWorkApi } from '@/api'
+import { useAuthStore } from '@/stores/auth'
+import { useSiteStore } from '@/stores/site'
+import { handleApiError } from '@/utils/errorHandler'
 
 const siteStore = useSiteStore()
 

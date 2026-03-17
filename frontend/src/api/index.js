@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '@/stores/auth'
 
 let baseURL = import.meta.env.VITE_API_BASE_URL || '/api';         //生产环境
 

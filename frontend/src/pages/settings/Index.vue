@@ -40,7 +40,7 @@
               <div v-if="siteSettings.system_logo" style="margin-top: 8px">
                 <el-image :src="siteSettings.system_logo" style="height: 40px" fit="contain">
                   <template #error>
-                    <span style="font-size: 12px; color: #909399">图片加载失败</span>
+                    <span style="font-size: var(--el-font-size-xs); color: var(--el-text-color-secondary)">图片加载失败</span>
                   </template>
                 </el-image>
               </div>
@@ -92,8 +92,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { api } from '../../api'
-import { useSiteStore } from '../../stores/site'
+import { api } from '@/api'
+import { useSiteStore } from '@/stores/site'
 
 const siteStore = useSiteStore()
 

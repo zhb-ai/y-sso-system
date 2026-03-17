@@ -249,8 +249,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid } from '@element-plus/icons-vue'
-import { applicationApi } from '../../api'
-import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
+import { applicationApi } from '@/api'
+import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 
 // 表格数据
 const applications = ref([])
@@ -555,12 +555,12 @@ onMounted(() => {
 }
 
 .app-name {
-  font-weight: 500;
-  line-height: 1.4;
+  font-weight: var(--el-font-weight-bold);
+  line-height: var(--c-line-height-sm);
 }
 
 .app-desc {
-  font-size: var(--font-size-sm, 12px);
+  font-size: var(--el-font-size-xs);
   color: var(--text-muted, #909399);
   overflow: hidden;
   text-overflow: ellipsis;

@@ -414,7 +414,7 @@
         <div class="section-block" style="margin-bottom: 16px;">
           <div class="section-block__content" style="padding: 12px 16px;">
             <div class="dept-tips">
-              <el-icon style="color: var(--el-color-info); font-size: 16px;"><Info-Filled /></el-icon>
+              <el-icon style="color: var(--el-color-info); font-size: var(--el-font-size-md);"><Info-Filled /></el-icon>
               <div class="dept-tips__content">
                 <div class="dept-tips__title">将员工添加到「{{ selectedDept?.name }}」部门</div>
                 <div class="dept-tips__desc">搜索系统中的员工，如果员工尚未加入当前组织，将自动添加</div>
@@ -516,7 +516,7 @@
         <div v-if="wechatBindMode === 'bind'" class="section-block" style="margin-bottom: 16px;">
           <div class="section-block__content" style="padding: 12px 16px;">
             <div class="wechat-tips">
-              <el-icon style="color: var(--el-color-info); font-size: 16px;"><Info-Filled /></el-icon>
+              <el-icon style="color: var(--el-color-info); font-size: var(--el-font-size-md);"><Info-Filled /></el-icon>
               <div class="wechat-tips__content">
                 <div class="wechat-tips__title">请在企业微信管理后台获取以下配置信息</div>
                 <div class="wechat-tips__desc">进入「管理工具 → 通讯录同步」获取 Secret；设置「接收事件服务器」获取 Token 和 EncodingAESKey</div>
@@ -591,7 +591,7 @@
                     <el-button @click="copyWebhookUrl">复制</el-button>
                   </template>
                 </el-input>
-                <div style="font-size: 12px; color: #909399; margin-top: 4px">
+                <div style="font-size: var(--el-font-size-xs); color: var(--el-text-color-secondary); margin-top: 4px">
                   将此 URL 填入企业微信「接收事件服务器」的 URL 字段
                 </div>
               </el-form-item>
@@ -620,7 +620,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Edit, Delete, Folder, User, UserFilled, ArrowDown, Search, OfficeBuilding, Connection, Key, Link, InfoFilled, Remove } from '@element-plus/icons-vue'
-import { organizationApi, departmentApi, employeeApi, wechatWorkApi } from '../../api'
+import { organizationApi, departmentApi, employeeApi, wechatWorkApi } from '@/api'
 
 // 组织列表
 const organizations = ref([])
@@ -1241,8 +1241,8 @@ onMounted(() => {
 
 .list-header h4 {
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--el-font-size-base);
+  font-weight: var(--el-font-weight-extra-bold);
   color: var(--font-color);
 }
 
@@ -1264,7 +1264,7 @@ onMounted(() => {
 }
 
 .list-filter .filter-form :v-deep(.el-form-item__label) {
-  font-size: 12px;
+  font-size: var(--el-font-size-xs);
 }
 
 /* 部门卡片头部样式 */
@@ -1277,8 +1277,8 @@ onMounted(() => {
 
 .dept-card-header h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--el-font-size-md);
+  font-weight: var(--el-font-weight-extra-bold);
 }
 
 .tree-node-content {
@@ -1316,8 +1316,8 @@ onMounted(() => {
   cursor: pointer;
 }
 .status-arrow {
-  font-size: 12px;
-  color: #909399;
+  font-size: var(--el-font-size-xs);
+  color: var(--el-text-color-secondary);
 }
 
 @media (max-width: 1024px) {
@@ -1339,15 +1339,15 @@ onMounted(() => {
   flex: 1;
 }
 .wechat-tips__title {
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   color: var(--el-text-color-primary);
-  line-height: 1.4;
+  line-height: var(--c-line-height-sm);
   margin-bottom: 2px;
 }
 .wechat-tips__desc {
-  font-size: 12px;
+  font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
-  line-height: 1.4;
+  line-height: var(--c-line-height-sm);
 }
 
 /* 添加员工到部门提示 */
@@ -1360,14 +1360,14 @@ onMounted(() => {
   flex: 1;
 }
 .dept-tips__title {
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   color: var(--el-text-color-primary);
-  line-height: 1.4;
+  line-height: var(--c-line-height-sm);
   margin-bottom: 2px;
 }
 .dept-tips__desc {
-  font-size: 12px;
+  font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
-  line-height: 1.4;
+  line-height: var(--c-line-height-sm);
 }
 </style>

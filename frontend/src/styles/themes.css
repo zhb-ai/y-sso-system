@@ -71,8 +71,39 @@
   --z-tooltip: 1070;
   --z-toast: 1080;
 
+
+
   /* element-plus 字体 */
   --el-font-family: var(--font-family-primary);
+
+  /* ===== 字体大小 ===== */
+  --el-font-size-xxl: 22px;
+  --el-font-size-xl: 20px;
+  --el-font-size-lg: 18px;
+  --el-font-size-md: 16px;
+  --el-font-size-base: 14px;
+  --el-font-size-sm: 13px;
+  --el-font-size-xs: 12px;
+  
+  /* ===== 字体大小兼容变量 ===== */
+  --el-font-size-extra-large: var(--el-font-size-md);
+  --el-font-size-large: var(--el-font-size-base);
+  --el-font-size-medium: var(--el-font-size-base);
+  --el-font-size-small: var(--el-font-size-sm);
+  --el-font-size-extra-small: var(--el-font-size-xs);
+  
+  /* ===== 字体权重变量 ===== */
+  --el-font-weight-extra-bold: 600;
+  --el-font-weight-bold: 500;
+  --el-font-weight-medium: 400;
+  --el-font-weight-regular: 300;
+  
+  /* ===== 行高变量 ===== */
+  --c-line-height-xs: 1;
+  --c-line-height-sm: 1.2;
+  --c-line-height-md: 1.4;
+  --c-line-height-lg: 1.6;
+  --c-line-height-xl: 2;
   /* element-plus 过渡动画时长 */
   --el-transition-duration: 0.3s;
   --el-transition-duration-fast: 0.2s;

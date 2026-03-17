@@ -1,14 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '@/stores/auth'
 
 // 公共路由
 const publicRoutes = [
+  {
+  name: 'Error',
+  path: '/:pathMatch(.*)*',
+  component: () => import('@/pages/404.vue'),
+  meta: {
+    title: '404',
+  },
+},
   // 测试页
   {
     path: '/test',
     name: 'test',
-    component: () => import('../Test.vue'),
+    component: () => import('@/Test.vue'),
     meta: {
       title: '测试页面'
     }
@@ -17,7 +25,7 @@ const publicRoutes = [
   {
     path: '/login',
     name: 'login',
-    component: () => import('../pages/Login.vue'),
+    component: () => import('@/pages/Login.vue'),
     meta: {
       title: '统一登录'
     }
@@ -26,7 +34,7 @@ const publicRoutes = [
   {
     path: '/sso/login',
     name: 'ssoLogin',
-    component: () => import('../pages/SSOLogin.vue'),
+    component: () => import('@/pages/SSOLogin.vue'),
     meta: {
       title: '应用门户',
       isSSOLogin: true,
@@ -37,14 +45,14 @@ const publicRoutes = [
     path: '/admin/login',
     redirect: '/login'
   },
-  {
-    path: '/404',
-    name: '404',
-    component: () => import('../pages/404.vue'),
-    meta: {
-      title: '404页面'
-    }
-  }
+  // {
+  //   path: '/404',
+  //   name: '404',
+  //   component: () => import('../pages/404.vue'),
+  //   meta: {
+  //     title: '404页面'
+  //   }
+  // }
 ]
 
 // 私有路由（管理后台，仅管理员可访问）
@@ -52,14 +60,14 @@ const privateRoutes = [
   {
     path: '/',
     name: 'layout',
-    component: () => import('../layout/Layout.vue'),
+    component: () => import('@/layout/Layout.vue'),
     redirect: '/dashboard',
     meta: { requiresAdmin: true },
     children: [
       {
         path: '/dashboard',
         name: 'dashboard',
-        component: () => import('../pages/Dashboard.vue'),
+        component: () => import('@/pages/Dashboard.vue'),
         meta: {
           title: '仪表盘',
           requiresAdmin: true,
@@ -69,7 +77,7 @@ const privateRoutes = [
       {
         path: '/applications',
         name: 'applications',
-        component: () => import('../pages/applications/Index.vue'),
+        component: () => import('@/pages/applications/Index.vue'),
         meta: {
           title: '应用管理',
           requiresAdmin: true,
@@ -79,7 +87,7 @@ const privateRoutes = [
       {
         path: '/users',
         name: 'users',
-        component: () => import('../pages/users/Index.vue'),
+        component: () => import('@/pages/users/Index.vue'),
         meta: {
           title: '用户管理',
           requiresAdmin: true,
@@ -88,7 +96,7 @@ const privateRoutes = [
       {
         path: '/users/:id',
         name: 'userEdit',
-        component: () => import('../pages/users/Edit.vue'),
+        component: () => import('@/pages/users/Edit.vue'),
         meta: {
           title: '编辑用户',
           parent: 'users',
@@ -99,7 +107,7 @@ const privateRoutes = [
       {
         path: '/roles',
         name: 'roles',
-        component: () => import('../pages/roles/Index.vue'),
+        component: () => import('@/pages/roles/Index.vue'),
         meta: {
           title: '角色管理',
           requiresAdmin: true,
@@ -109,7 +117,7 @@ const privateRoutes = [
       {
         path: '/sso-roles',
         name: 'ssoRoles',
-        component: () => import('../pages/sso-roles/Index.vue'),
+        component: () => import('@/pages/sso-roles/Index.vue'),
         meta: {
           title: 'SSO 角色管理',
           requiresAdmin: true,
@@ -119,7 +127,7 @@ const privateRoutes = [
       {
         path: '/organization',
         name: 'organization',
-        component: () => import('../pages/organization/Index.vue'),
+        component: () => import('@/pages/organization/Index.vue'),
         meta: {
           title: '组织架构',
           requiresAdmin: true,
@@ -128,7 +136,7 @@ const privateRoutes = [
       {
         path: '/departments',
         name: 'departments',
-        component: () => import('../pages/departments/Index.vue'),
+        component: () => import('@/pages/departments/Index.vue'),
         meta: {
           title: '部门管理',
           requiresAdmin: true,
@@ -137,7 +145,7 @@ const privateRoutes = [
       {
         path: '/employees',
         name: 'employees',
-        component: () => import('../pages/employees/Index.vue'),
+        component: () => import('@/pages/employees/Index.vue'),
         meta: {
           title: '员工管理',
           requiresAdmin: true,
@@ -147,7 +155,7 @@ const privateRoutes = [
       {
         path: '/settings',
         name: 'settings',
-        component: () => import('../pages/settings/Index.vue'),
+        component: () => import('@/pages/settings/Index.vue'),
         meta: {
           title: '系统设置',
           requiresAdmin: true,
@@ -156,7 +164,7 @@ const privateRoutes = [
       {
         path: '/cache',
         name: 'cache',
-        component: () => import('../pages/cache/Index.vue'),
+        component: () => import('@/pages/cache/Index.vue'),
         meta: {
           title: '缓存管理',
           requiresAdmin: true,
@@ -166,7 +174,7 @@ const privateRoutes = [
       {
         path: '/profile',
         name: 'profile',
-        component: () => import('../pages/profile/Index.vue'),
+        component: () => import('@/pages/profile/Index.vue'),
         meta: {
           title: '个人资料',
           requiresAdmin: true,

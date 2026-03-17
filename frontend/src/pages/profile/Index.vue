@@ -95,9 +95,9 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { userApi } from '../../api'
-import { useAuthStore } from '../../stores/auth'
-import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
+import { userApi } from '@/api'
+import { useAuthStore } from '@/stores/auth'
+import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 import { User, Lock } from '@element-plus/icons-vue'
 
 const authStore = useAuthStore()
@@ -228,6 +228,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 500;
+  font-weight: var(--el-font-weight-bold);
 }
 </style>

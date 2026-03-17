@@ -207,14 +207,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { api, oauth2Api } from '../api'
 import { ElMessage } from 'element-plus'
 import { UserFilled, Lock, Monitor, ArrowRight, Loading } from '@element-plus/icons-vue'
-import { handleApiError } from '../utils/errorHandler'
-import { useWechatWorkLogin } from '../composables/useWechatWorkLogin'
-
-import { useSiteStore } from '../stores/site'
+import { api, oauth2Api } from '@/api'
+import { useAuthStore } from '@/stores/auth'
+import { useSiteStore } from '@/stores/site'
+import { handleApiError } from '@/utils/errorHandler'
+import { useWechatWorkLogin } from '@/composables/useWechatWorkLogin'
 
 const route = useRoute()
 const router = useRouter()
@@ -516,13 +515,13 @@ async function handlePortalLogin() {
 }
 
 .sso-username {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--el-font-size-lg);
+  font-weight: var(--el-font-weight-extra-bold);
   color: var(--el-text-color-primary);
 }
 
 .sso-email {
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   color: var(--el-text-color-secondary);
   margin-top: 2px;
 }
@@ -534,7 +533,7 @@ async function handlePortalLogin() {
 }
 
 .sso-scope-title {
-  font-size: 14px;
+  font-size: var(--el-font-size-base);
   color: var(--el-text-color-regular);
   margin-bottom: 8px;
 }
@@ -549,7 +548,7 @@ async function handlePortalLogin() {
   position: relative;
   padding-left: 20px;
   margin-bottom: 6px;
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   color: var(--el-text-color-secondary);
 }
 
@@ -569,7 +568,7 @@ async function handlePortalLogin() {
 /* ==================== 门户模式：应用列表 ==================== */
 
 .sso-portal-title {
-  font-size: 14px;
+  font-size: var(--el-font-size-base);
   color: var(--el-text-color-regular);
   margin-bottom: 12px;
 }
@@ -581,7 +580,7 @@ async function handlePortalLogin() {
   gap: 8px;
   padding: 32px 0;
   color: var(--el-text-color-secondary);
-  font-size: 14px;
+  font-size: var(--el-font-size-base);
 }
 
 .sso-app-list {
@@ -644,8 +643,8 @@ async function handlePortalLogin() {
 }
 
 .sso-app-name {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--el-font-size-sm);
+  font-weight: var(--el-font-weight-bold);
   color: var(--el-text-color-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -653,7 +652,7 @@ async function handlePortalLogin() {
 }
 
 .sso-app-desc {
-  font-size: 12px;
+  font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
   margin-top: 2px;
   overflow: hidden;

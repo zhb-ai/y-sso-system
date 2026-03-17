@@ -229,11 +229,10 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { roleApi, permissionApi } from '../../api'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
 import { Plus, Edit, Delete, User, Key, Refresh, Remove, Medal } from '@element-plus/icons-vue'
-import '../../styles/components/ui/tables.css'
+import { roleApi, permissionApi } from '@/api'
+import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 
 // ==================== 角色列表 ====================
 
@@ -498,8 +497,8 @@ onMounted(() => {
 }
 
 .perm-group-title {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: var(--el-font-weight-extra-bold);
+  font-size: var(--el-font-size-base);
   margin-bottom: 8px;
   color: var(--el-text-color-primary);
   border-left: 3px solid var(--el-color-primary);

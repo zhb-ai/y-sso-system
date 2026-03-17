@@ -154,8 +154,8 @@
 
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue'
-import { useAuthStore } from '../stores/auth'
-import { dashboardApi } from '../api'
+import { dashboardApi } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const userInfo = computed(() => authStore.userInfo)
