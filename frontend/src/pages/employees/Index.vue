@@ -195,7 +195,7 @@
                 </el-col>
               </el-row>
               <el-row :gutter="20">
-                <el-col :span="12">
+                <el-col :span="24">
                   <el-form-item label="性别">
                     <el-radio-group v-model="form.gender">
                       <el-radio :label="1">男</el-radio>
