@@ -58,6 +58,7 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column prop="code" label="员工编码" min-width="100" />
         <el-table-column prop="mobile" label="手机号" min-width="130" />
         <el-table-column prop="email" label="邮箱" min-width="180" />
         <el-table-column label="性别" width="70">
@@ -176,17 +177,24 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="手机号">
-                    <el-input v-model="form.mobile" placeholder="请输入手机号" />
+                  <el-form-item label="员工编码">
+                    <el-input v-model="form.code" placeholder="请输入员工编码" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
                 <el-col :span="12">
+                  <el-form-item label="手机号">
+                    <el-input v-model="form.mobile" placeholder="请输入手机号" />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
                   <el-form-item label="邮箱">
                     <el-input v-model="form.email" placeholder="请输入邮箱" />
                   </el-form-item>
                 </el-col>
+              </el-row>
+              <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="性别">
                     <el-radio-group v-model="form.gender">
@@ -631,7 +639,7 @@ const handleOrgSelectChange = async (orgId) => {
 // 创建员工
 const handleCreate = () => {
   Object.assign(form, { 
-    id: null, name: '', mobile: '', email: '', gender: 0,
+    id: null, name: '', code: '', mobile: '', email: '', gender: 0,
     org_id: null, emp_no: '', position: '', dept_id: null,
     create_account: false,
   })
@@ -644,6 +652,7 @@ const handleEdit = (row) => {
   Object.assign(form, {
     id: row.id,
     name: row.name,
+    code: row.code || '',
     mobile: row.mobile || '',
     email: row.email || '',
     gender: row.gender || 0
@@ -675,6 +684,7 @@ const submitForm = async () => {
       // 编辑
       await employeeApi.update(form.id, {
         name: form.name,
+        code: form.code,
         mobile: form.mobile,
         email: form.email,
         gender: form.gender
@@ -684,6 +694,7 @@ const submitForm = async () => {
       // 新建
       const res = await employeeApi.create({
         name: form.name,
+        code: form.code,
         mobile: form.mobile,
         email: form.email,
         gender: form.gender
