@@ -552,4 +552,16 @@ class OAuth2ProviderService:
         from app.domain.sso_role.entities import UserSSORole
         userinfo["sso_roles"] = UserSSORole.get_user_sso_role_codes(user.id)
 
+        # 关联员工编码（供 SSO 下游如 Superset 等使用）
+        try:
+            from app.models_registry import get_app_org_models
+            org_models = get_app_org_models()
+            if org_models is not None:
+                employee_cls = org_models.Employee
+                employee = employee_cls.query.filter(employee_cls.user_id == user.id).first()
+                if employee is not None and getattr(employee, "code", None) is not None:
+                    userinfo["user_code"] = getattr(employee, "code", None)
+        except Exception as e:
+            logger.debug("get_userinfo: 解析员工编码跳过, %s", e)
+
         return userinfo
