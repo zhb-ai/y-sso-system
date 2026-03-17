@@ -7,16 +7,12 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     port: 5200,
-    strictPort: true,
-    // 跨域配置
-    allowedHosts: ['localhost', '127.0.0.1', '0.0.0.0'],
-    // 本地dev配置
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000',
+        target: 'http://192.168.50.71:8000',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => path.replace(/^\/api/, '/api')
       }
     }
   },
