@@ -2,9 +2,9 @@ import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 
 let baseURL = import.meta.env.VITE_API_BASE_URL || '/api';         //生产环境
-// baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';  //本地dev
+baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';  //本地dev
 // baseURL = import.meta.env.VITE_API_BASE_URL || 'https://frp-fun.com:18238/api';  //英杰
-baseURL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.50.71:8000/api';  //英杰
+// baseURL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.50.71:8000/api';  //英杰
 
 // 创建axios实例
 const api = axios.create({
