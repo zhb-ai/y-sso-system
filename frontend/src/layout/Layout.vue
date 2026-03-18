@@ -381,7 +381,7 @@ onUnmounted(() => {
 
 ::v-deep(.el-menu) {
   border-right: none;
-  color: #fff ;
+  color: var(--white);
 }
 
 ::v-deep(.el-menu-item) {
@@ -407,7 +407,7 @@ onUnmounted(() => {
 
 ::v-deep(.el-menu-item.is-active) {
   background-color: rgba(var(--primary), 1) !important;
-  color: #ffffff !important;
+  color: var(--white) !important;
   box-shadow: var(--hover-shadow);
 }
 

@@ -40,36 +40,36 @@ const goHome = () => {
 }
 
 .error-code {
-  font-size: 100px;
-  font-weight: 600;
+  font-size: 6rem;
+  font-weight: var(--el-font-weight-extra-bold);
   margin: 0 0 1.5rem 0;
   color: rgba(var(--primary), 1);
-  line-height: 1;
+  line-height: var(--c-line-height-xs);
 }
 
 .error-title {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: var(--el-font-size-xxl);
+  font-weight: var(--el-font-weight-extra-bold);
   margin: 0 0 1rem 0;
   color: var(--font-title-color);
 }
 
 .error-message {
-  font-size: 14px;
+  font-size: var(--el-font-size-base);
   color: var(--font-color);
   margin: 0 0 2rem 0;
-  line-height: 1.5;
+  line-height: var(--c-line-height-md);
 }
 
-:v-deep(.el-button--primary) {
+:deep(.el-button--primary) {
   background-color: rgba(var(--primary), 1);
   border-color: rgba(var(--primary), 1);
   border-radius: var(--border-radius);
   transition: all 0.2s ease;
   box-shadow: none;
   padding: 0.625rem 1.5rem;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--el-font-size-base);
+  font-weight: var(--el-font-weight-bold);
 }
 
 :v-deep(.el-button--primary:hover) {
