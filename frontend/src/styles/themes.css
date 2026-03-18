@@ -244,6 +244,11 @@
   --el-button-bg-color: var(--light-gray);
 }
 
+/* 头像组件 当空间不足的时候禁用缩放效果 防止压缩变形 */
+.el-avatar {
+  flex-shrink: 0;
+}
+
 /* ===== Element Plus 卡片样式 ===== */
 
 .el-card {

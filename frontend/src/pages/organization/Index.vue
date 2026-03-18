@@ -1289,7 +1289,7 @@ onMounted(() => {
 }
 .dept-icon {
   margin-right: 6px;
-  color: #409EFF;
+  color: var(--el-color-primary);
 }
 .dept-name {
   flex: 1;

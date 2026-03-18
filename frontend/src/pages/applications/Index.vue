@@ -593,11 +593,11 @@ onMounted(() => {
   flex: 1;
   word-break: break-all;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   padding: 4px 8px;
   background: var(--el-fill-color-light, #f5f7fa);
   border-radius: 4px;
-  line-height: 1.6;
+  line-height: var(--c-line-height-lg);
 }
 
 .secret-text--danger {

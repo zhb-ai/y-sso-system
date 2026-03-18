@@ -58,7 +58,12 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="code" label="员工编码" min-width="100" />
+        <el-table-column prop="code" label="员工编码" min-width="120">
+          <template #default="{ row }">
+            <el-tag v-if="row.code" type="primary" size="small" effect="light">{{ row.code }}</el-tag>
+            <el-tag v-else type="info" size="small" effect="light">未设置</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="mobile" label="手机号" min-width="130" />
         <el-table-column prop="email" label="邮箱" min-width="180" />
         <el-table-column label="性别" width="70">

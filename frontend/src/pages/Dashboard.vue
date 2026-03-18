@@ -283,6 +283,6 @@ onMounted(() => {
 
 .failure-reason {
   color: var(--el-color-danger);
-  font-size: 12px;
+  font-size: var(--el-font-size-xs);
 }
 </style>
