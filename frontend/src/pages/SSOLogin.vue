@@ -288,25 +288,29 @@ async function handleAppClick(app) {
     ElMessage.warning('该应用未配置重定向地址')
     return
   }
-
-  jumpingAppId.value = app.id
-  try {
-    const response = await oauth2Api.authorize({
-      client_id: app.client_id,
-      redirect_uri: uris[0],  // 使用第一个 redirect_uri
-      scope: 'openid profile email',
-      state: null,
-    })
-    const redirectUrl = response.data?.redirect_url || response.redirect_url
-    if (redirectUrl) {
-      window.open(redirectUrl, '_blank')
-    } else {
-      ElMessage.error('授权失败：未获取到重定向地址')
+  // url[1] 应用的登录地址
+  if (uris.length > 1){
+    window.open(uris[1], '_blank')
+  } else {
+    jumpingAppId.value = app.id
+    try {
+      const response = await oauth2Api.authorize({
+        client_id: app.client_id,
+        redirect_uri: uris[0],  // 使用第一个 redirect_uri
+        scope: 'openid profile email',
+        state: null,
+      })
+      const redirectUrl = response.data?.redirect_url || response.redirect_url
+      if (redirectUrl) {
+        window.open(redirectUrl, '_blank')
+      } else {
+        ElMessage.error('授权失败：未获取到重定向地址')
+      }
+    } catch (error) {
+      handleApiError(error, '授权失败')
+    } finally {
+      jumpingAppId.value = null
     }
-  } catch (error) {
-    handleApiError(error, '授权失败')
-  } finally {
-    jumpingAppId.value = null
   }
 }
 
