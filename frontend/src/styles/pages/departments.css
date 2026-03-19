@@ -55,7 +55,6 @@
 }
 
 .tree-node-content:hover {
-  background-color: var(--el-fill-color-lighter);
   border-radius: 4px;
 }
 
