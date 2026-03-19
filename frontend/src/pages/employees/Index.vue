@@ -499,7 +499,7 @@
       <el-descriptions :column="1" border>
         <el-descriptions-item label="员工姓名">{{ accountResult.employee_name }}</el-descriptions-item>
         <el-descriptions-item label="用户名">
-          <el-tag>{{ accountResult.username }}</el-tag>
+          <code>{{ accountResult.username }}</code>
         </el-descriptions-item>
         <el-descriptions-item label="默认密码">
           <code>{{ accountResult.raw_password }}</code>
