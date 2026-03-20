@@ -1219,6 +1219,22 @@ onMounted(() => {
 .department-card {
   flex: 0 0 360px;
   min-height: 500px;
+  max-height: 620px;
+  display: flex;
+  flex-direction: column;
+}
+
+.department-card :deep(.el-card__body) {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.department-card :deep(.el-tree) {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(620px - 60px);
 }
 .data-card {
   flex: 1;
