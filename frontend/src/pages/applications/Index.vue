@@ -63,12 +63,12 @@
         <el-table-column prop="name" label="应用名称" min-width="200">
           <template #default="scope">
             <div class="app-info">
-              <el-avatar :size="32" :src="scope.row.logo_url" class="app-logo">
+              <el-avatar :size="32" :src="scope.row.logo_url" class="app-logo" alt="应用图标">
                 <el-icon><Document /></el-icon>
               </el-avatar>
               <div class="app-details">
-                <div class="app-name">{{ scope.row.name }}</div>
-                <div class="app-desc">{{ scope.row.description || '暂无描述' }}</div>
+                <div class="app-name truncate">{{ scope.row.name }}</div>
+                <div class="app-desc line-clamp">{{ scope.row.description || '暂无描述' }}</div>
               </div>
             </div>
           </template>
@@ -602,5 +602,25 @@ onMounted(() => {
 
 .secret-text--danger {
   color: var(--el-color-danger, #f56c6c);
+}
+
+/* 文本溢出处理 */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 应用信息布局 */
+.app-details {
+  min-width: 0;
+  flex: 1;
 }
 </style>

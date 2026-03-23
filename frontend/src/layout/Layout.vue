@@ -2,8 +2,7 @@
   <div class="app-container">
     <!-- 移动端遮罩层 -->
     <div 
-      v-if="isMobileMenuOpen" 
-      class="sidebar-overlay" 
+      :class="{ 'sidebar-overlay': true, 'active': isMobileMenuOpen }" 
       @click="closeMobileMenu"
     ></div>
     
@@ -344,6 +343,13 @@ onUnmounted(() => {
   z-index: calc(var(--z-fixed) - 1);
   backdrop-filter: blur(2px);
   transition: opacity 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (max-width: 768px) {
@@ -381,33 +387,31 @@ onUnmounted(() => {
 
 ::v-deep(.el-menu) {
   border-right: none;
-  color: var(--white);
+}
+.sidebar-menu{
+  border-right: none;
 }
 
-::v-deep(.el-menu-item) {
-  height: 50px;
-  line-height: 50px;
+
+.sidebar-menu ::v-deep(.el-menu-item) {
   margin: 4px 0.5rem;
   border-radius: 0.5rem;
-  transition: var(--app-transition);
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0 1rem !important;
-  color: var(--font-color) !important;
+  padding: 0 1rem;
+  /* color: var(--font-color) !important; */
   font-weight: var(--el-font-weight-bold);
-  font-size: var(--el-font-size-base);
 }
 
-::v-deep(.el-menu-item:hover),
-::v-deep(.el-sub-menu__title:hover) {
-  background-color: rgba(var(--primary), 0.05) !important;
-  color: rgba(var(--primary), 1) !important;
+.sidebar-menu ::v-deep(.el-menu-item:hover),
+.sidebar-menu ::v-deep(.el-sub-menu__title:hover) {
+  color: rgba(var(--primary), 1);
 }
 
-::v-deep(.el-menu-item.is-active) {
-  background-color: rgba(var(--primary), 1) !important;
-  color: var(--white) !important;
+.sidebar-menu ::v-deep(.el-menu-item.is-active) {
+  background-color: rgba(var(--primary), 1);
+  color: var(--white);
   box-shadow: var(--hover-shadow);
 }
 

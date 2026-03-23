@@ -328,3 +328,44 @@
 .el-button.is-circle .el-icon {
   margin-right: 0px;
 }
+
+/* ===== 菜单组件相关样式 ===== */
+/* 使用 Element Plus CSS 变量来定制菜单样式 */
+.el-menu {
+  /* 菜单项激活状态颜色 */
+  --el-menu-active-color: var(--white);
+  /* 菜单项默认文字颜色 */
+  --el-menu-text-color: var(--font-color);
+  /* 菜单项悬停文字颜色 */
+  --el-menu-hover-text-color: rgba(var(--primary), 1);
+  /* 菜单背景颜色 */
+  --el-menu-bg-color: var(--font-color);
+  /* 菜单项悬停背景颜色 */
+  --el-menu-hover-bg-color: rgba(var(--primary), 0.05);
+  /* 菜单项高度 */
+  --el-menu-item-height: 50px;
+  /* 子菜单项高度 */
+  --el-menu-sub-item-height: calc(var(--el-menu-item-height) - 6px);
+  /* 水平菜单高度 */
+  --el-menu-horizontal-height: 50px;
+  /* 水平子菜单项高度 */
+  --el-menu-horizontal-sub-item-height: 44px;
+  /* 菜单项字体大小 */
+  --el-menu-item-font-size: var(--el-font-size-base);
+  /* 菜单项悬停填充颜色 */
+  --el-menu-item-hover-fill: rgba(var(--primary), 1);
+  /* 菜单边框颜色 */
+  --el-menu-border-color: transparent;
+  /* 菜单基础层级内边距 */
+  --el-menu-base-level-padding: 12px;
+  /* 菜单层级内边距 */
+  --el-menu-level-padding: 20px;
+  /* 菜单图标宽度 */
+  --el-menu-icon-width: 20px;
+}
+.el-pagination,
+.el-pagination .el-select__wrapper{
+  --el-font-size-base: 12px;
+  --el-pagination-font-size:var(--el-font-size-base);
+  font-size: var(--el-font-size-base);
+}

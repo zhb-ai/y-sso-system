@@ -22,7 +22,8 @@ export default defineConfig({
     strictPort: false,
     proxy: {
       '/api': {
-        target: 'http://192.168.50.71:8000',
+        // target: 'http://192.168.50.71:8000',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, '/api')
@@ -33,8 +34,10 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, '../web'),
     assetsDir: 'assets',
-    minify: false,
+    minify: 'esbuild',
     emptyOutDir: true,  // 构建前清空输出目录
+    cssCodeSplit: true,
+    sourcemap: false
   },
   // 后端将静态文件挂载在根路径，资源使用相对路径加载
   // base: '/'
