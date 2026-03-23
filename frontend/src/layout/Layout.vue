@@ -81,6 +81,18 @@
         </div>
         
         <div class="header-right">
+          <!-- 应用授权按钮 -->
+          <el-button 
+            site="small"
+            plain 
+            class="header-action app-auth-btn"
+            @click="handleAppAuthorization"
+            title="应用授权"
+          >
+            <el-icon><Key /></el-icon>
+            <span>应用授权</span>
+          </el-button>
+          
           <!-- 用户信息 -->
           <el-dropdown trigger="click" class="header-action user-info">
             <div class="user-avatar">
@@ -91,7 +103,6 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="handleProfile">个人资料</el-dropdown-item>
-                <el-dropdown-item @click="handleAppAuthorization">应用授权</el-dropdown-item>
                 <el-dropdown-item v-if="isAdmin" @click="handleSettings">系统设置</el-dropdown-item>
                 <el-divider />
                 <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
@@ -531,6 +542,20 @@ onUnmounted(() => {
   margin-left: 68px;
 }
 
+/* 应用授权按钮样式 */
+.app-auth-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 头部右侧布局 */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .sidebar {
@@ -544,6 +569,21 @@ onUnmounted(() => {
 
   .main-content {
     margin-left: 0;
+  }
+
+  /* 移动端应用授权按钮样式 */
+  .app-auth-btn {
+    font-size: 12px;
+    padding: 0 12px;
+  }
+
+  .app-auth-btn span {
+    display: none;
+  }
+
+  /* 移动端头部右侧布局 */
+  .header-right {
+    gap: 8px;
   }
 }
 
