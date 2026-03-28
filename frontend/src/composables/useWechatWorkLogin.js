@@ -1,8 +1,8 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { wechatWorkApi } from '../api'
-import { useAuthStore } from '../stores/auth'
+import { wechatWorkApi } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 
 /**
  * 企业微信登录 Composable

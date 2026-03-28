@@ -63,12 +63,12 @@
         <el-table-column prop="name" label="应用名称" min-width="200">
           <template #default="scope">
             <div class="app-info">
-              <el-avatar :size="32" :src="scope.row.logo_url" class="app-logo">
+              <el-avatar :size="32" :src="scope.row.logo_url" class="app-logo" alt="应用图标">
                 <el-icon><Document /></el-icon>
               </el-avatar>
               <div class="app-details">
-                <div class="app-name">{{ scope.row.name }}</div>
-                <div class="app-desc">{{ scope.row.description || '暂无描述' }}</div>
+                <div class="app-name truncate">{{ scope.row.name }}</div>
+                <div class="app-desc line-clamp">{{ scope.row.description || '暂无描述' }}</div>
               </div>
             </div>
           </template>
@@ -249,8 +249,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid } from '@element-plus/icons-vue'
-import { applicationApi } from '../../api'
-import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
+import { applicationApi } from '@/api'
+import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 
 // 表格数据
 const applications = ref([])
@@ -555,12 +555,12 @@ onMounted(() => {
 }
 
 .app-name {
-  font-weight: 500;
-  line-height: 1.4;
+  font-weight: var(--el-font-weight-bold);
+  line-height: var(--c-line-height-sm);
 }
 
 .app-desc {
-  font-size: var(--font-size-sm, 12px);
+  font-size: var(--el-font-size-xs);
   color: var(--text-muted, #909399);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -593,14 +593,34 @@ onMounted(() => {
   flex: 1;
   word-break: break-all;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   padding: 4px 8px;
   background: var(--el-fill-color-light, #f5f7fa);
   border-radius: 4px;
-  line-height: 1.6;
+  line-height: var(--c-line-height-lg);
 }
 
 .secret-text--danger {
   color: var(--el-color-danger, #f56c6c);
+}
+
+/* 文本溢出处理 */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 应用信息布局 */
+.app-details {
+  min-width: 0;
+  flex: 1;
 }
 </style>

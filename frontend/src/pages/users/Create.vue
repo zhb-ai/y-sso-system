@@ -79,8 +79,8 @@
 <script setup>
 import { ref, reactive, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { userApi } from '../../api'
-import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
+import { userApi } from '@/api'
+import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 
 const props = defineProps({
   modelValue: {

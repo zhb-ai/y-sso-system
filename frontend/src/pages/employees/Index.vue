@@ -58,6 +58,12 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column prop="code" label="员工编码" min-width="120">
+          <template #default="{ row }">
+            <el-tag v-if="row.code" type="primary" size="small" effect="light">{{ row.code }}</el-tag>
+            <el-tag v-else type="info" size="small" effect="light">未设置</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="mobile" label="手机号" min-width="130" />
         <el-table-column prop="email" label="邮箱" min-width="180" />
         <el-table-column label="性别" width="70">
@@ -176,18 +182,25 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="手机号">
-                    <el-input v-model="form.mobile" placeholder="请输入手机号" />
+                  <el-form-item label="员工编码">
+                    <el-input v-model="form.code" placeholder="请输入员工编码" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
                 <el-col :span="12">
+                  <el-form-item label="手机号">
+                    <el-input v-model="form.mobile" placeholder="请输入手机号" />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
                   <el-form-item label="邮箱">
                     <el-input v-model="form.email" placeholder="请输入邮箱" />
                   </el-form-item>
                 </el-col>
-                <el-col :span="12">
+              </el-row>
+              <el-row :gutter="20">
+                <el-col :span="24">
                   <el-form-item label="性别">
                     <el-radio-group v-model="form.gender">
                       <el-radio :label="1">男</el-radio>
@@ -486,7 +499,7 @@
       <el-descriptions :column="1" border>
         <el-descriptions-item label="员工姓名">{{ accountResult.employee_name }}</el-descriptions-item>
         <el-descriptions-item label="用户名">
-          <el-tag>{{ accountResult.username }}</el-tag>
+          <code>{{ accountResult.username }}</code>
         </el-descriptions-item>
         <el-descriptions-item label="默认密码">
           <code>{{ accountResult.raw_password }}</code>
@@ -504,7 +517,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, ArrowDown, OfficeBuilding, Folder, User, Key, Edit, Delete } from '@element-plus/icons-vue'
-import { employeeApi, organizationApi, departmentApi } from '../../api'
+import { employeeApi, organizationApi, departmentApi } from '@/api'
 
 // 数据
 const employees = ref([])
@@ -631,7 +644,7 @@ const handleOrgSelectChange = async (orgId) => {
 // 创建员工
 const handleCreate = () => {
   Object.assign(form, { 
-    id: null, name: '', mobile: '', email: '', gender: 0,
+    id: null, name: '', code: '', mobile: '', email: '', gender: 0,
     org_id: null, emp_no: '', position: '', dept_id: null,
     create_account: false,
   })
@@ -644,6 +657,7 @@ const handleEdit = (row) => {
   Object.assign(form, {
     id: row.id,
     name: row.name,
+    code: row.code || '',
     mobile: row.mobile || '',
     email: row.email || '',
     gender: row.gender || 0
@@ -675,6 +689,7 @@ const submitForm = async () => {
       // 编辑
       await employeeApi.update(form.id, {
         name: form.name,
+        code: form.code,
         mobile: form.mobile,
         email: form.email,
         gender: form.gender
@@ -684,6 +699,7 @@ const submitForm = async () => {
       // 新建
       const res = await employeeApi.create({
         name: form.name,
+        code: form.code,
         mobile: form.mobile,
         email: form.email,
         gender: form.gender
@@ -996,7 +1012,7 @@ onMounted(() => {
   gap: 8px;
 }
 .employee-info span {
-  font-weight: 500;
+  font-weight: var(--el-font-weight-bold);
 }
 .avatar {
   background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.7));
@@ -1008,7 +1024,7 @@ onMounted(() => {
   cursor: pointer;
 }
 .status-arrow {
-  font-size: 12px;
-  color: #909399;
+  font-size: var(--el-font-size-xs);
+  color: var(--el-text-color-secondary);
 }
 </style>

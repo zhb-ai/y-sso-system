@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { api } from '../api'
+import { api } from '@/api'
 
 /**
  * 站点信息全局 Store

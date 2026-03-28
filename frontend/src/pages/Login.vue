@@ -56,8 +56,8 @@
         <div class="login-footer" v-if="wechatLoginEnabled">
           <el-divider>其他登录方式</el-divider>
           <div class="other-login">
-            <el-button @click="showWechatQrCode" :loading="wechatLoading">
-              <svg viewBox="0 0 1024 1024" width="18" height="18" style="margin-right: 6px; vertical-align: middle">
+            <el-button @click="showWechatQrCode" :loading="wechatLoading" aria-label="使用企业微信登录">
+              <svg viewBox="0 0 1024 1024" width="18" height="18" style="margin-right: 6px; vertical-align: middle" aria-hidden="true">
                 <path d="M688.6 323.2c-15.6-2-31.6-3.2-47.8-3.2-141.4 0-262.2 88.4-310.4 213-10.4-0.8-20.8-1.4-31.4-1.4C142.6 531.6 16 641.4 16 776.6c0 75.4 37.2 142.6 95.4 188.4l-23.8 71.6 83.2-41.6c30.6 10 62.8 15.6 96.2 15.6 15.8 0 31.2-1.2 46.4-3.4 48.2 124.4 169 213 310.4 213 26.2 0 51.6-3.4 75.8-9.6l104.2 52-29.8-89.6C844.6 1129 896 1054.2 896 966.6c0-64.8-30.4-123-78-165" fill="#07C160"/>
               </svg>
               企业微信登录
@@ -114,12 +114,12 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { handleApiError } from '../utils/errorHandler'
-import { wechatWorkApi } from '../api'
-import { useSiteStore } from '../stores/site'
+import { wechatWorkApi } from '@/api'
+import { useAuthStore } from '@/stores/auth'
+import { useSiteStore } from '@/stores/site'
+import { handleApiError } from '@/utils/errorHandler'
 
 const siteStore = useSiteStore()
 

@@ -71,8 +71,39 @@
   --z-tooltip: 1070;
   --z-toast: 1080;
 
+
+
   /* element-plus 字体 */
   --el-font-family: var(--font-family-primary);
+
+  /* ===== 字体大小 ===== */
+  --el-font-size-xxl: 22px;
+  --el-font-size-xl: 20px;
+  --el-font-size-lg: 18px;
+  --el-font-size-md: 16px;
+  --el-font-size-base: 14px;
+  --el-font-size-sm: 13px;
+  --el-font-size-xs: 12px;
+  
+  /* ===== 字体大小兼容变量 ===== */
+  --el-font-size-extra-large: var(--el-font-size-md);
+  --el-font-size-large: var(--el-font-size-base);
+  --el-font-size-medium: var(--el-font-size-base);
+  --el-font-size-small: var(--el-font-size-sm);
+  --el-font-size-extra-small: var(--el-font-size-xs);
+  
+  /* ===== 字体权重变量 ===== */
+  --el-font-weight-extra-bold: 600;
+  --el-font-weight-bold: 500;
+  --el-font-weight-medium: 400;
+  --el-font-weight-regular: 300;
+  
+  /* ===== 行高变量 ===== */
+  --c-line-height-xs: 1;
+  --c-line-height-sm: 1.2;
+  --c-line-height-md: 1.4;
+  --c-line-height-lg: 1.6;
+  --c-line-height-xl: 2;
   /* element-plus 过渡动画时长 */
   --el-transition-duration: 0.3s;
   --el-transition-duration-fast: 0.2s;
@@ -213,6 +244,22 @@
   --el-button-bg-color: var(--light-gray);
 }
 
+/* 头像组件 当空间不足的时候禁用缩放效果 防止压缩变形 */
+.el-avatar {
+  flex-shrink: 0;
+}
+/* 树组件 节点内容高度自适应 防止内容超出高度 */
+.el-tree{
+  --el-tree-node-content-height: auto;
+  --el-tree-node-hover-bg-color: var(--el-fill-color-lighter);
+}
+.el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+  background-color: var(--el-fill-color-light);
+}
+.tree-node-content{
+  padding: 6px 12px;
+}
+
 /* ===== Element Plus 卡片样式 ===== */
 
 .el-card {
@@ -280,4 +327,45 @@
 }
 .el-button.is-circle .el-icon {
   margin-right: 0px;
+}
+
+/* ===== 菜单组件相关样式 ===== */
+/* 使用 Element Plus CSS 变量来定制菜单样式 */
+.el-menu {
+  /* 菜单项激活状态颜色 */
+  --el-menu-active-color: var(--white);
+  /* 菜单项默认文字颜色 */
+  --el-menu-text-color: var(--font-color);
+  /* 菜单项悬停文字颜色 */
+  --el-menu-hover-text-color: rgba(var(--primary), 1);
+  /* 菜单背景颜色 */
+  --el-menu-bg-color: var(--font-color);
+  /* 菜单项悬停背景颜色 */
+  --el-menu-hover-bg-color: rgba(var(--primary), 0.05);
+  /* 菜单项高度 */
+  --el-menu-item-height: 50px;
+  /* 子菜单项高度 */
+  --el-menu-sub-item-height: calc(var(--el-menu-item-height) - 6px);
+  /* 水平菜单高度 */
+  --el-menu-horizontal-height: 50px;
+  /* 水平子菜单项高度 */
+  --el-menu-horizontal-sub-item-height: 44px;
+  /* 菜单项字体大小 */
+  --el-menu-item-font-size: var(--el-font-size-base);
+  /* 菜单项悬停填充颜色 */
+  --el-menu-item-hover-fill: rgba(var(--primary), 1);
+  /* 菜单边框颜色 */
+  --el-menu-border-color: transparent;
+  /* 菜单基础层级内边距 */
+  --el-menu-base-level-padding: 12px;
+  /* 菜单层级内边距 */
+  --el-menu-level-padding: 20px;
+  /* 菜单图标宽度 */
+  --el-menu-icon-width: 20px;
+}
+.el-pagination,
+.el-pagination .el-select__wrapper{
+  --el-font-size-base: 12px;
+  --el-pagination-font-size:var(--el-font-size-base);
+  font-size: var(--el-font-size-base);
 }

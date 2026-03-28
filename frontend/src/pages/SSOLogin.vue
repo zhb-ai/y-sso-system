@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <div class="login-box sso-login-box">
+    <div class="login-box sso-login-box" :class="{ 'is-wide': !isOAuth2Mode && isLoggedIn && availableApps.length > 3 }">
       <!-- SSO 头部 -->
       <div class="login-header">
         <h1>{{ siteStore.systemName }}</h1>
@@ -104,21 +104,23 @@
           <el-empty v-else-if="availableApps.length === 0" description="暂无可用应用" :image-size="80" />
 
           <!-- 应用列表 -->
-          <div v-else class="sso-app-list">
+          <div v-else class="sso-app-list" :class="{ 'is-grid': availableApps.length > 3 }">
             <div
               v-for="app in availableApps"
               :key="app.id"
               class="sso-app-card"
               :class="{ 'is-jumping': jumpingAppId === app.id }"
+              :style="app.logo_url ? { '--app-logo': `url(${app.logo_url})` } : {}"
               @click="handleAppClick(app)"
             >
-              <div class="sso-app-icon">
-                <img v-if="app.logo_url" :src="app.logo_url" :alt="app.name" class="sso-app-logo" />
-                <el-icon v-else :size="32" class="sso-app-icon-default"><Monitor /></el-icon>
-              </div>
-              <div class="sso-app-info">
-                <span class="sso-app-name">{{ app.name }}</span>
-                <span class="sso-app-desc">{{ app.description || app.code }}</span>
+              <div class="sso-app-content">
+                <div class="sso-app-icon">
+                  <el-icon :size="28" class="sso-app-icon-default"><Monitor /></el-icon>
+                </div>
+                <div class="sso-app-info">
+                  <span class="sso-app-name">{{ app.name }}</span>
+                  <span class="sso-app-desc">{{ app.description || app.code }}</span>
+                </div>
               </div>
               <el-icon class="sso-app-arrow"><ArrowRight /></el-icon>
             </div>
@@ -207,14 +209,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { api, oauth2Api } from '../api'
 import { ElMessage } from 'element-plus'
 import { UserFilled, Lock, Monitor, ArrowRight, Loading } from '@element-plus/icons-vue'
-import { handleApiError } from '../utils/errorHandler'
-import { useWechatWorkLogin } from '../composables/useWechatWorkLogin'
-
-import { useSiteStore } from '../stores/site'
+import { api, oauth2Api } from '@/api'
+import { useAuthStore } from '@/stores/auth'
+import { useSiteStore } from '@/stores/site'
+import { handleApiError } from '@/utils/errorHandler'
+import { useWechatWorkLogin } from '@/composables/useWechatWorkLogin'
 
 const route = useRoute()
 const router = useRouter()
@@ -289,25 +290,29 @@ async function handleAppClick(app) {
     ElMessage.warning('该应用未配置重定向地址')
     return
   }
-
-  jumpingAppId.value = app.id
-  try {
-    const response = await oauth2Api.authorize({
-      client_id: app.client_id,
-      redirect_uri: uris[0],  // 使用第一个 redirect_uri
-      scope: 'openid profile email',
-      state: null,
-    })
-    const redirectUrl = response.data?.redirect_url || response.redirect_url
-    if (redirectUrl) {
-      window.open(redirectUrl, '_blank')
-    } else {
-      ElMessage.error('授权失败：未获取到重定向地址')
+  // url[1] 应用的登录地址
+  if (uris.length > 1){
+    window.open(uris[1], '_blank')
+  } else {
+    jumpingAppId.value = app.id
+    try {
+      const response = await oauth2Api.authorize({
+        client_id: app.client_id,
+        redirect_uri: uris[0],  // 使用第一个 redirect_uri
+        scope: 'openid profile email',
+        state: null,
+      })
+      const redirectUrl = response.data?.redirect_url || response.redirect_url
+      if (redirectUrl) {
+        window.open(redirectUrl, '_blank')
+      } else {
+        ElMessage.error('授权失败：未获取到重定向地址')
+      }
+    } catch (error) {
+      handleApiError(error, '授权失败')
+    } finally {
+      jumpingAppId.value = null
     }
-  } catch (error) {
-    handleApiError(error, '授权失败')
-  } finally {
-    jumpingAppId.value = null
   }
 }
 
@@ -489,7 +494,13 @@ async function handlePortalLogin() {
 
 <style scoped>
 .sso-login-box {
+  width: 100%;
   max-width: 460px;
+  transition: max-width 0.3s ease;
+}
+
+.sso-login-box.is-wide {
+  max-width: 860px;
 }
 
 /* ==================== 用户信息 ==================== */
@@ -516,13 +527,13 @@ async function handlePortalLogin() {
 }
 
 .sso-username {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--el-font-size-lg);
+  font-weight: var(--el-font-weight-extra-bold);
   color: var(--el-text-color-primary);
 }
 
 .sso-email {
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   color: var(--el-text-color-secondary);
   margin-top: 2px;
 }
@@ -534,7 +545,7 @@ async function handlePortalLogin() {
 }
 
 .sso-scope-title {
-  font-size: 14px;
+  font-size: var(--el-font-size-base);
   color: var(--el-text-color-regular);
   margin-bottom: 8px;
 }
@@ -549,7 +560,7 @@ async function handlePortalLogin() {
   position: relative;
   padding-left: 20px;
   margin-bottom: 6px;
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   color: var(--el-text-color-secondary);
 }
 
@@ -569,7 +580,7 @@ async function handlePortalLogin() {
 /* ==================== 门户模式：应用列表 ==================== */
 
 .sso-portal-title {
-  font-size: 14px;
+  font-size: var(--el-font-size-base);
   color: var(--el-text-color-regular);
   margin-bottom: 12px;
 }
@@ -581,7 +592,7 @@ async function handlePortalLogin() {
   gap: 8px;
   padding: 32px 0;
   color: var(--el-text-color-secondary);
-  font-size: 14px;
+  font-size: var(--el-font-size-base);
 }
 
 .sso-app-list {
@@ -590,16 +601,44 @@ async function handlePortalLogin() {
   gap: 8px;
 }
 
+/* 超过3个应用时使用网格布局 */
+.sso-app-list.is-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
 .sso-app-card {
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: space-between;
+  gap: 12px;
   padding: 14px 16px;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   background: var(--el-bg-color);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 有logo时添加背景图 */
+.sso-app-card[style*="--app-logo"]::before {
+  content: '';
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  background-image: var(--app-logo);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .sso-app-card:hover {
@@ -613,23 +652,26 @@ async function handlePortalLogin() {
   pointer-events: none;
 }
 
+.sso-app-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
 .sso-app-icon {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
-}
-
-.sso-app-logo {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border-radius: 4px;
 }
 
 .sso-app-icon-default {
@@ -644,8 +686,8 @@ async function handlePortalLogin() {
 }
 
 .sso-app-name {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--el-font-size-sm);
+  font-weight: var(--el-font-weight-bold);
   color: var(--el-text-color-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -653,7 +695,7 @@ async function handlePortalLogin() {
 }
 
 .sso-app-desc {
-  font-size: 12px;
+  font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
   margin-top: 2px;
   overflow: hidden;
@@ -665,10 +707,31 @@ async function handlePortalLogin() {
   flex-shrink: 0;
   color: var(--el-text-color-placeholder);
   transition: color 0.2s;
+  position: relative;
+  z-index: 1;
 }
 
 .sso-app-card:hover .sso-app-arrow {
   color: var(--el-color-primary);
+}
+
+/* ==================== 响应式适配 ==================== */
+@media (max-width: 768px) {
+  .sso-app-list.is-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sso-app-list.is-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .sso-app-list.is-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 /* ==================== 底部链接区域 ==================== */

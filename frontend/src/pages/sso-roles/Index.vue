@@ -156,9 +156,9 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ssoRoleApi } from '../../api'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
+import { ssoRoleApi } from '@/api'
+import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 import { Plus, Edit, Delete, Search, RefreshRight, Check, Close, Connection } from '@element-plus/icons-vue'
 
 // ==================== 筛选条件 ====================

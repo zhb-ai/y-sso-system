@@ -7,53 +7,68 @@
     
     <!-- 统计卡片 -->
     <div class="stats-cards">
-      <el-card shadow="hover" class="stat-card">
-        <div class="stat-content">
-          <div class="stat-info">
-            <h3>{{ applicationCount }}</h3>
-            <p>已注册应用</p>
+      <template v-if="loading">
+        <el-card shadow="hover" class="stat-card" v-for="i in 4" :key="i">
+          <div class="stat-content">
+            <div class="stat-info">
+              <el-skeleton animated :rows="1" />
+              <el-skeleton animated :rows="1" />
+            </div>
+            <div class="stat-icon skeleton-icon">
+              <el-skeleton animated :rows="1" />
+            </div>
           </div>
-          <div class="stat-icon application">
-            <el-icon><Grid /></el-icon>
+        </el-card>
+      </template>
+      <template v-else>
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-info">
+              <h3>{{ applicationCount }}</h3>
+              <p>已注册应用</p>
+            </div>
+            <div class="stat-icon application">
+              <el-icon><Grid /></el-icon>
+            </div>
           </div>
-        </div>
-      </el-card>
-      
-      <el-card shadow="hover" class="stat-card">
-        <div class="stat-content">
-          <div class="stat-info">
-            <h3>{{ userCount }}</h3>
-            <p>活跃用户</p>
+        </el-card>
+        
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-info">
+              <h3>{{ userCount }}</h3>
+              <p>活跃用户</p>
+            </div>
+            <div class="stat-icon user">
+              <el-icon><User /></el-icon>
+            </div>
           </div>
-          <div class="stat-icon user">
-            <el-icon><User /></el-icon>
+        </el-card>
+        
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-info">
+              <h3>{{ employeeCount }}</h3>
+              <p>员工数量</p>
+            </div>
+            <div class="stat-icon role">
+              <el-icon><Management /></el-icon>
+            </div>
           </div>
-        </div>
-      </el-card>
-      
-      <el-card shadow="hover" class="stat-card">
-        <div class="stat-content">
-          <div class="stat-info">
-            <h3>{{ employeeCount }}</h3>
-            <p>员工数量</p>
+        </el-card>
+        
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-info">
+              <h3>{{ departmentCount }}</h3>
+              <p>部门数量</p>
+            </div>
+            <div class="stat-icon department">
+              <el-icon><OfficeBuilding /></el-icon>
+            </div>
           </div>
-          <div class="stat-icon role">
-            <el-icon><Management /></el-icon>
-          </div>
-        </div>
-      </el-card>
-      
-      <el-card shadow="hover" class="stat-card">
-        <div class="stat-content">
-          <div class="stat-info">
-            <h3>{{ departmentCount }}</h3>
-            <p>部门数量</p>
-          </div>
-          <div class="stat-icon department">
-            <el-icon><OfficeBuilding /></el-icon>
-          </div>
-        </div>
-      </el-card>
+        </el-card>
+      </template>
     </div>
     
     <!-- 最近登录记录筛选条件 -->
@@ -113,6 +128,7 @@
     <!-- 最近登录记录 -->
     <el-card class="data-card" shadow="hover">
       <el-table
+        v-loading="loginLoading"
         :data="recentLogins"
         style="width: 100%"
         empty-text="暂无登录记录"
@@ -154,11 +170,15 @@
 
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue'
-import { useAuthStore } from '../stores/auth'
-import { dashboardApi } from '../api'
+import { dashboardApi } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const userInfo = computed(() => authStore.userInfo)
+
+// 加载状态
+const loading = ref(true)
+const loginLoading = ref(true)
 
 // 统计数据
 const applicationCount = ref(0)
@@ -183,10 +203,10 @@ const searchIp = ref('')
 
 // 获取统计数据
 const fetchStatistics = async () => {
+  loading.value = true
   try {
     // BaseResponse 格式: { message, msg_details, data }
     const response = await dashboardApi.getStatistics()
-    console.log('统计数据响应:', response)
     // 直接从 response.data 获取数据
     const data = response.data || {}
     applicationCount.value = data.application_count || 0
@@ -195,11 +215,14 @@ const fetchStatistics = async () => {
     employeeCount.value = data.employee_count || 0
   } catch (error) {
     console.error('获取统计数据失败:', error)
+  } finally {
+    loading.value = false
   }
 }
 
 // 获取最近登录记录
 const fetchRecentLogins = async (page = 1) => {
+  loginLoading.value = true
   try {
     const params = {
       page: page,
@@ -220,7 +243,6 @@ const fetchRecentLogins = async (page = 1) => {
     // BaseResponse 格式: { message, msg_details, data }
     // data 为分页对象: { rows, total_records, page, page_size, total_pages, has_prev, has_next }
     const response = await dashboardApi.getRecentLogins(params)
-    console.log('登录记录响应:', response)
     
     const data = response.data || {}
     // 分页数据格式
@@ -242,6 +264,8 @@ const fetchRecentLogins = async (page = 1) => {
     // 出错时显示空数组
     recentLogins.value = []
     pagination.value.total = 0
+  } finally {
+    loginLoading.value = false
   }
 }
 
@@ -283,6 +307,26 @@ onMounted(() => {
 
 .failure-reason {
   color: var(--el-color-danger);
-  font-size: 12px;
+  font-size: var(--el-font-size-xs);
+}
+
+/* 骨架屏样式 */
+.skeleton-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--el-color-bg-secondary);
+}
+
+/* 统计卡片布局 */
+.stat-info h3 {
+  min-height: 24px;
+}
+
+.stat-info p {
+  min-height: 16px;
 }
 </style>

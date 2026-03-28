@@ -2,8 +2,7 @@
   <div class="app-container">
     <!-- 移动端遮罩层 -->
     <div 
-      v-if="isMobileMenuOpen" 
-      class="sidebar-overlay" 
+      :class="{ 'sidebar-overlay': true, 'active': isMobileMenuOpen }" 
       @click="closeMobileMenu"
     ></div>
     
@@ -82,6 +81,18 @@
         </div>
         
         <div class="header-right">
+          <!-- 应用授权按钮 -->
+          <el-button 
+            site="small"
+            plain 
+            class="header-action app-auth-btn"
+            @click="handleAppAuthorization"
+            title="应用授权"
+          >
+            <el-icon><Key /></el-icon>
+            <span>应用授权</span>
+          </el-button>
+          
           <!-- 用户信息 -->
           <el-dropdown trigger="click" class="header-action user-info">
             <div class="user-avatar">
@@ -92,7 +103,6 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="handleProfile">个人资料</el-dropdown-item>
-                <el-dropdown-item @click="handleAppAuthorization">应用授权</el-dropdown-item>
                 <el-dropdown-item v-if="isAdmin" @click="handleSettings">系统设置</el-dropdown-item>
                 <el-divider />
                 <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
@@ -124,8 +134,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '@/stores/auth'
 // 导入图标组件
 import {
   DataAnalysis,
@@ -149,7 +159,7 @@ import {
   Grid
 } from '@element-plus/icons-vue'
 
-import { useSiteStore } from '../stores/site'
+import { useSiteStore } from '@/stores/site'
 
 const router = useRouter()
 const route = useRoute()
@@ -344,6 +354,13 @@ onUnmounted(() => {
   z-index: calc(var(--z-fixed) - 1);
   backdrop-filter: blur(2px);
   transition: opacity 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (max-width: 768px) {
@@ -381,33 +398,31 @@ onUnmounted(() => {
 
 ::v-deep(.el-menu) {
   border-right: none;
-  color: #fff ;
+}
+.sidebar-menu{
+  border-right: none;
 }
 
-::v-deep(.el-menu-item) {
-  height: 50px;
-  line-height: 50px;
+
+.sidebar-menu ::v-deep(.el-menu-item) {
   margin: 4px 0.5rem;
   border-radius: 0.5rem;
-  transition: var(--app-transition);
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0 1rem !important;
-  color: var(--font-color) !important;
-  font-weight: 500;
-  font-size: 14px;
+  padding: 0 1rem;
+  /* color: var(--font-color) !important; */
+  font-weight: var(--el-font-weight-bold);
 }
 
-::v-deep(.el-menu-item:hover),
-::v-deep(.el-sub-menu__title:hover) {
-  background-color: rgba(var(--primary), 0.05) !important;
-  color: rgba(var(--primary), 1) !important;
+.sidebar-menu ::v-deep(.el-menu-item:hover),
+.sidebar-menu ::v-deep(.el-sub-menu__title:hover) {
+  color: rgba(var(--primary), 1);
 }
 
-::v-deep(.el-menu-item.is-active) {
-  background-color: rgba(var(--primary), 1) !important;
-  color: #ffffff !important;
+.sidebar-menu ::v-deep(.el-menu-item.is-active) {
+  background-color: rgba(var(--primary), 1);
+  color: var(--white);
   box-shadow: var(--hover-shadow);
 }
 
@@ -436,8 +451,8 @@ onUnmounted(() => {
   border-radius: 0.375rem;
   background-color: var(--light-gray) !important;
   color: var(--font-color) !important;
-  font-weight: 400;
-  font-size: 13px;
+  font-weight: var(--el-font-weight-medium);
+  font-size: var(--el-font-size-sm);
 }
 
 ::v-deep(.el-sub-menu .el-menu-item:hover) {
@@ -448,7 +463,7 @@ onUnmounted(() => {
 ::v-deep(.el-sub-menu .el-menu-item.is-active) {
   background-color: rgba(var(--primary), 0.1) !important;
   color: rgba(var(--primary), 1) !important;
-  font-weight: 500;
+  font-weight: var(--el-font-weight-bold);
 }
 
 ::v-deep(.el-menu-item .el-icon),
@@ -458,7 +473,7 @@ onUnmounted(() => {
   margin-right: 0.75rem;
   vertical-align: middle;
   flex-shrink: 0;
-  font-size: 18px;
+  font-size: var(--el-font-size-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -500,7 +515,7 @@ onUnmounted(() => {
   visibility: visible;
   flex-grow: 1;
   text-align: left;
-  font-weight: 500;
+  font-weight: var(--el-font-weight-bold);
 }
 
 /* 侧边栏折叠样式 */
@@ -527,6 +542,20 @@ onUnmounted(() => {
   margin-left: 68px;
 }
 
+/* 应用授权按钮样式 */
+.app-auth-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 头部右侧布局 */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .sidebar {
@@ -540,6 +569,21 @@ onUnmounted(() => {
 
   .main-content {
     margin-left: 0;
+  }
+
+  /* 移动端应用授权按钮样式 */
+  .app-auth-btn {
+    font-size: 12px;
+    padding: 0 12px;
+  }
+
+  .app-auth-btn span {
+    display: none;
+  }
+
+  /* 移动端头部右侧布局 */
+  .header-right {
+    gap: 8px;
   }
 }
 

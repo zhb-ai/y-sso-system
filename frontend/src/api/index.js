@@ -1,10 +1,11 @@
 import axios from 'axios'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '@/stores/auth'
+
+let baseURL = import.meta.env.VITE_API_BASE_URL || '/api';         //生产环境
 
 // 创建axios实例
 const api = axios.create({
-  // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: baseURL,
   timeout: 120000, // 2分钟超时
   headers: {
     'Content-Type': 'application/json'

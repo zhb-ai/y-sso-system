@@ -163,7 +163,7 @@
             </div>
           </div>
           <div class="section-block__content" v-loading="roleDialogLoading">
-            <p style="margin-bottom: 16px; color: var(--el-text-color-secondary); font-size: 13px;">
+            <p style="margin-bottom: 16px; color: var(--el-text-color-secondary); font-size: var(--el-font-size-sm);">
               勾选要分配给该用户的角色：
             </p>
             <el-checkbox-group v-model="selectedRoleCodes">
@@ -174,11 +174,11 @@
                 :value="role.code"
                 style="display: block; margin-bottom: 12px"
               >
-                <span style="font-weight: 500">{{ role.name }}</span>
-                <span style="color: var(--el-text-color-secondary); margin-left: 8px; font-size: 12px">
+                <span style="font-weight: var(--el-font-weight-bold)">{{ role.name }}</span>
+                <span style="color: var(--el-text-color-secondary); margin-left: 8px; font-size: var(--el-font-size-xs)">
                   {{ role.code }}
                 </span>
-                <span v-if="role.description" style="color: var(--el-text-color-placeholder); margin-left: 8px; font-size: 12px">
+                <span v-if="role.description" style="color: var(--el-text-color-placeholder); margin-left: 8px; font-size: var(--el-font-size-xs)">
                   - {{ role.description }}
                 </span>
               </el-checkbox>
@@ -208,7 +208,7 @@
             </div>
           </div>
           <div class="section-block__content" v-loading="ssoRoleDialogLoading">
-            <p style="margin-bottom: 16px; color: var(--el-text-color-secondary); font-size: 13px;">
+            <p style="margin-bottom: 16px; color: var(--el-text-color-secondary); font-size: var(--el-font-size-sm);">
               勾选要分配给该用户的 SSO 角色（用于同步给外部系统）：
             </p>
             <el-checkbox-group v-model="selectedSSORoleCodes">
@@ -220,12 +220,12 @@
                 :disabled="!role.is_active"
                 style="display: block; margin-bottom: 12px"
               >
-                <span style="font-weight: 500">{{ role.name }}</span>
-                <span style="color: var(--el-text-color-secondary); margin-left: 8px; font-size: 12px">
+                <span style="font-weight: var(--el-font-weight-bold)">{{ role.name }}</span>
+                <span style="color: var(--el-text-color-secondary); margin-left: 8px; font-size: var(--el-font-size-xs)">
                   {{ role.code }}
                 </span>
                 <el-tag v-if="!role.is_active" type="info" size="small" style="margin-left: 8px">已禁用</el-tag>
-                <span v-if="role.description" style="color: var(--el-text-color-placeholder); margin-left: 8px; font-size: 12px">
+                <span v-if="role.description" style="color: var(--el-text-color-placeholder); margin-left: 8px; font-size: var(--el-font-size-xs)">
                   - {{ role.description }}
                 </span>
               </el-checkbox>
@@ -252,10 +252,10 @@
       <div class="section-blocks" style="gap: 0;">
         <div class="section-block">
           <div class="section-block__content" style="padding: 16px;">
-            <p style="margin: 0; color: var(--el-text-color-regular); font-size: 14px; line-height: 1.6;">
+            <p style="margin: 0; color: var(--el-text-color-regular); font-size: var(--el-font-size-base); line-height: var(--c-line-height-md);">
               确定要重置用户 <strong>{{ resetPasswordUser?.username }}</strong> 的密码吗？
             </p>
-            <p style="margin: 8px 0 0 0; color: var(--el-text-color-secondary); font-size: 13px; line-height: 1.5;">
+            <p style="margin: 8px 0 0 0; color: var(--el-text-color-secondary); font-size: var(--el-font-size-sm); line-height: var(--c-line-height-sm);">
               重置后将生成临时密码，用户首次登录时需强制修改密码。
             </p>
           </div>
@@ -289,10 +289,10 @@
             <el-descriptions :column="1" border>
               <el-descriptions-item label="用户名">{{ resetPasswordUser?.username }}</el-descriptions-item>
               <el-descriptions-item label="临时密码">
-                <code style="font-size: 16px; font-weight: bold; color: var(--el-color-danger);">{{ resetPasswordResult?.password }}</code>
+                <code style="font-size: var(--el-font-size-md); font-weight: var(--el-font-weight-extra-bold); color: var(--el-color-danger);">{{ resetPasswordResult?.password }}</code>
               </el-descriptions-item>
             </el-descriptions>
-            <p style="margin: 16px 0 0 0; color: var(--el-text-color-secondary); font-size: 13px;">
+            <p style="margin: 16px 0 0 0; color: var(--el-text-color-secondary); font-size: var(--el-font-size-sm);">
               <el-icon style="vertical-align: middle; margin-right: 4px;"><Warning /></el-icon>
               用户首次登录时需强制修改密码
             </p>
@@ -311,8 +311,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, Edit, Key, Unlock, Lock, Check, Close, UserFilled, Connection, Medal, Warning } from '@element-plus/icons-vue'
-import { userApi, roleApi, ssoRoleApi } from '../../api'
-import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
+import { userApi, roleApi, ssoRoleApi } from '@/api'
+import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 import UserCreateDialog from './Create.vue'
 import UserEditDialog from './Edit.vue'
 

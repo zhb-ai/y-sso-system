@@ -289,13 +289,13 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, QuestionFilled, RefreshRight } from '@element-plus/icons-vue'
-import { cacheApi } from '../../api'
-import { handleApiError, getDefaultErrorMessage } from '../../utils/errorHandler'
+import { cacheApi } from '@/api'
+import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 import {
   CACHE_BACKEND_TAG_TYPE,
   CACHE_FUNCTION_COLUMNS,
   CACHE_PAGE_KEYS,
-} from '../../constants/cache'
+} from '@/constants/cache'
 
 const loading = ref(false)
 const clearingAll = ref(false)
@@ -514,7 +514,7 @@ onMounted(() => {
 }
 
 .table-header-hint {
-  font-size: 11px;
+  font-size: var(--el-font-size-xs);
   margin-left: 4px;
 }
 
@@ -528,15 +528,15 @@ onMounted(() => {
 
 .summary-title {
   color: var(--font-medium-color);
-  font-size: 12px;
+  font-size: var(--el-font-size-xs);
   margin-bottom: 8px;
 }
 
 .summary-value {
   color: var(--font-title-color);
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: var(--el-font-size-xxl);
+  font-weight: var(--el-font-weight-extra-bold);
+  line-height: var(--c-line-height-xs);
 }
 
 .registrations-card {
@@ -551,8 +551,8 @@ onMounted(() => {
 
 .card-title {
   color: var(--font-title-color);
-  font-size: var(--h6-font-size);
-  font-weight: 600;
+  font-size: var(--el-font-size-base);
+  font-weight: var(--el-font-weight-extra-bold);
 }
 
 .switch-area {
@@ -563,7 +563,7 @@ onMounted(() => {
 
 .switch-label {
   color: var(--font-medium-color);
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
 }
 
 .registration-item {
@@ -609,8 +609,8 @@ onMounted(() => {
 
 .entry-detail-title {
   color: var(--font-title-color);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--el-font-size-base);
+  font-weight: var(--el-font-weight-extra-bold);
   margin-bottom: 8px;
 }
 
@@ -630,7 +630,7 @@ onMounted(() => {
 
 .preview-title {
   color: var(--font-medium-color);
-  font-size: 13px;
+  font-size: var(--el-font-size-sm);
   margin-bottom: 6px;
 }
 
@@ -640,8 +640,8 @@ onMounted(() => {
   border-radius: var(--border-radius);
   color: var(--font-color);
   font-family: var(--font-family-mono);
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: var(--el-font-size-xs);
+  line-height: var(--c-line-height-md);
   margin: 0;
   max-height: 260px;
   overflow: auto;
