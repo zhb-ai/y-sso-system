@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <div class="login-box sso-login-box" :class="{ 'is-wide': !isOAuth2Mode && isLoggedIn && availableApps.length > 3 }">
+    <div class="login-box sso-login-box" :class="`columns-${!isOAuth2Mode && isLoggedIn ? Math.min(Math.ceil(availableApps.length / 3), 4) : 1}`">
       <!-- SSO 头部 -->
       <div class="login-header">
         <h1>{{ siteStore.systemName }}</h1>
@@ -104,7 +104,7 @@
           <el-empty v-else-if="availableApps.length === 0" description="暂无可用应用" :image-size="80" />
 
           <!-- 应用列表 -->
-          <div v-else class="sso-app-list" :class="{ 'is-grid': availableApps.length > 3 }">
+          <div v-else class="sso-app-list" :class="`columns-${Math.min(Math.ceil(availableApps.length / 3), 4)}`">
             <div
               v-for="app in availableApps"
               :key="app.id"
@@ -499,8 +499,23 @@ async function handlePortalLogin() {
   transition: max-width 0.3s ease;
 }
 
-.sso-login-box.is-wide {
-  max-width: 860px;
+/* 根据列数动态调整宽度，每列300px */
+.sso-login-box.columns-2 {
+  max-width: 760px;
+}
+
+.sso-login-box.columns-3 {
+  max-width: 1060px;
+}
+
+.sso-login-box.columns-4 {
+  max-width: 1200px;
+}
+
+/* 登录容器添加横向滚动支持 */
+.login-container {
+  overflow-x: auto;
+  padding: 20px;
 }
 
 /* ==================== 用户信息 ==================== */
@@ -599,13 +614,32 @@ async function handlePortalLogin() {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
 }
 
-/* 超过3个应用时使用网格布局 */
-.sso-app-list.is-grid {
+/* 多列布局 - 每列固定3个应用，纵向排列 */
+.sso-app-list.columns-2,
+.sso-app-list.columns-3,
+.sso-app-list.columns-4 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-flow: column;
+  grid-template-rows: repeat(3, 1fr);
   gap: 12px;
+  max-height: none;
+  overflow-y: visible;
+}
+
+.sso-app-list.columns-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.sso-app-list.columns-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.sso-app-list.columns-4 {
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .sso-app-card {
