@@ -495,21 +495,27 @@ async function handlePortalLogin() {
 <style scoped>
 .sso-login-box {
   width: 100%;
-  max-width: 460px;
+  max-width: 400px;
   transition: max-width 0.3s ease;
 }
 
-/* 根据列数动态调整宽度，每列300px */
+/*
+  宽度计算公式：列数量*280px + (列数量-1)*12px + 80px(左右padding各40px)
+  1列: 280 + 0 + 80 = 360px → 400px (留一些余量)
+  2列: 560 + 12 + 80 = 652px → 680px
+  3列: 840 + 24 + 80 = 944px → 960px
+  4列: 1120 + 36 + 80 = 1236px → 1240px
+*/
 .sso-login-box.columns-2 {
-  max-width: 760px;
+  max-width: 680px;
 }
 
 .sso-login-box.columns-3 {
-  max-width: 1060px;
+  max-width: 960px;
 }
 
 .sso-login-box.columns-4 {
-  max-width: 1200px;
+  max-width: 1240px;
 }
 
 /* 登录容器添加横向滚动支持 */
@@ -628,18 +634,19 @@ async function handlePortalLogin() {
   gap: 12px;
   max-height: none;
   overflow-y: visible;
+  justify-content: space-between;
 }
 
 .sso-app-list.columns-2 {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 280px);
 }
 
 .sso-app-list.columns-3 {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 280px);
 }
 
 .sso-app-list.columns-4 {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 280px);
 }
 
 .sso-app-card {
