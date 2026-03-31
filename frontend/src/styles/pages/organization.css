@@ -127,6 +127,17 @@
   padding: 20px 0;
 }
 
+/* 员工信息展示样式 - 与员工管理页面保持一致 */
+.employee-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.employee-info .avatar {
+  flex-shrink: 0;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .page-container {

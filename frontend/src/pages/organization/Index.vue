@@ -167,8 +167,8 @@
         >
           <el-table-column prop="name" label="姓名" min-width="80">
             <template #default="{ row }">
-              <div class="employee-name">
-                <el-avatar :size="24">{{ row.name?.charAt(0) }}</el-avatar>
+              <div class="employee-info">
+                <el-avatar :size="32" class="avatar">{{ row.name?.charAt(0) }}</el-avatar>
                 <span>{{ row.name }}</span>
               </div>
             </template>
@@ -1218,6 +1218,9 @@ onMounted(() => {
 .org-code-tag{
   margin-left: -22px;
   height: 32px;
+}
+.avatar {
+  background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.7));
 }
 .page-header {
   display: flex;
