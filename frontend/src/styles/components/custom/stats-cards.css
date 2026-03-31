@@ -1,4 +1,4 @@
-/* 统计卡片图标样式 */
+/* 统计卡片图标样式 - 使用渐变色增强视觉吸引力 */
 
 .stat-icon {
   width: 60px;
@@ -10,26 +10,57 @@
   font-size: 24px;
   flex-shrink: 0;
   transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
+/* 应用图标 - 青色渐变 */
 .stat-icon.application {
-  background: rgba(var(--primary), 0.1);
-  color: rgba(var(--primary), 1);
+  background: linear-gradient(135deg, #48bece 0%, #6ecdd9 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(72, 190, 206, 0.3);
 }
 
+/* 用户图标 - 绿色渐变 */
 .stat-icon.user {
-  background: rgba(var(--success), 0.1);
-  color: rgba(var(--success), 1);
+  background: linear-gradient(135deg, #aecc34 0%, #c2d962 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(174, 204, 52, 0.3);
 }
 
+/* 角色图标 - 橙色渐变 */
 .stat-icon.role {
-  background: rgba(var(--warning), 0.1);
-  color: rgba(var(--warning), 1);
+  background: linear-gradient(135deg, #ebc33f 0%, #f0d56a 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(235, 195, 63, 0.3);
 }
 
+/* 部门图标 - 紫色渐变 */
 .stat-icon.department {
-  background: rgba(var(--info), 0.1);
-  color: rgba(var(--info), 1);
+  background: linear-gradient(135deg, #535ae7 0%, #7a7fed 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(83, 90, 231, 0.3);
+}
+
+/* 悬停效果 */
+.stat-icon:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+.stat-icon.application:hover {
+  box-shadow: 0 6px 16px rgba(72, 190, 206, 0.4);
+}
+
+.stat-icon.user:hover {
+  box-shadow: 0 6px 16px rgba(174, 204, 52, 0.4);
+}
+
+.stat-icon.role:hover {
+  box-shadow: 0 6px 16px rgba(235, 195, 63, 0.4);
+}
+
+.stat-icon.department:hover {
+  box-shadow: 0 6px 16px rgba(83, 90, 231, 0.4);
 }
 
 /* 统计卡片响应式设计 */

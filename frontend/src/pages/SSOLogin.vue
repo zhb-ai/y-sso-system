@@ -128,10 +128,10 @@
 
           <el-divider />
           <div class="sso-footer-links">
-            <el-link v-if="authStore.isAdmin" type="primary" :underline="false" @click="$router.push('/dashboard')">
+            <el-link v-if="authStore.isAdmin" type="primary" :underline="'never'" @click="$router.push('/dashboard')">
               进入管理后台
             </el-link>
-            <el-link type="info" :underline="false" @click="handleLogout">
+            <el-link type="info" :underline="'never'" @click="handleLogout">
               退出登录
             </el-link>
           </div>

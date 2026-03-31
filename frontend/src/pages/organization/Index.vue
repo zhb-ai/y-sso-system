@@ -23,13 +23,11 @@
         <el-form-item v-if="currentOrg">
           <el-tag class="org-code-tag" type="info">编码: {{ currentOrg.code }}</el-tag>
         </el-form-item>
-        <el-form-item>
-          <el-button type="warning" class="btn-modern" @click="handleEditOrg" v-if="currentOrg">
-            <el-icon><Edit /></el-icon> 编辑组织
-          </el-button>
-        </el-form-item>
         <!-- 企业微信绑定状态 -->
         <el-form-item v-if="currentOrg">
+        <el-button type="warning" class="btn-modern" @click="handleEditOrg" v-if="currentOrg">
+            <el-icon><Edit /></el-icon> 编辑组织
+          </el-button>
           <el-tooltip content="同步通讯录功能，需要绑定企业微信，才能使用" :disabled="wechatBound">
             <el-button
               type="primary"

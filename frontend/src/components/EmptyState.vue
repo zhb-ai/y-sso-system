@@ -117,16 +117,39 @@ defineEmits(['action'])
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(var(--primary), 0.1) 0%, rgba(var(--primary), 0.05) 100%);
+  background: linear-gradient(135deg, #e8f7f9 0%, #f4fbfc 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
+  border: 2px solid rgba(72, 190, 206, 0.2);
+  animation: float 3s ease-in-out infinite;
 }
 
 .empty-state__icon .el-icon {
   font-size: 40px;
-  color: rgba(var(--primary), 0.6);
+  color: #48bece;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
 }
 
 .empty-state--compact .empty-state__icon {
@@ -170,30 +193,33 @@ defineEmits(['action'])
   color: var(--font-light-color);
 }
 
-/* 搜索空状态 */
+/* 搜索空状态 - 使用紫色系 */
 .empty-state--search .empty-state__icon {
-  background: linear-gradient(135deg, rgba(var(--secondary), 0.1) 0%, rgba(var(--secondary), 0.05) 100%);
+  background: linear-gradient(135deg, #f0f0fd 0%, #f8f8fe 100%);
+  border-color: rgba(83, 90, 231, 0.2);
 }
 
 .empty-state--search .empty-state__icon .el-icon {
-  color: rgba(var(--secondary), 0.6);
+  color: #535ae7;
 }
 
-/* 错误空状态 */
+/* 错误空状态 - 使用红色系 */
 .empty-state--error .empty-state__icon {
-  background: linear-gradient(135deg, rgba(var(--danger), 0.1) 0%, rgba(var(--danger), 0.05) 100%);
+  background: linear-gradient(135deg, #fceae7 0%, #fef5f3 100%);
+  border-color: rgba(229, 94, 64, 0.2);
 }
 
 .empty-state--error .empty-state__icon .el-icon {
-  color: rgba(var(--danger), 0.6);
+  color: #e55e40;
 }
 
-/* 权限空状态 */
+/* 权限空状态 - 使用橙色系 */
 .empty-state--permission .empty-state__icon {
-  background: linear-gradient(135deg, rgba(var(--warning), 0.1) 0%, rgba(var(--warning), 0.05) 100%);
+  background: linear-gradient(135deg, #fcf6e6 0%, #fefbf3 100%);
+  border-color: rgba(235, 195, 63, 0.2);
 }
 
 .empty-state--permission .empty-state__icon .el-icon {
-  color: rgba(var(--warning), 0.6);
+  color: #d4a72c;
 }
 </style>

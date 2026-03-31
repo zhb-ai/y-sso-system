@@ -38,7 +38,7 @@
         
         <div class="login-actions">
           <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
-          <el-link type="primary" href="#" :underline="false">忘记密码？</el-link>
+          <el-link type="primary" href="#" :underline="'never'">忘记密码？</el-link>
         </div>
         
         <el-form-item>
