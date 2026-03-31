@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <h2>员工管理</h2>
-      <el-button type="primary" @click="handleCreate">
+      <el-button type="primary" class="btn-modern" @click="handleCreate">
         <el-icon><Plus /></el-icon> 新建员工
       </el-button>
     </div>
@@ -16,7 +16,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="搜索">
-          <el-input v-model="filter.keyword" placeholder="姓名/手机号" clearable @keyup.enter="handleSearch">
+          <el-input v-model="filter.keyword" placeholder="姓名/手机号" clearable autocomplete="off" @keyup.enter="handleSearch">
             <template #prefix><el-icon><Search /></el-icon></template>
           </el-input>
         </el-form-item>
@@ -37,10 +37,10 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">
+          <el-button type="primary" class="btn-modern" @click="handleSearch">
             <el-icon><Search /></el-icon> 搜索
           </el-button>
-          <el-button @click="handleReset">
+          <el-button class="btn-reset" @click="handleReset">
             <el-icon><RefreshRight /></el-icon> 重置
           </el-button>
         </el-form-item>
@@ -178,24 +178,24 @@
               <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="姓名" required>
-                    <el-input v-model="form.name" placeholder="请输入姓名" />
+                    <el-input v-model="form.name" placeholder="请输入姓名" autocomplete="off" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="员工编码">
-                    <el-input v-model="form.code" placeholder="请输入员工编码" />
+                    <el-input v-model="form.code" placeholder="请输入员工编码" autocomplete="off" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="手机号">
-                    <el-input v-model="form.mobile" placeholder="请输入手机号" />
+                    <el-input v-model="form.mobile" placeholder="请输入手机号" autocomplete="off" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="邮箱">
-                    <el-input v-model="form.email" placeholder="请输入邮箱" />
+                    <el-input v-model="form.email" placeholder="请输入邮箱" autocomplete="off" />
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -592,7 +592,7 @@ const loadOrganizations = async () => {
     // 组织列表接口返回分页格式 { rows, total_records, page, page_size }
     organizations.value = res.data?.rows || []
   } catch (e) {
-    console.error('加载组织列表失败', e)
+    // 错误已在API拦截器中处理
   }
 }
 
@@ -615,7 +615,7 @@ const loadDeptTree = async (orgId, target = 'main') => {
       departmentTree.value = treeData
     }
   } catch (e) {
-    console.error('加载部门树失败:', e)
+    // 错误已在API拦截器中处理
   }
 }
 
@@ -822,18 +822,16 @@ const handleManageDept = async (row) => {
         await loadDeptTree(firstOrgId)
       }
     }
-    
+
     // 7. 打开对话框
     deptDialogVisible.value = true
   } catch (e) {
-    console.error('加载员工详情失败:', e)
     ElMessage.error('加载员工详情失败')
   }
 }
 
 // 切换组织时重新加载部门树
 const handleOrgForDeptChange = async (orgId) => {
-  console.log('切换组织:', orgId)
   addDeptForm.dept_id = null
   departmentTree.value = []
   if (orgId) {

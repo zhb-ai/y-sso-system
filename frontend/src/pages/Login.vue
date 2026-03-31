@@ -10,7 +10,7 @@
         <el-form-item prop="username">
           <el-input
             v-model="loginForm.username"
-            placeholder="请输入用户名"
+            placeholder="用户名"
             size="large"
             @keyup.enter="focusPassword"
           >
@@ -19,12 +19,12 @@
             </template>
           </el-input>
         </el-form-item>
-        
+
         <el-form-item prop="password">
           <el-input
             v-model="loginForm.password"
             type="password"
-            placeholder="请输入密码"
+            placeholder="密码"
             show-password
             size="large"
             ref="passwordInputRef"
@@ -88,7 +88,7 @@
           <el-input
             v-model="changePwdForm.newPassword"
             type="password"
-            placeholder="请输入新密码（至少6位）"
+            placeholder="至少6位字符"
             show-password
           />
         </el-form-item>
@@ -96,7 +96,7 @@
           <el-input
             v-model="changePwdForm.confirmPassword"
             type="password"
-            placeholder="请再次输入新密码"
+            placeholder="再次输入新密码"
             show-password
             @keyup.enter="handleChangePassword"
           />
@@ -104,7 +104,7 @@
       </el-form>
       <template #footer>
         <el-button type="primary" :loading="changePwdLoading" @click="handleChangePassword">
-          确认修改
+          保存新密码
         </el-button>
       </template>
     </el-dialog>
@@ -193,23 +193,16 @@ const focusPassword = async () => {
 
 // 处理登录
 const handleLogin = async () => {
-  console.log('开始登录流程...')
   if (!loginFormRef.value) {
-    console.log('登录表单引用不存在')
     return
   }
   
   try {
-    console.log('开始表单验证...')
     await loginFormRef.value.validate()
-    console.log('表单验证通过')
     loading.value = true
-    console.log('设置loading状态为true')
     
     // 直接发送明文密码（后端使用 pbkdf2_sha256 验证，HTTPS 保证传输安全）
-    console.log('调用authStore.login方法...')
     const result = await authStore.login(loginForm.username, loginForm.password)
-    console.log('authStore.login方法返回结果:', result)
     
     if (result.success) {
       if (result.mustChangePassword) {
@@ -219,7 +212,6 @@ const handleLogin = async () => {
         ElMessage.warning('首次登录，请先修改默认密码')
       } else {
         ElMessage.success('登录成功')
-        console.log('登录成功，跳转到 SSO 门户')
         router.push('/sso/login')
       }
     } else {
@@ -238,13 +230,10 @@ const handleLogin = async () => {
       } else {
         handleApiError(error, '登录失败，请稍后重试')
       }
-      console.log('登录失败:', result.error)
     }
   } catch (error) {
-    console.error('登录过程中发生异常:', error)
     handleApiError(error, '登录过程中发生异常，请稍后重试')
   } finally {
-    console.log('执行finally块，设置loading状态为false')
     loading.value = false
   }
 }

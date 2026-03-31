@@ -24,19 +24,19 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="姓名" prop="name">
-                  <el-input v-model="userForm.name" placeholder="请输入姓名" />
+                  <el-input v-model="userForm.name" placeholder="请输入姓名" autocomplete="off" />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="邮箱" prop="email">
-                  <el-input v-model="userForm.email" placeholder="请输入邮箱（选填）" />
+                  <el-input v-model="userForm.email" placeholder="请输入邮箱（选填）" autocomplete="off" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="手机号" prop="phone">
-                  <el-input v-model="userForm.phone" placeholder="请输入手机号" />
+                  <el-input v-model="userForm.phone" placeholder="请输入手机号" autocomplete="off" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -45,8 +45,11 @@
                 v-model="userForm.status"
                 active-value="active"
                 inactive-value="inactive"
+                :active-action-icon="Check"
+                :inactive-action-icon="Close"
                 active-text="启用"
                 inactive-text="禁用"
+                inline-prompt
               />
             </el-form-item>
           </el-form>
@@ -65,7 +68,7 @@
 <script setup>
 import { ref, reactive, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { User } from '@element-plus/icons-vue'
+import { User, Check, Close } from '@element-plus/icons-vue'
 import { userApi } from '@/api'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 

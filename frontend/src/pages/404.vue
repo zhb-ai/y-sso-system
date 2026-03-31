@@ -72,7 +72,7 @@ const goHome = () => {
   font-weight: var(--el-font-weight-bold);
 }
 
-:v-deep(.el-button--primary:hover) {
+:deep(.el-button--primary:hover) {
   background-color: rgba(var(--primary), 0.9);
   border-color: rgba(var(--primary), 0.9);
   box-shadow: var(--hover-shadow);

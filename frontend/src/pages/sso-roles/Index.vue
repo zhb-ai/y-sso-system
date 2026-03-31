@@ -131,16 +131,23 @@
                 />
               </el-form-item>
               <el-form-item label="角色名称" prop="name">
-                <el-input v-model="roleForm.name" placeholder="如 财务管理员" />
+                <el-input v-model="roleForm.name" placeholder="如 财务管理员" autocomplete="off" />
               </el-form-item>
               <el-form-item label="描述" prop="description">
-                <el-input v-model="roleForm.description" type="textarea" :rows="3" placeholder="角色描述（选填）" />
+                <el-input v-model="roleForm.description" type="textarea" :rows="3" placeholder="角色描述（选填）" autocomplete="off" />
               </el-form-item>
               <el-form-item label="排序" prop="sort_order">
                 <el-input-number v-model="roleForm.sort_order" :min="0" :max="9999" style="width: 120px" />
               </el-form-item>
               <el-form-item v-if="isEdit" label="状态" prop="is_active">
-                <el-switch v-model="roleForm.is_active" active-text="启用" inactive-text="禁用" />
+                <el-switch
+                  v-model="roleForm.is_active"
+                  :active-action-icon="Check"
+                  :inactive-action-icon="Close"
+                  active-text="启用"
+                  inactive-text="禁用"
+                  inline-prompt
+                />
               </el-form-item>
             </el-form>
           </div>

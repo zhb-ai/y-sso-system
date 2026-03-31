@@ -84,9 +84,10 @@
   transition: var(--app-transition);
   background-color: var(--bodybg-color);
   padding-top: 64px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 
@@ -142,11 +143,33 @@
 
 
 
-/*  05 内容区域 */
+/*  05 内容区域 - 内部滚动 */
 .content-wrapper {
   padding: 1.5rem;
-  min-height: 100%;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
+  height: calc(100vh - 64px);
+}
+
+/* 内容区域滚动条样式 */
+.content-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.content-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb {
+  background-color: var(--border_color);
+  border-radius: 4px;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--secondary), 0.5);
 }
 
 /*  06 登录页面 */

@@ -3,10 +3,10 @@
     <div class="page-header">
       <h2>组织架构</h2>
       <div class="header-actions">
-        <el-button type="success" @click="handleCreateEmployee">
+        <el-button type="success" class="btn-modern" @click="handleCreateEmployee">
           <el-icon><User /></el-icon> 新建员工
         </el-button>
-        <el-button type="primary" @click="handleCreateOrg">
+        <el-button type="primary" class="btn-modern" @click="handleCreateOrg">
           <el-icon><Plus /></el-icon> 新建组织
         </el-button>
       </div>
@@ -21,10 +21,10 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="currentOrg">
-          <el-tag type="info">编码: {{ currentOrg.code }}</el-tag>
+          <el-tag class="org-code-tag" type="info">编码: {{ currentOrg.code }}</el-tag>
         </el-form-item>
         <el-form-item>
-          <el-button type="warning" @click="handleEditOrg" v-if="currentOrg">
+          <el-button type="warning" class="btn-modern" @click="handleEditOrg" v-if="currentOrg">
             <el-icon><Edit /></el-icon> 编辑组织
           </el-button>
         </el-form-item>
@@ -33,6 +33,7 @@
           <el-tooltip content="同步通讯录功能，需要绑定企业微信，才能使用" :disabled="wechatBound">
             <el-button
               type="primary"
+              class="btn-modern"
               :disabled="!wechatBound"
               @click="handleWechatSync"
               :loading="wechatSyncLoading"
@@ -42,17 +43,17 @@
           </el-tooltip>
           <template v-if="wechatBound">
             <el-tag type="success" style="margin-right: 8px">已绑定企业微信</el-tag>
-            <el-button type="info" @click="showWechatConfigDialog">
+            <el-button type="info" class="btn-modern" @click="showWechatConfigDialog">
               查看配置
             </el-button>
             <el-tooltip content="解除组织与企业微信的绑定，不再接收通讯录变更通知，已同步的数据会保留">
-              <el-button type="danger" plain @click="handleWechatUnbind">
+              <el-button type="danger" class="btn-modern" plain @click="handleWechatUnbind">
                 解绑
               </el-button>
             </el-tooltip>
           </template>
           <template v-else>
-            <el-button type="success" @click="showWechatBindDialog">
+            <el-button type="success" class="btn-modern" @click="showWechatBindDialog">
               绑定企业微信
             </el-button>
           </template>
@@ -107,7 +108,17 @@
           </template>
         </el-tree>
         
-        <el-empty v-if="!deptLoading && departmentTree.length === 0" description="暂无部门，请先创建" />
+        <EmptyState
+          v-if="!deptLoading && departmentTree.length === 0"
+          type="data"
+          :icon="Folder"
+          title="暂无部门"
+          description="当前组织下还没有创建任何部门，点击下方按钮创建第一个部门"
+          action-text="添加部门"
+          :action-icon="Plus"
+          compact
+          @action="handleCreateDept(null)"
+        />
       </el-card>
       
       <!-- 右侧：员工列表 -->
@@ -221,7 +232,14 @@
           </el-table-column>
         </el-table>
         
-        <el-empty v-else description="点击左侧部门查看员工" />
+        <EmptyState
+          v-else
+          type="data"
+          :icon="Collection"
+          title="请选择部门"
+          description="点击左侧部门树中的部门，查看该部门下的员工列表"
+          compact
+        />
         
         <div class="pagination-container" v-if="selectedDept && employeePagination.total > 0">
           <el-pagination
@@ -250,13 +268,13 @@
           <div class="section-block__content">
             <el-form :model="orgForm" label-width="80px">
               <el-form-item label="名称" required>
-                <el-input v-model="orgForm.name" placeholder="请输入组织名称" />
+                <el-input v-model="orgForm.name" placeholder="请输入组织名称" autocomplete="off" />
               </el-form-item>
               <el-form-item label="编码" required>
-                <el-input v-model="orgForm.code" placeholder="请输入组织编码" />
+                <el-input v-model="orgForm.code" placeholder="请输入组织编码" autocomplete="off" />
               </el-form-item>
               <el-form-item label="备注">
-                <el-input v-model="orgForm.note" type="textarea" :rows="3" placeholder="请输入备注" />
+                <el-input v-model="orgForm.note" type="textarea" :rows="3" placeholder="请输入备注" autocomplete="off" />
               </el-form-item>
             </el-form>
           </div>
@@ -281,7 +299,7 @@
           <div class="section-block__content">
             <el-form :model="deptForm" label-width="80px">
               <el-form-item label="名称" required>
-                <el-input v-model="deptForm.name" placeholder="请输入部门名称" />
+                <el-input v-model="deptForm.name" placeholder="请输入部门名称" autocomplete="off" />
               </el-form-item>
               <el-form-item label="父部门">
                 <el-tree-select
@@ -308,10 +326,10 @@
     </el-dialog>
     
     <!-- 员工编辑对话框 -->
-    <el-dialog 
-      v-model="employeeDialogVisible" 
-      :title="employeeForm.id ? '编辑员工' : '新建员工'" 
-      width="600px"
+    <el-dialog
+      v-model="employeeDialogVisible"
+      :title="employeeForm.id ? '编辑员工' : '新建员工'"
+      width="650px"
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -328,19 +346,19 @@
               <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="姓名" required>
-                    <el-input v-model="employeeForm.name" placeholder="请输入姓名" />
+                    <el-input v-model="employeeForm.name" placeholder="请输入姓名" autocomplete="off" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="手机">
-                    <el-input v-model="employeeForm.mobile" placeholder="请输入手机号" />
+                    <el-input v-model="employeeForm.mobile" placeholder="请输入手机号" autocomplete="off" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="邮箱">
-                    <el-input v-model="employeeForm.email" placeholder="请输入邮箱" />
+                    <el-input v-model="employeeForm.email" placeholder="请输入邮箱" autocomplete="off" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
@@ -371,12 +389,12 @@
                 <el-row :gutter="20">
                   <el-col :span="12">
                     <el-form-item label="工号">
-                      <el-input v-model="employeeForm.emp_no" placeholder="请输入工号" />
+                      <el-input v-model="employeeForm.emp_no" placeholder="请输入工号" autocomplete="off" />
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
                     <el-form-item label="职位">
-                      <el-input v-model="employeeForm.position" placeholder="请输入职位" />
+                      <el-input v-model="employeeForm.position" placeholder="请输入职位" autocomplete="off" />
                     </el-form-item>
                   </el-col>
                 </el-row>
@@ -443,6 +461,7 @@
                   v-model="searchKeyword" 
                   placeholder="输入姓名或手机号" 
                   clearable
+                  autocomplete="off"
                   @keyup.enter="searchEmployees"
                   style="width: 200px"
                 />
@@ -536,10 +555,10 @@
           <div class="section-block__content">
             <el-form :model="wechatForm" label-width="160px" :disabled="wechatBindMode === 'view'">
               <el-form-item label="企业 ID (corp_id)" required>
-                <el-input v-model="wechatForm.corp_id" placeholder="如 wwxxxxxxxxxxxxxxxxxx" />
+                <el-input v-model="wechatForm.corp_id" placeholder="如 wwxxxxxxxxxxxxxxxxxx" autocomplete="off" />
               </el-form-item>
               <el-form-item label="通讯录 Secret" required>
-                <el-input v-model="wechatForm.corp_secret" placeholder="通讯录同步专用 Secret" show-password />
+                <el-input v-model="wechatForm.corp_secret" placeholder="通讯录同步专用 Secret" show-password autocomplete="off" />
               </el-form-item>
             </el-form>
           </div>
@@ -556,10 +575,10 @@
           <div class="section-block__content">
             <el-form :model="wechatForm" label-width="160px" :disabled="wechatBindMode === 'view'">
               <el-form-item label="自建应用 AgentID">
-                <el-input v-model="wechatForm.login_agent_id" placeholder="应用管理 → 自建应用 → AgentID" />
+                <el-input v-model="wechatForm.login_agent_id" placeholder="应用管理 → 自建应用 → AgentID" autocomplete="off" />
               </el-form-item>
               <el-form-item label="自建应用 Secret">
-                <el-input v-model="wechatForm.login_secret" placeholder="自建应用的 Secret" show-password />
+                <el-input v-model="wechatForm.login_secret" placeholder="自建应用的 Secret" show-password autocomplete="off" />
               </el-form-item>
             </el-form>
           </div>
@@ -576,10 +595,10 @@
           <div class="section-block__content">
             <el-form :model="wechatForm" label-width="160px" :disabled="wechatBindMode === 'view'">
               <el-form-item label="回调 Token">
-                <el-input v-model="wechatForm.callback_token" placeholder="事件服务器 Token" />
+                <el-input v-model="wechatForm.callback_token" placeholder="事件服务器 Token" autocomplete="off" />
               </el-form-item>
               <el-form-item label="EncodingAESKey">
-                <el-input v-model="wechatForm.callback_aes_key" placeholder="事件服务器 EncodingAESKey" />
+                <el-input v-model="wechatForm.callback_aes_key" placeholder="事件服务器 EncodingAESKey" autocomplete="off" />
               </el-form-item>
               <el-form-item v-if="wechatBindMode !== 'view'" label="回调 URL">
                 <el-input 
@@ -619,7 +638,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete, Folder, User, UserFilled, ArrowDown, Search, OfficeBuilding, Connection, Key, Link, InfoFilled, Remove } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Folder, User, UserFilled, ArrowDown, Search, OfficeBuilding, Connection, Key, Link, InfoFilled, Remove, Collection } from '@element-plus/icons-vue'
+import EmptyState from '@/components/EmptyState.vue'
 import { organizationApi, departmentApi, employeeApi, wechatWorkApi } from '@/api'
 
 // 组织列表
@@ -1069,9 +1089,7 @@ const searchEmployees = async () => {
     }
     const res = await employeeApi.list(params)
     searchResults.value = res.data?.rows || []
-    console.log('搜索结果:', searchResults.value)
   } catch (e) {
-    console.error('搜索失败:', e)
     ElMessage.error('搜索失败')
   } finally {
     searchLoading.value = false
@@ -1097,9 +1115,8 @@ const handleAddExistingToDept = async (emp) => {
         org_id: currentOrgId.value,
         set_primary: false
       })
-      console.log(`员工 ${emp.name} 已添加到组织`)
     }
-    
+
     // 然后添加到部门
     await employeeApi.addToDept({
       employee_id: emp.id,
@@ -1112,7 +1129,6 @@ const handleAddExistingToDept = async (emp) => {
     // 更新搜索结果中的状态
     searchResults.value = [...searchResults.value]
   } catch (e) {
-    console.error('添加员工到部门失败:', e)
     ElMessage.error(e.message || '添加失败')
   }
 }
@@ -1201,7 +1217,10 @@ onMounted(() => {
 
 <style scoped>
 @import '../../styles/components/ui/tables.css';
-
+.org-code-tag{
+  margin-left: -22px;
+  height: 32px;
+}
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -1242,7 +1261,7 @@ onMounted(() => {
 }
 
 /* 员工列表卡片内部样式 */
-.employee-list-card :v-deep(.el-card__body) {
+.employee-list-card :deep(.el-card__body) {
   padding: 16px;
   background-color: var(--bodybg-color);
 }
@@ -1274,12 +1293,12 @@ onMounted(() => {
   margin-bottom: 0;
 }
 
-.list-filter .filter-form :v-deep(.el-form-item) {
+.list-filter .filter-form :deep(.el-form-item) {
   margin-bottom: 0;
   margin-right: 16px;
 }
 
-.list-filter .filter-form :v-deep(.el-form-item__label) {
+.list-filter .filter-form :deep(.el-form-item__label) {
   font-size: var(--el-font-size-xs);
 }
 

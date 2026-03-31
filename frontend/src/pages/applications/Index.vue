@@ -15,6 +15,7 @@
             v-model="searchKeyword"
             placeholder="搜索应用名称或编码"
             clearable
+            autocomplete="off"
             @clear="handleSearch"
             @keyup.enter="handleSearch"
           >
@@ -120,9 +121,21 @@
           </template>
         </el-table-column>
       </el-table>
-      
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-if="!loading && applications.length === 0"
+        type="data"
+        :icon="Collection"
+        title="暂无应用"
+        :description="searchKeyword || filterStatus ? '没有找到符合条件的应用，请调整搜索条件' : '还没有创建任何应用，点击下方按钮创建第一个应用'"
+        :action-text="searchKeyword || filterStatus ? '重置筛选' : '新建应用'"
+        :action-icon="searchKeyword || filterStatus ? RefreshRight : Plus"
+        @action="searchKeyword || filterStatus ? handleReset() : handleCreate()"
+      />
+
       <!-- 分页 -->
-      <div class="pagination-container">
+      <div class="pagination-container" v-if="applications.length > 0">
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -160,7 +173,7 @@
               <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="应用名称" prop="name">
-                    <el-input v-model="applicationForm.name" placeholder="请输入应用名称" />
+                    <el-input v-model="applicationForm.name" placeholder="请输入应用名称" autocomplete="off" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
@@ -168,6 +181,7 @@
                     <el-input
                       v-model="applicationForm.code"
                       placeholder="字母、数字、下划线"
+                      autocomplete="off"
                       :disabled="isEditing"
                     />
                   </el-form-item>
@@ -179,6 +193,7 @@
                   type="textarea"
                   :rows="3"
                   placeholder="请输入应用描述"
+                  autocomplete="off"
                 />
               </el-form-item>
               <el-form-item label="重定向URI" prop="redirect_uris_str">
@@ -187,10 +202,11 @@
                   type="textarea"
                   :rows="3"
                   placeholder="请输入重定向URI，多个URI用换行分隔"
+                  autocomplete="off"
                 />
               </el-form-item>
               <el-form-item label="Logo URL" prop="logo_url">
-                <el-input v-model="applicationForm.logo_url" placeholder="请输入应用Logo URL（可选）" />
+                <el-input v-model="applicationForm.logo_url" placeholder="请输入应用Logo URL（可选）" autocomplete="off" />
               </el-form-item>
             </el-form>
           </div>
@@ -248,8 +264,9 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid } from '@element-plus/icons-vue'
+import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid, Collection } from '@element-plus/icons-vue'
 import { applicationApi } from '@/api'
+import EmptyState from '@/components/EmptyState.vue'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 
 // 表格数据

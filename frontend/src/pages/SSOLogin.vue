@@ -32,10 +32,10 @@
           </div>
 
           <div class="sso-actions">
-            <el-button type="primary" size="large" :loading="authorizing" @click="handleAuthorize" style="width: 100%">
+            <el-button type="primary" size="large" :loading="authorizing" @click="handleAuthorize" class="btn-full">
               授权并继续
             </el-button>
-            <el-button size="large" @click="handleCancel" style="width: 100%; margin-top: 10px; margin-left: 0">
+            <el-button size="large" @click="handleCancel" class="btn-full btn-secondary">
               取消
             </el-button>
           </div>
@@ -56,7 +56,7 @@
               </el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="loading" @click="handleLogin" size="large" style="width: 100%">
+              <el-button type="primary" :loading="loading" @click="handleLogin" size="large" class="btn-full">
                 登录并授权
               </el-button>
             </el-form-item>
@@ -66,8 +66,8 @@
           <div class="login-footer" v-if="wechatLoginEnabled">
             <el-divider>其他登录方式</el-divider>
             <div class="other-login">
-              <el-button @click="showWechatQrCode" :loading="wechatLoading" size="large" style="width: 100%">
-                <svg viewBox="0 0 1024 1024" width="18" height="18" style="margin-right: 6px; vertical-align: middle">
+              <el-button @click="showWechatQrCode" :loading="wechatLoading" size="large" class="btn-full">
+                <svg viewBox="0 0 1024 1024" width="18" height="18" class="wechat-icon">
                   <path d="M688.6 323.2c-15.6-2-31.6-3.2-47.8-3.2-141.4 0-262.2 88.4-310.4 213-10.4-0.8-20.8-1.4-31.4-1.4C142.6 531.6 16 641.4 16 776.6c0 75.4 37.2 142.6 95.4 188.4l-23.8 71.6 83.2-41.6c30.6 10 62.8 15.6 96.2 15.6 15.8 0 31.2-1.2 46.4-3.4 48.2 124.4 169 213 310.4 213 26.2 0 51.6-3.4 75.8-9.6l104.2 52-29.8-89.6C844.6 1129 896 1054.2 896 966.6c0-64.8-30.4-123-78-165" fill="#07C160"/>
                 </svg>
                 企业微信登录
@@ -152,7 +152,7 @@
               </el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="loading" @click="handlePortalLogin" size="large" style="width: 100%">
+              <el-button type="primary" :loading="loading" @click="handlePortalLogin" size="large" class="btn-full">
                 登录
               </el-button>
             </el-form-item>
@@ -162,8 +162,8 @@
           <div class="login-footer" v-if="wechatLoginEnabled">
             <el-divider>其他登录方式</el-divider>
             <div class="other-login">
-              <el-button @click="showWechatQrCode" :loading="wechatLoading" size="large" style="width: 100%">
-                <svg viewBox="0 0 1024 1024" width="18" height="18" style="margin-right: 6px; vertical-align: middle">
+              <el-button @click="showWechatQrCode" :loading="wechatLoading" size="large" class="btn-full">
+                <svg viewBox="0 0 1024 1024" width="18" height="18" class="wechat-icon">
                   <path d="M688.6 323.2c-15.6-2-31.6-3.2-47.8-3.2-141.4 0-262.2 88.4-310.4 213-10.4-0.8-20.8-1.4-31.4-1.4C142.6 531.6 16 641.4 16 776.6c0 75.4 37.2 142.6 95.4 188.4l-23.8 71.6 83.2-41.6c30.6 10 62.8 15.6 96.2 15.6 15.8 0 31.2-1.2 46.4-3.4 48.2 124.4 169 213 310.4 213 26.2 0 51.6-3.4 75.8-9.6l104.2 52-29.8-89.6C844.6 1129 896 1054.2 896 966.6c0-64.8-30.4-123-78-165" fill="#07C160"/>
                 </svg>
                 企业微信登录
@@ -189,7 +189,7 @@
         type="warning"
         :closable="false"
         show-icon
-        style="margin-bottom: 20px"
+        class="mb-4"
       />
       <el-form :model="changePwdForm" :rules="changePwdRules" ref="changePwdFormRef" label-width="80px">
         <el-form-item label="新密码" prop="newPassword">
@@ -730,18 +730,12 @@ async function handlePortalLogin() {
   font-size: var(--el-font-size-sm);
   font-weight: var(--el-font-weight-bold);
   color: var(--el-text-color-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .sso-app-desc {
   font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
   margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .sso-app-arrow {
@@ -756,23 +750,31 @@ async function handlePortalLogin() {
   color: var(--el-color-primary);
 }
 
-/* ==================== 响应式适配 ==================== */
-@media (max-width: 768px) {
-  .sso-app-list.is-grid {
-    grid-template-columns: 1fr;
-  }
+.sso-app-name,
+.sso-app-desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .sso-app-list.is-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ==================== 通用工具类 ==================== */
+
+.btn-full {
+  width: 100%;
 }
 
-@media (min-width: 1025px) {
-  .sso-app-list.is-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.btn-secondary {
+  margin-top: 10px;
+  margin-left: 0;
+}
+
+.wechat-icon {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.mb-4 {
+  margin-bottom: 20px;
 }
 
 /* ==================== 底部链接区域 ==================== */

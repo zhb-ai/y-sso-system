@@ -361,7 +361,6 @@ const loadStats = async () => {
   summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_MISSES] = data.total_misses || 0
   summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE] = data.total_hit_rate || 0
   perFunctionStats.value = data.functions || {}
-  console.log(perFunctionStats.value)
 }
 
 const loadRegistrations = async () => {

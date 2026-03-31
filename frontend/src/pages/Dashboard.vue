@@ -214,7 +214,7 @@ const fetchStatistics = async () => {
     departmentCount.value = data.department_count || 0
     employeeCount.value = data.employee_count || 0
   } catch (error) {
-    console.error('获取统计数据失败:', error)
+    // 错误已在API拦截器中处理
   } finally {
     loading.value = false
   }
@@ -260,7 +260,7 @@ const fetchRecentLogins = async (page = 1) => {
       pagination.value.total = 0
     }
   } catch (error) {
-    console.error('获取最近登录记录失败:', error)
+    // 错误已在API拦截器中处理
     // 出错时显示空数组
     recentLogins.value = []
     pagination.value.total = 0
@@ -295,7 +295,6 @@ const handleReset = () => {
 
 onMounted(() => {
   // 从API获取真实数据
-  console.log('Dashboard组件已挂载')
   fetchStatistics()
   fetchRecentLogins()
 })

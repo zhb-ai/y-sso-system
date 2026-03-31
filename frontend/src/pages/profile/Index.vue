@@ -24,13 +24,13 @@
               />
             </el-form-item>
             <el-form-item label="姓名" prop="name">
-              <el-input v-model="userForm.name" placeholder="请输入姓名" size="large" />
+              <el-input v-model="userForm.name" placeholder="请输入姓名" size="large" autocomplete="off" />
             </el-form-item>
             <el-form-item label="邮箱" prop="email">
-              <el-input v-model="userForm.email" placeholder="请输入邮箱（选填）" size="large" />
+              <el-input v-model="userForm.email" placeholder="请输入邮箱（选填）" size="large" autocomplete="off" />
             </el-form-item>
             <el-form-item label="手机号" prop="phone">
-              <el-input v-model="userForm.phone" placeholder="请输入手机号" size="large" />
+              <el-input v-model="userForm.phone" placeholder="请输入手机号" size="large" autocomplete="off" />
             </el-form-item>
 
             <el-form-item>
@@ -59,6 +59,7 @@
                 placeholder="请输入当前密码"
                 size="large"
                 show-password
+                autocomplete="off"
               />
             </el-form-item>
             <el-form-item label="新密码" prop="newPassword">
@@ -68,6 +69,7 @@
                 placeholder="请输入新密码"
                 size="large"
                 show-password
+                autocomplete="off"
               />
             </el-form-item>
             <el-form-item label="确认新密码" prop="confirmPassword">
@@ -77,6 +79,7 @@
                 placeholder="请再次输入新密码"
                 size="large"
                 show-password
+                autocomplete="off"
               />
             </el-form-item>
 

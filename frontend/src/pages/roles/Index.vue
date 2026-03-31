@@ -82,10 +82,10 @@
                 />
               </el-form-item>
               <el-form-item label="角色名称" prop="name">
-                <el-input v-model="roleForm.name" placeholder="如 管理员" />
+                <el-input v-model="roleForm.name" placeholder="如 管理员" autocomplete="off" />
               </el-form-item>
               <el-form-item label="描述" prop="description">
-                <el-input v-model="roleForm.description" type="textarea" :rows="3" placeholder="角色描述（选填）" />
+                <el-input v-model="roleForm.description" type="textarea" :rows="3" placeholder="角色描述（选填）" autocomplete="off" />
               </el-form-item>
             </el-form>
           </div>
@@ -151,37 +151,37 @@
       </template>
     </el-dialog>
 
-    <!-- 权限分配对话框 -->
-    <el-dialog
-      v-model="permDialogVisible"
+    <!-- 权限分配抽屉 -->
+    <el-drawer
+      v-model="permDrawerVisible"
       :title="`${permRole && permRole.name}（${permRole && permRole.code}）- 分配权限`"
-      width="560px"
+      size="480px"
       destroy-on-close
     >
-      <div class="section-blocks" style="gap: 0;">
+      <div class="section-blocks" style="gap: 0; height: 100%; display: flex; flex-direction: column;">
         <!-- 操作栏 -->
-        <div class="section-block" style="margin-bottom: 16px;">
+        <div class="section-block" style="margin-bottom: 16px; flex-shrink: 0;">
           <div class="section-block__content" style="padding: 12px 16px;">
             <div style="display: flex; align-items: center; gap: 12px;">
               <el-button size="small" type="primary" plain :loading="scanLoading" @click="handleScan">
                 <el-icon><Refresh /></el-icon> 扫描路由更新权限
               </el-button>
               <el-text v-if="permRole && permRole.code === 'admin'" type="info" size="small">
-                admin 角色自动拥有所有权限，无需手动分配
+                admin 角色自动拥有所有权限
               </el-text>
             </div>
           </div>
         </div>
 
         <!-- 权限列表 -->
-        <div class="section-block">
-          <div class="section-block__header">
+        <div class="section-block" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+          <div class="section-block__header" style="flex-shrink: 0;">
             <div class="section-block__title">
               <el-icon><Key /></el-icon>
               <span>权限列表</span>
             </div>
           </div>
-          <div class="section-block__content" v-loading="permLoading" style="min-height: 120px;">
+          <div class="section-block__content" v-loading="permLoading" style="flex: 1; overflow-y: auto; min-height: 0;">
             <template v-if="permTree.length > 0">
               <el-checkbox
                 v-model="checkAll"
@@ -212,18 +212,19 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <template #footer>
-        <el-button @click="permDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          :loading="permSaving"
-          :disabled="permRole && permRole.code === 'admin'"
-          @click="handleSavePermissions"
-        >保存</el-button>
-      </template>
-    </el-dialog>
+        <!-- 底部按钮 -->
+        <div class="drawer-footer" style="flex-shrink: 0; padding: 16px 0 0; border-top: 1px solid var(--el-border-color-lighter); display: flex; justify-content: flex-end; gap: 12px;">
+          <el-button @click="permDrawerVisible = false">取消</el-button>
+          <el-button
+            type="primary"
+            :loading="permSaving"
+            :disabled="permRole && permRole.code === 'admin'"
+            @click="handleSavePermissions"
+          >保存</el-button>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
@@ -389,7 +390,7 @@ const handleRemoveUserRole = async (user) => {
 
 // ==================== 权限分配 ====================
 
-const permDialogVisible = ref(false)
+const permDrawerVisible = ref(false)
 const permLoading = ref(false)
 const permSaving = ref(false)
 const scanLoading = ref(false)
@@ -419,10 +420,10 @@ const handleCheckAllChange = (val) => {
   checkedPermIds.value = val ? [...allPermIds.value] : []
 }
 
-// 打开权限分配对话框
+// 打开权限分配抽屉
 const handlePermissions = async (row) => {
   permRole.value = row
-  permDialogVisible.value = true
+  permDrawerVisible.value = true
   permLoading.value = true
   try {
     // 并行加载：权限树 + 角色已分配权限
@@ -462,7 +463,7 @@ const handleSavePermissions = async () => {
   try {
     await permissionApi.setRolePermissions(permRole.value.code, checkedPermIds.value)
     ElMessage.success('权限保存成功')
-    permDialogVisible.value = false
+    permDrawerVisible.value = false
   } catch (error) {
     handleApiError(error, '保存失败')
   } finally {
