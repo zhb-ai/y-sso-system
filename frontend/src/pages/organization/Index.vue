@@ -1215,6 +1215,161 @@ onMounted(() => {
 
 <style scoped>
 @import '../../styles/components/ui/tables.css';
+
+/* ===== 组织架构页面按钮颜色优化 - 增强视觉区分 ===== */
+
+/* 头部主要操作按钮 - 使用鲜明的渐变色 */
+.header-actions .el-button--success {
+  background: linear-gradient(135deg, rgba(var(--success), 1), rgba(var(--success), 0.85));
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(var(--success), 0.35);
+}
+
+.header-actions .el-button--success:hover {
+  background: linear-gradient(135deg, rgba(var(--success), 0.95), rgba(var(--success), 0.75));
+  box-shadow: 0 4px 10px rgba(var(--success), 0.45);
+  transform: translateY(-1px);
+}
+
+.header-actions .el-button--primary {
+  background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.85));
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(var(--primary), 0.35);
+}
+
+.header-actions .el-button--primary:hover {
+  background: linear-gradient(135deg, rgba(var(--primary), 0.95), rgba(var(--primary), 0.75));
+  box-shadow: 0 4px 10px rgba(var(--primary), 0.45);
+  transform: translateY(-1px);
+}
+
+/* 组织操作区按钮 - 不同功能用不同颜色 */
+.filter-form .el-button--warning {
+  background: linear-gradient(135deg, rgba(var(--warning), 1), rgba(var(--warning), 0.85));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(var(--warning), 0.35);
+}
+
+.filter-form .el-button--warning:hover {
+  background: linear-gradient(135deg, rgba(var(--warning), 0.95), rgba(var(--warning), 0.75));
+  box-shadow: 0 4px 10px rgba(var(--warning), 0.45);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.filter-form .el-button--info {
+  background: linear-gradient(135deg, rgba(var(--info), 1), rgba(var(--info), 0.85));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(var(--info), 0.35);
+}
+
+.filter-form .el-button--info:hover {
+  background: linear-gradient(135deg, rgba(var(--info), 0.95), rgba(var(--info), 0.75));
+  box-shadow: 0 4px 10px rgba(var(--info), 0.45);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.filter-form .el-button--danger {
+  background: linear-gradient(135deg, rgba(var(--danger), 1), rgba(var(--danger), 0.85));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(var(--danger), 0.35);
+}
+
+.filter-form .el-button--danger:hover {
+  background: linear-gradient(135deg, rgba(var(--danger), 0.95), rgba(var(--danger), 0.75));
+  box-shadow: 0 4px 10px rgba(var(--danger), 0.45);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* 绑定企业微信按钮 - 绿色强调 */
+.filter-form .el-button--success {
+  background: linear-gradient(135deg, rgba(var(--success), 1), rgba(var(--success), 0.85));
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(var(--success), 0.35);
+}
+
+.filter-form .el-button--success:hover {
+  background: linear-gradient(135deg, rgba(var(--success), 0.95), rgba(var(--success), 0.75));
+  box-shadow: 0 4px 10px rgba(var(--success), 0.45);
+  transform: translateY(-1px);
+}
+
+/* 部门树操作按钮 - 悬停时增强颜色 */
+.dept-actions .el-button--primary {
+  color: rgba(var(--primary), 1);
+}
+
+.dept-actions .el-button--primary:hover {
+  color: rgba(var(--primary), 0.8);
+  background-color: rgba(var(--primary), 0.1);
+}
+
+.dept-actions .el-button--warning {
+  color: rgba(var(--warning), 1);
+}
+
+.dept-actions .el-button--warning:hover {
+  color: rgba(var(--warning), 0.8);
+  background-color: rgba(var(--warning), 0.1);
+}
+
+.dept-actions .el-button--danger {
+  color: rgba(var(--danger), 1);
+}
+
+.dept-actions .el-button--danger:hover {
+  color: rgba(var(--danger), 0.8);
+  background-color: rgba(var(--danger), 0.1);
+}
+
+/* 员工列表操作按钮 */
+.el-table .el-button--primary {
+  color: rgba(var(--primary), 1);
+}
+
+.el-table .el-button--primary:hover {
+  color: rgba(var(--primary), 0.8);
+}
+
+.el-table .el-button--danger {
+  color: rgba(var(--danger), 1);
+}
+
+.el-table .el-button--danger:hover {
+  color: rgba(var(--danger), 0.8);
+}
+
+/* 添加部门按钮 - 更鲜明的蓝色 */
+.dept-card-header .el-button--primary {
+  background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.8));
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(var(--primary), 0.3);
+}
+
+.dept-card-header .el-button--primary:hover {
+  background: linear-gradient(135deg, rgba(var(--primary), 0.95), rgba(var(--primary), 0.7));
+  box-shadow: 0 4px 10px rgba(var(--primary), 0.4);
+  transform: translateY(-1px);
+}
+
+/* 员工列表头部按钮 */
+.list-header .el-button--primary {
+  background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.8));
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(var(--primary), 0.3);
+}
+
+.list-header .el-button--primary:hover {
+  background: linear-gradient(135deg, rgba(var(--primary), 0.95), rgba(var(--primary), 0.7));
+  box-shadow: 0 4px 10px rgba(var(--primary), 0.4);
+  transform: translateY(-1px);
+}
+
 .org-code-tag{
   margin-left: -22px;
   height: 32px;

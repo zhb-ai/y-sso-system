@@ -402,7 +402,9 @@ async function doAuthorize() {
     })
     const redirectUrl = response.data?.redirect_url || response.redirect_url
     if (redirectUrl) {
-      window.location.href = redirectUrl
+      setTimeout(() => {
+        window.location.href = redirectUrl
+      }, 200);
     } else {
       ElMessage.error('授权失败：未获取到重定向地址')
     }
@@ -423,7 +425,9 @@ function handleCancel() {
     error_description: 'User denied the request',
   })
   if (state.value) params.set('state', state.value)
-  window.location.href = `${redirectUri.value}?${params.toString()}`
+  setTimeout(() => {
+    window.location.href = `${redirectUri.value}?${params.toString()}`
+  }, 200);
 }
 
 // OAuth2 模式登录：登录后自动授权
