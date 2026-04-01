@@ -23,6 +23,7 @@
   --border_color: #ebedf0;
   --box-shadow: 0px 0px 21px 3px rgba(var(--secondary), 0.05);
   --hover-shadow: 0 0.5rem 2rem var(--light-gray);
+  --el-box-shadow-light: var(--hover-shadow);
   --app-transition: all 0.3s ease;
   --font-size: 14px;
   --p-font-size: 14px;
@@ -131,11 +132,13 @@
   /* 主体颜色 */
   --el-color-primary: rgba(var(--primary), 1);
   --el-color-primary-light-3: rgba(var(--primary), 0.95);
-  --el-color-primary-light-5: rgba(var(--primary), 0.8);
+  --el-color-primary-light-5: rgba(var(--primary), 0.6);
   --el-color-primary-light-7: rgba(var(--primary), 0.4);
   --el-color-primary-light-8: rgba(var(--primary), 0.1);
   --el-color-primary-light-9: rgba(var(--primary), 0.05);
   --el-color-primary-dark-2: rgba(var(--primary), 0.99);
+
+  --el-fill-color-light: rgba(var(--primary), 0.05);
 
   --el-color-success: rgba(var(--success), 1);
   --el-color-success-light-3: rgba(var(--success), 0.95);
@@ -166,7 +169,7 @@
   --el-color-error-light-5: rgba(var(--danger), 0.8);
   --el-color-error-light-7: rgba(var(--danger), 0.4);
   --el-color-error-light-8: rgba(var(--danger), 0.1);
-  --el-color-error-light-9: rgba(var(--danger), 0.05);
+  --el-color-error-light-9: rgb(255, 240, 237); 
   --el-color-error-dark-2: rgba(var(--danger), 0.99);
 
   /* --el-color-info: rgba(var(--info), 1);
@@ -233,6 +236,10 @@
   transform: translateY(-2px);
   box-shadow: var(--hover-shadow);
 }
+
+.el-table .cell{
+  line-height: normal;
+}
 /* 侧边栏收起按钮:hover 效果 防止动画卡顿 禁用移入效果 */
 .collapse-btn:hover {
   transform: none;
@@ -276,6 +283,10 @@
   transform: translateY(-2px);
   box-shadow: var(--hover-shadow);
   --el-card-border-color: rgba(var(--primary), 0.2);
+}
+
+.el-drawer__header{
+  margin-bottom: 12px;
 }
 
 /* form 表单 */
@@ -368,4 +379,8 @@
   --el-font-size-base: 12px;
   --el-pagination-font-size:var(--el-font-size-base);
   font-size: var(--el-font-size-base);
+}
+
+.el-table{
+  --el-font-size-base: 12px;
 }

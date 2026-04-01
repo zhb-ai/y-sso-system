@@ -6,62 +6,100 @@ body {
   font-size: var(--font-size);
   color: var(--font-color);
   line-height: var(--p-line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 标题样式 */
+/* 标题样式 - 使用一致的字体权重策略 */
 h1, h2, h3, h4, h5, h6 {
   color: var(--font-title-color);
-  font-weight: 600;
-  line-height: 1.2;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--heading-line-height);
   margin-bottom: var(--spacing-medium);
+  letter-spacing: var(--heading-letter-spacing);
 }
 
+/* 标题层级 - 使用黄金比例 1.25 */
 h1 {
   font-size: var(--h1-font-size);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.1;
 }
 
 h2 {
   font-size: var(--h2-font-size);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.15;
 }
 
 h3 {
   font-size: var(--h3-font-size);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
 }
 
 h4 {
   font-size: var(--h4-font-size);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
 }
 
 h5 {
   font-size: var(--h5-font-size);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
 }
 
 h6 {
   font-size: var(--h6-font-size);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.35;
 }
 
-/* 段落样式 */
+/* 段落样式 - 优化可读性 */
 p {
   font-size: var(--p-font-size);
   line-height: var(--p-line-height);
   margin-bottom: var(--spacing-medium);
+  max-width: var(--text-max-width);
 }
 
-/* 链接样式 */
+/* 小型文本 */
+small {
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+/* 链接样式 - 增强可访问性 */
 a {
   color: var(--link-color);
   transition: var(--app-transition);
+  text-decoration: none;
 }
 
 a:hover {
-  opacity: 0.8;
+  text-decoration: underline;
 }
 
-/* 文本样式 */
+a:focus-visible {
+  outline: 2px solid var(--link-color);
+  outline-offset: 2px;
+}
+
+/* 文本样式 - 使用语义化命名 */
 .text-muted {
   color: var(--font-light-color);
 }
 
+.text-secondary {
+  color: var(--font-secondary-color);
+}
+
+.text-primary {
+  color: var(--font-color);
+}
+
+/* 对齐 */
 .text-center {
   text-align: center;
 }
@@ -74,23 +112,23 @@ a:hover {
   text-align: right;
 }
 
-/* 字体权重 */
+/* 字体权重 - 使用CSS变量 */
 .font-weight-light {
-  font-weight: 300;
+  font-weight: var(--font-weight-light);
 }
 
 .font-weight-normal {
-  font-weight: 400;
+  font-weight: var(--font-weight-normal);
 }
 
 .font-weight-medium {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .font-weight-semibold {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .font-weight-bold {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }

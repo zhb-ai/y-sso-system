@@ -102,64 +102,74 @@
 
 ---
 
-## 5. Message 组件
+## 5. Switch 组件
 
-### 5.1 消息提示
-使用 `ElMessage` 进行消息提示：
+### 5.1 带文案的 Switch 规范
 
-```javascript
-import { ElMessage } from 'element-plus'
-
-// 成功提示
-ElMessage.success('操作成功')
-
-// 错误提示
-ElMessage.error('操作失败')
-
-// 警告提示
-ElMessage.warning('请注意')
-
-// 信息提示
-ElMessage.info('提示信息')
-```
-
----
-
-## 6. 通用规范
-
-### 6.1 样式覆盖原则
-1. **禁止**直接修改 `.el-xxx` 类名的样式
-2. **禁止**使用 `!important` 破坏组件原有样式
-3. **必须**使用 `:deep()` 选择器进行样式穿透
-4. **优先**使用 CSS 变量覆盖主题
-
-### 6.2 图标使用
-- 使用 `@element-plus/icons-vue` 提供的图标
-- 图标大小通过 CSS 类控制，不使用内联样式
+当 Switch 组件需要显示切换文案（如"启用/禁用"）时，**必须**使用以下标准配置：
 
 ```vue
-<el-icon class="icon-small"><HomeFilled /></el-icon>
-
-<style scoped>
-.icon-small {
-  font-size: 16px;
-}
-</style>
+<el-switch
+  v-model="scope.row.is_active"
+  @change="handleStatusChange(scope.row)"
+  :active-action-icon="Check"
+  :inactive-action-icon="Close"
+  active-text="启用"
+  inactive-text="禁用"
+  inline-prompt
+/>
 ```
 
-### 6.3 尺寸规范
-- 默认使用 Element Plus 默认尺寸
-- 需要调整时使用 `size` 属性（large, default, small）
-- 自定义尺寸通过 CSS 变量实现
+**必需属性说明：**
+
+| 属性 | 值 | 说明 |
+|-----|---|------|
+| `active-action-icon` | `Check` (从 @element-plus/icons-vue 导入) | 开启状态的图标 |
+| `inactive-action-icon` | `Close` (从 @element-plus/icons-vue 导入) | 关闭状态的图标 |
+| `active-text` | 根据业务定义，如"启用" | 开启状态的文字 |
+| `inactive-text` | 根据业务定义，如"禁用" | 关闭状态的文字 |
+| `inline-prompt` | - | 将文字显示在 Switch 内部 |
+
+**使用场景：**
+- 表格中的状态切换列
+- 需要明确标识开关含义的场景
+- 启用/禁用、是/否等二元状态
+
+**注意事项：**
+- 必须同时配置 `active-text` 和 `inactive-text`
+- 必须添加 `inline-prompt` 属性
+- 图标统一使用 `Check` 和 `Close`
+- 事件处理使用 `@change` 而非 `@input`
+
+### 5.2 纯图标 Switch（无文案）
+
+当不需要显示文案时，仅使用图标：
+
+```vue
+<el-switch
+  v-model="value"
+  :active-action-icon="Check"
+  :inactive-action-icon="Close"
+/>
+```
+
+### 5.3 简单 Switch（无图标无文案）
+
+最简配置，仅保留基础功能：
+
+```vue
+<el-switch v-model="value" />
+```
 
 ---
 
-## 更新日志
+## 6. 其他组件
 
-| 日期 | 更新内容 |
-|-----|---------|
-| 2026-03-16 | 初始版本，包含 Button、Form、Table、Dialog、Message 组件规范 |
+### 6.1 图标使用
+- 统一从 `@element-plus/icons-vue` 导入
+- 使用 `<component :is="IconName" />` 方式动态切换
 
----
-
-**注意**：本文档将持续更新，添加更多组件的使用规范。在开发过程中遇到 Element Plus 组件使用问题，应及时更新本文档。
+### 6.2 输入框
+- 非登录页输入框必须添加 `autocomplete="off"`
+- 手机号输入框使用 `autocomplete="new-phone"` 阻止自动填充
+- 密码输入框使用 `autocomplete="new-password"`

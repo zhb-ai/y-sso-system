@@ -37,7 +37,39 @@ export default defineConfig({
     minify: 'esbuild',
     emptyOutDir: true,  // 构建前清空输出目录
     cssCodeSplit: true,
-    sourcemap: false
+    sourcemap: false,
+    // 代码分割优化
+    rollupOptions: {
+      output: {
+        // 手动代码分割策略
+        manualChunks: {
+          // Element Plus 单独打包
+          'element-plus': ['element-plus', '@element-plus/icons-vue'],
+          // Vue 核心库
+          'vue-core': ['vue', 'vue-router', 'pinia'],
+          // 工具库
+          'utils': ['axios', 'crypto-js']
+        },
+        // 资源文件命名规则
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.')
+          const ext = info[info.length - 1]
+          if (/\.(png|jpe?g|gif|svg|webp|ico)$/i.test(assetInfo.name)) {
+            return 'assets/images/[name]-[hash][extname]'
+          }
+          if (/\.(css)$/i.test(assetInfo.name)) {
+            return 'assets/css/[name]-[hash][extname]'
+          }
+          return 'assets/[name]-[hash][extname]'
+        }
+      }
+    },
+    // 压缩选项
+    target: 'es2015',
+    // 启用 brotli 压缩
+    reportCompressedSize: false
   },
   // 后端将静态文件挂载在根路径，资源使用相对路径加载
   // base: '/'

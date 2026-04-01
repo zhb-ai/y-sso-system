@@ -37,7 +37,6 @@ function onRefreshFailed(error) {
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
-    console.log('发送HTTP请求:', config)
     const authStore = useAuthStore()
     // 添加Token
     if (authStore.token) {
@@ -46,7 +45,6 @@ api.interceptors.request.use(
     return config
   },
   (error) => {
-    console.error('请求拦截器错误:', error)
     return Promise.reject(error)
   }
 )

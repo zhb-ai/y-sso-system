@@ -18,16 +18,12 @@ export const useAuthStore = defineStore('auth', () => {
   // 方法
   const login = async (username, password) => {
     try {
-      console.log('开始执行登录请求，用户名:', username)
       const requestData = { username, password };
-      console.log('发送登录请求数据:', requestData)
       
       const response = await api.post('/v1/auth/login', requestData)
-      console.log('收到登录响应:', response)
       
       // BaseResponse 格式: { status, message, msg_details, data }
       const { access_token, refresh_token, token_type, user } = response.data
-      console.log('解析响应数据，access_token:', access_token, 'user:', user)
       
       // 保存 Token
       token.value = access_token
@@ -38,11 +34,9 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', access_token)
       localStorage.setItem('refreshToken', refresh_token)
       localStorage.setItem('userInfo', JSON.stringify(user))
-      console.log('登录信息保存完成')
       
       return { success: true, mustChangePassword: mustChangePassword.value }
     } catch (error) {
-      console.error('登录失败:', error)
       return { 
         success: false, 
         error: error.message || '登录失败',
@@ -127,7 +121,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (newToken) {
       token.value = newToken
       localStorage.setItem('token', newToken)
-      console.log('Token 已更新')
     }
   }
 
@@ -140,7 +133,6 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('userInfo', JSON.stringify(response.data))
       return userInfo.value
     } catch (error) {
-      console.error('获取用户信息失败:', error)
       logout()
       return null
     }
@@ -159,10 +151,8 @@ export const useAuthStore = defineStore('auth', () => {
         const parsedUser = JSON.parse(savedUserInfo)
         userInfo.value = parsedUser
         mustChangePassword.value = !!parsedUser.must_change_password
-        console.log('认证状态已从本地存储恢复')
         return true
       } catch (error) {
-        console.error('恢复认证状态失败:', error)
         logout()
         return false
       }

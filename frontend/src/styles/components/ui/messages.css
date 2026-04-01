@@ -6,26 +6,42 @@
   box-shadow: var(--box-shadow) !important;
   border: none !important;
   min-height: 50px;
+  animation: message-slide-in 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes message-slide-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 :v-deep(.el-message--success) {
-  background: linear-gradient(135deg, rgba(var(--success), 0.1), rgba(var(--success), 0.2)) !important;
-  color: rgba(var(--success), 1) !important;
+  background: linear-gradient(135deg, #f3f8e6 0%, #e8f3d6 100%) !important;
+  color: #7a9c1a !important;
+  border-left: 4px solid #aecc34 !important;
 }
 
 :v-deep(.el-message--warning) {
-  background: linear-gradient(135deg, rgba(var(--warning), 0.1), rgba(var(--warning), 0.2)) !important;
-  color: rgba(var(--warning), 1) !important;
+  background: linear-gradient(135deg, #fcf6e6 0%, #f9f0d6 100%) !important;
+  color: #b8962a !important;
+  border-left: 4px solid #ebc33f !important;
 }
 
 :v-deep(.el-message--error) {
-  background: linear-gradient(135deg, rgba(var(--danger), 0.1), rgba(var(--danger), 0.2)) !important;
-  color: rgba(var(--danger), 1) !important;
+  background: linear-gradient(135deg, #fceae7 0%, #f9ddd8 100%) !important;
+  color: #c94a32 !important;
+  border-left: 4px solid #e55e40 !important;
 }
 
 :v-deep(.el-message--info) {
-  background: linear-gradient(135deg, rgba(var(--info), 0.1), rgba(var(--info), 0.2)) !important;
-  color: rgba(var(--info), 1) !important;
+  background: linear-gradient(135deg, #f0f0fd 0%, #e6e6fc 100%) !important;
+  color: #535ae7 !important;
+  border-left: 4px solid #535ae7 !important;
 }
 
 /* 通知样式优化 */

@@ -4,6 +4,7 @@
 @import './spacing.css';
 @import './colors.css';
 @import './text.css';
+@import './animations.css';
 
 /* 显示工具类 */
 .d-none { display: none !important; }

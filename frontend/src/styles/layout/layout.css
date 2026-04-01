@@ -84,9 +84,10 @@
   transition: var(--app-transition);
   background-color: var(--bodybg-color);
   padding-top: 64px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 
@@ -142,11 +143,33 @@
 
 
 
-/*  05 内容区域 */
+/*  05 内容区域 - 内部滚动 */
 .content-wrapper {
   padding: 1.5rem;
-  min-height: 100%;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
+  height: calc(100vh - 64px);
+}
+
+/* 内容区域滚动条样式 */
+.content-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.content-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb {
+  background-color: var(--border_color);
+  border-radius: 4px;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--secondary), 0.5);
 }
 
 /*  06 登录页面 */
@@ -191,7 +214,7 @@
 }
 
 .login-header p {
-  margin: 8px 0 0 0;
+  margin: 8px auto 0;
   color: var(--font-light-color);
   font-size: var(--p-font-size);
 }
@@ -262,6 +285,20 @@
   font-size: 24px;
   font-weight: 600;
   color: var(--font-title-color);
+  position: relative;
+  padding-left: 12px;
+}
+
+.page-header h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(180deg, #48bece 0%, #6ecdd9 100%);
+  border-radius: 2px;
 }
 
 /* 响应式设计 */

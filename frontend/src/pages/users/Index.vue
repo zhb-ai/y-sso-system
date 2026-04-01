@@ -15,6 +15,7 @@
             v-model="searchKeyword"
             placeholder="请输入用户名、姓名或邮箱"
             clearable
+            autocomplete="off"
             @clear="handleSearch"
             @keyup.enter="handleSearch"
           >
@@ -121,7 +122,19 @@
         </el-table-column>
       </el-table>
 
-      <div class="pagination-container">
+      <!-- 空状态 -->
+      <EmptyState
+        v-if="!loading && userList.length === 0"
+        type="data"
+        :icon="Collection"
+        title="暂无用户"
+        :description="searchKeyword || filterForm.status || filterForm.role ? '没有找到符合条件的用户，请调整搜索条件' : '还没有创建任何用户，点击下方按钮创建第一个用户'"
+        :action-text="searchKeyword || filterForm.status || filterForm.role ? '重置筛选' : '新建用户'"
+        :action-icon="searchKeyword || filterForm.status || filterForm.role ? RefreshRight : Plus"
+        @action="searchKeyword || filterForm.status || filterForm.role ? handleReset() : handleCreate()"
+      />
+
+      <div class="pagination-container" v-if="userList.length > 0">
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -310,11 +323,12 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, RefreshRight, Edit, Key, Unlock, Lock, Check, Close, UserFilled, Connection, Medal, Warning } from '@element-plus/icons-vue'
+import { Plus, Search, RefreshRight, Edit, Key, Unlock, Lock, Check, Close, UserFilled, Connection, Medal, Warning, Collection } from '@element-plus/icons-vue'
 import { userApi, roleApi, ssoRoleApi } from '@/api'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 import UserCreateDialog from './Create.vue'
 import UserEditDialog from './Edit.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 // 表格数据
 const userList = ref([])
@@ -359,7 +373,7 @@ const fetchAllRoles = async () => {
     const response = await roleApi.list()
     allRoles.value = response.data || []
   } catch (error) {
-    console.error('获取角色列表失败:', error)
+    // 错误已在API拦截器中处理
     allRoles.value = []
   }
 }
@@ -419,7 +433,7 @@ const fetchAllSSORoles = async () => {
     const response = await ssoRoleApi.list()
     allSSORoles.value = response.data || []
   } catch (error) {
-    console.error('获取 SSO 角色列表失败:', error)
+    // 错误已在API拦截器中处理
     allSSORoles.value = []
   }
 }

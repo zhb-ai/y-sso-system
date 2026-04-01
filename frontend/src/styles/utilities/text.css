@@ -32,6 +32,28 @@
   white-space: nowrap;
 }
 
+/* 多行文本截断 */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* 文本转换 */
 .text-lowercase {
   text-transform: lowercase !important;
@@ -163,51 +185,49 @@
   letter-spacing: 0.05em !important;
 }
 
-/* 响应式文本对齐 */
-@media (min-width: 576px) {
-  .text-sm-left {
-    text-align: left !important;
-  }
-  .text-sm-center {
-    text-align: center !important;
-  }
-  .text-sm-right {
-    text-align: right !important;
-  }
+.text-tracking-widest {
+  letter-spacing: 0.1em !important;
 }
 
-@media (min-width: 768px) {
-  .text-md-left {
-    text-align: left !important;
-  }
-  .text-md-center {
-    text-align: center !important;
-  }
-  .text-md-right {
-    text-align: right !important;
-  }
+/* 长文本自动换行 */
+.text-break {
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
 }
 
-@media (min-width: 992px) {
-  .text-lg-left {
-    text-align: left !important;
-  }
-  .text-lg-center {
-    text-align: center !important;
-  }
-  .text-lg-right {
-    text-align: right !important;
-  }
+/* 保留空白符 */
+.text-pre {
+  white-space: pre !important;
 }
 
-@media (min-width: 1200px) {
-  .text-xl-left {
-    text-align: left !important;
-  }
-  .text-xl-center {
-    text-align: center !important;
-  }
-  .text-xl-right {
-    text-align: right !important;
-  }
+.text-pre-line {
+  white-space: pre-line !important;
+}
+
+.text-pre-wrap {
+  white-space: pre-wrap !important;
+}
+
+/* 等宽数字 - 用于表格和数据对齐 */
+.text-tabular {
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* 最佳阅读宽度 */
+.text-readable {
+  max-width: 65ch;
+}
+
+/* 列表样式 */
+.list-none {
+  list-style: none !important;
+}
+
+.list-disc {
+  list-style: disc !important;
+}
+
+.list-decimal {
+  list-style: decimal !important;
 }
