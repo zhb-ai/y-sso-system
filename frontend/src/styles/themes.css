@@ -488,8 +488,8 @@ input:-internal-autofill-selected {
   --el-font-size-base: 12px;
   --el-table-border-color: var(--border_color);
   --el-table-border: 1px solid var(--el-table-border-color);
-  --el-table-text-color: var(--font-medium-color);
-  --el-table-header-text-color: var(--font-color);
+  --el-table-text-color: var(--font-color);
+  --el-table-header-text-color: var(--font-medium-color);
   --el-table-row-hover-bg-color: var(--el-fill-color-light);
   --el-table-current-row-bg-color: var(--el-color-primary-light-9);
   --el-table-header-bg-color: var(--light-gray);
@@ -549,6 +549,104 @@ input:-internal-autofill-selected {
 .el-select__wrapper {
   font-size: 14px;
 }
+
+
+
+
+
+
+/* 
+ * 现代化按钮样式 - 带愉悦微交互
+ */
+.btn-modern {
+  border-radius: var(--bs-border-radius);
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: var(--box-shadow);
+  border: none;
+  background: rgba(var(--primary), 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-modern::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
+  background: rgba(var(--primary), 0.9);
+}
+
+.btn-modern:active {
+  transform: translateY(0) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+.btn-modern:active::before {
+  width: 200px;
+  height: 200px;
+}
+
+/* 
+ * 重置按钮样式 - 带愉悦微交互
+ */
+.btn-reset {
+  border-radius: var(--bs-border-radius);
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border_color);
+  background: var(--white);
+  color: var(--font-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-reset::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(var(--primary), 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-reset:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
+  border-color: rgba(var(--primary), 0.5);
+  color: rgba(var(--primary), 1);
+}
+
+.btn-reset:active {
+  transform: translateY(0) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+.btn-reset:active::before {
+  width: 200px;
+  height: 200px;
+}
+
+
+
+
+
 
 @media (max-width: 1200px) {
   .el-table .el-table__cell {

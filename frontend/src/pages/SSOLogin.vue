@@ -771,9 +771,18 @@ async function handlePortalLogin() {
   width: 100%;
 }
 
+
 .btn-secondary {
+  color: var(--white);
+  background-color: rgba(var(--secondary), 1);
+  border-color: rgba(var(--secondary), 1);
   margin-top: 10px;
   margin-left: 0;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(var(--secondary), 0.9);
+  border-color: rgba(var(--secondary), 0.9);
 }
 
 .wechat-icon {
