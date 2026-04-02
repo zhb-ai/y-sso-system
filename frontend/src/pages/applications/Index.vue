@@ -153,6 +153,7 @@
       v-model="formDialogVisible"
       :title="isEditing ? '编辑应用' : '新建应用'"
       width="600px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">

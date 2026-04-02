@@ -3,6 +3,7 @@
     v-model="visible"
     title="新建用户"
     width="600px"
+    align-center
     destroy-on-close
     @close="handleClose"
   >

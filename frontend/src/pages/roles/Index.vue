@@ -74,6 +74,7 @@
       v-model="formDialogVisible"
       :title="isEdit ? '编辑角色' : '新建角色'"
       width="500px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -114,6 +115,7 @@
       v-model="usersDialogVisible"
       :title="`${currentRole && currentRole.name}（${currentRole && currentRole.code}）- 关联用户`"
       width="800px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">

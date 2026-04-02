@@ -180,6 +180,7 @@
       v-model="changePasswordVisible"
       title="首次登录 — 请修改密码"
       width="420px"
+      align-center
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :show-close="false"

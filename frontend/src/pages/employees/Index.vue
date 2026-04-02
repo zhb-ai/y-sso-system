@@ -163,7 +163,7 @@
     </el-card>
     
     <!-- 员工编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" width="820px" destroy-on-close>
+    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" width="820px" align-center destroy-on-close>
       <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0;">
         <!-- 基本信息 -->
         <div class="section-block" style="margin-bottom: 16px;">
@@ -575,7 +575,7 @@
     </el-dialog>
     
     <!-- 管理组织对话框 -->
-    <el-dialog v-model="orgDialogVisible" title="管理员工组织" width="700px">
+    <el-dialog v-model="orgDialogVisible" title="管理员工组织" width="700px" align-center>
       <div v-if="currentEmployee" class="section-blocks">
         <!-- 员工信息 -->
         <div class="section-block__info">
@@ -659,7 +659,7 @@
     </el-dialog>
     
     <!-- 管理部门对话框 -->
-    <el-dialog v-model="deptDialogVisible" title="管理员工部门" width="650px">
+    <el-dialog v-model="deptDialogVisible" title="管理员工部门" width="650px" align-center>
       <div v-if="currentEmployee" class="section-blocks">
         <!-- 员工信息 -->
         <div class="section-block__info">
@@ -763,6 +763,7 @@
       v-model="accountResultVisible"
       title="用户账号已创建"
       width="480px"
+      align-center
       :close-on-click-modal="false"
     >
       <el-alert

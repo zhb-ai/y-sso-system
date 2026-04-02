@@ -416,3 +416,89 @@
   </div>
 </template>
 ```
+
+---
+
+## 10. Dialog 组件 - 对齐规范
+
+### 10.1 默认对齐要求
+
+所有 `el-dialog` 组件**必须**使用 `align-center` 属性，使对话框在屏幕中垂直和水平居中显示：
+
+**标准写法：**
+```vue
+<el-dialog 
+  v-model="dialogVisible" 
+  title="对话框标题" 
+  width="500px"
+  align-center
+  destroy-on-close
+>
+  <!-- 对话框内容 -->
+</el-dialog>
+```
+
+**规范要求：**
+
+| 属性 | 要求 | 说明 |
+|-----|------|------|
+| `align-center` | ✅ 必须 | 对话框在屏幕中垂直和水平居中 |
+| `width` | 必须 | 指定对话框宽度，如 `500px`、`600px` |
+| `destroy-on-close` | 推荐 | 关闭时销毁内容，释放内存 |
+
+### 10.2 使用示例
+
+**基础对话框：**
+```vue
+<el-dialog 
+  v-model="formDialogVisible" 
+  :title="isEdit ? '编辑' : '新建'" 
+  width="500px"
+  align-center
+  destroy-on-close
+>
+  <el-form :model="form" label-width="80px">
+    <el-form-item label="名称">
+      <el-input v-model="form.name" />
+    </el-form-item>
+  </el-form>
+  <template #footer>
+    <el-button @click="formDialogVisible = false">取消</el-button>
+    <el-button type="primary" @click="handleSubmit">确定</el-button>
+  </template>
+</el-dialog>
+```
+
+**宽对话框：**
+```vue
+<el-dialog 
+  v-model="detailDialogVisible" 
+  title="详细信息" 
+  width="820px"
+  align-center
+  destroy-on-close
+>
+  <!-- 详细内容 -->
+</el-dialog>
+```
+
+**提示对话框：**
+```vue
+<el-dialog
+  v-model="resultDialogVisible"
+  title="操作成功"
+  width="480px"
+  align-center
+  :close-on-click-modal="false"
+>
+  <!-- 结果内容 -->
+</el-dialog>
+```
+
+### 10.3 注意事项
+
+- ✅ 所有 `el-dialog` 必须添加 `align-center` 属性
+- ✅ 根据内容合理设置 `width`（常用：400px、500px、600px、820px）
+- ✅ 表单对话框推荐使用 `destroy-on-close`
+- ✅ 重要提示对话框可设置 `:close-on-click-modal="false"`
+- ❌ 禁止不使用 `align-center`（默认顶部对齐不美观）

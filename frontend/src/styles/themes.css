@@ -511,6 +511,9 @@ input:-internal-autofill-selected {
 .el-table .el-table__header .el-table__cell {
   padding: 0.6rem 0;
 }
+.el-table .cell{
+  line-height: normal;
+}
 .el-table__header-wrapper{
   border-radius: var(--app-border-radius) var(--app-border-radius) 0 0;
 }

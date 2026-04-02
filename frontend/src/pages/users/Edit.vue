@@ -3,6 +3,7 @@
     v-model="visible"
     title="编辑用户"
     width="600px"
+    align-center
     destroy-on-close
     @close="handleClose"
   >

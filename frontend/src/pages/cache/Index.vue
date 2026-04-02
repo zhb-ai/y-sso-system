@@ -288,6 +288,7 @@
       v-model="singleStatsDialogVisible"
       title="缓存函数统计"
       width="520px"
+      align-center
     >
       <el-descriptions :column="1" border v-if="singleStats">
         <el-descriptions-item label="函数">{{
@@ -318,6 +319,7 @@
       v-model="entriesDialogVisible"
       :title="`缓存条目 - ${entriesFunctionName || '-'}`"
       width="900px"
+      align-center
       destroy-on-close
     >
       <el-alert

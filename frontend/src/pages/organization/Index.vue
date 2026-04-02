@@ -260,7 +260,7 @@
     </div>
     
     <!-- 组织编辑对话框 -->
-    <el-dialog v-model="orgDialogVisible" :title="orgForm.id ? '编辑组织' : '新建组织'" width="500px" destroy-on-close>
+    <el-dialog v-model="orgDialogVisible" :title="orgForm.id ? '编辑组织' : '新建组织'" width="500px" align-center destroy-on-close>
       <div class="section-blocks" style="gap: 0;">
         <div class="section-block">
           <div class="section-block__header">
@@ -291,7 +291,7 @@
     </el-dialog>
     
     <!-- 部门编辑对话框 -->
-    <el-dialog v-model="deptDialogVisible" :title="deptForm.id ? '编辑部门' : '新建部门'" width="500px" destroy-on-close>
+    <el-dialog v-model="deptDialogVisible" :title="deptForm.id ? '编辑部门' : '新建部门'" width="500px" align-center destroy-on-close>
       <div class="section-blocks" style="gap: 0;">
         <div class="section-block">
           <div class="section-block__header">
@@ -334,6 +334,7 @@
       v-model="employeeDialogVisible" 
       :title="employeeForm.id ? '编辑员工' : '新建员工'" 
       width="820px"
+      align-center
       destroy-on-close
     >
       <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0;">
@@ -372,9 +373,9 @@
                 <el-col :span="12">
                   <el-form-item label="性别">
                     <el-radio-group v-model="employeeForm.gender">
-                      <el-radio :label="1">男</el-radio>
-                      <el-radio :label="2">女</el-radio>
-                      <el-radio :label="0">未知</el-radio>
+                      <el-radio :value="1">男</el-radio>
+                      <el-radio :value="2">女</el-radio>
+                      <el-radio :value="0">未知</el-radio>
                     </el-radio-group>
                   </el-form-item>
                 </el-col>
@@ -566,6 +567,7 @@
       v-model="accountResultVisible"
       title="用户账号已创建"
       width="480px"
+      align-center
       :close-on-click-modal="false"
     >
       <el-alert
@@ -595,6 +597,7 @@
       v-model="addToDeptDialogVisible" 
       title="添加员工到部门" 
       width="700px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -698,6 +701,7 @@
       v-model="wechatBindDialogVisible" 
       :title="wechatBindMode === 'bind' ? '绑定企业微信' : '企业微信配置'" 
       width="560px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">

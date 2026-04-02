@@ -165,6 +165,7 @@
       v-model="roleDialogVisible"
       :title="`分配角色 - ${roleDialogUser?.username || ''}`"
       width="500px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -210,6 +211,7 @@
       v-model="ssoRoleDialogVisible"
       :title="`分配 SSO 角色 - ${ssoRoleDialogUser?.username || ''}`"
       width="500px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -260,6 +262,7 @@
       v-model="resetPasswordVisible"
       title="重置密码"
       width="400px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -287,6 +290,7 @@
       v-model="resetPasswordResultVisible"
       title="密码已重置"
       width="480px"
+      align-center
       :close-on-click-modal="false"
     >
       <div class="section-blocks" style="gap: 0;">
