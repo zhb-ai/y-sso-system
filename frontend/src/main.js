@@ -7,8 +7,8 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import App from './App.vue'
 import router from './router'
-import './styles/themes.css'
 import './styles/index.css'
+import './styles/themes.css'
 import { useAuthStore } from './stores/auth'
 
 const app = createApp(App)

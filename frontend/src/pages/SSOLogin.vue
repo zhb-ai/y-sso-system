@@ -497,6 +497,10 @@ async function handlePortalLogin() {
 </script>
 
 <style scoped>
+
+.login-form {
+  margin-bottom: var(--spacing-medium);
+}
 .sso-login-box {
   width: 100%;
   max-width: 400px;

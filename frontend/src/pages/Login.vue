@@ -140,6 +140,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -422,3 +423,72 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+
+
+.login-form {
+  margin-bottom: var(--spacing-medium);
+}
+/* 登录表单相关组件样式 */
+.login-form .el-form-item {
+  margin-bottom: var(--spacing-medium);
+}
+
+/* 登录表单输入框样式 - 通过输入框类控制 */
+.login-form .el-input {
+  border-radius: var(--bs-border-radius);
+  transition: var(--app-transition);
+}
+
+.login-form .el-checkbox__label {
+  color: var(--font-color);
+  font-size: var(--p-font-size);
+}
+
+.login-form .el-link {
+  font-size: var(--p-font-size);
+  color: rgba(var(--primary), 1);
+}
+
+.login-form .el-button--primary {
+  height: 44px;
+  border-radius: var(--bs-border-radius);
+  font-size: var(--btn-font-size);
+  font-weight: 500;
+  letter-spacing: normal;
+  box-shadow: none;
+  background-color: rgba(var(--primary), 1);
+  border-color: rgba(var(--primary), 1);
+  transition: var(--app-transition);
+  width: 100%;
+}
+
+.login-form .el-button--primary:hover {
+  background-color: rgba(var(--primary), 0.9);
+  border-color: rgba(var(--primary), 0.9);
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-1px);
+}
+
+.login-form .el-button--primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.login-form .el-button--default {
+  border-radius: var(--bs-border-radius);
+  box-shadow: none;
+  border: 1px solid var(--border_color);
+  color: var(--font-color);
+  transition: var(--app-transition);
+}
+
+.login-form .el-button--default:hover {
+  border-color: rgba(var(--primary), 1);
+  color: rgba(var(--primary), 1);
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-1px);
+}
+
+</style>

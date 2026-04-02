@@ -20,13 +20,11 @@
 @import './components/ui/buttons.css';
 @import './components/ui/cards.css';
 @import './components/ui/forms.css';
-@import './components/ui/tables.css';
 @import './components/ui/modals.css';
 @import './components/ui/filters.css';
 @import './components/ui/tree.css';
 @import './components/ui/messages.css';
 @import './components/ui/section-blocks.css';
-@import './components/element-plus/overrides.css';
 @import './components/custom/index.css';
 @import './components/custom/stats-cards.css';
 @import './components/user-info.css';

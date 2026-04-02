@@ -219,9 +219,6 @@
   font-size: var(--p-font-size);
 }
 
-.login-form {
-  margin-bottom: var(--spacing-medium);
-}
 
 .login-actions {
   display: flex;

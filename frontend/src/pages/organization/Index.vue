@@ -1214,7 +1214,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../styles/components/ui/tables.css';
 
 /* ===== 组织架构页面按钮颜色优化 - 增强视觉区分 ===== */
 

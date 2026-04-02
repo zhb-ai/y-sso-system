@@ -651,7 +651,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import "../../styles/components/ui/tables.css";
 @import "../../styles/components/ui/filters.css";
 
 .page-header-actions {

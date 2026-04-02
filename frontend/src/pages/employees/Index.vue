@@ -1001,7 +1001,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../styles/components/ui/tables.css';
 @import '../../styles/components/ui/filters.css';
 
 .employee-info {
