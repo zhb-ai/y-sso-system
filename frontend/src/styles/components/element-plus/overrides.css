@@ -8,53 +8,7 @@
   margin-right: 4px;
 }
 
-/* 对话框样式优化 - 通过对话框类控制 */
-:v-deep(.el-dialog) {
-  border-radius: var(--app-border-radius) !important;
-  overflow: hidden;
-  box-shadow: var(--box-shadow) !important;
-}
 
-/* 对话框底部样式 - 通过对话框类控制 */
-:v-deep(.el-dialog) {
-  border-radius: var(--app-border-radius) !important;
-  overflow: hidden;
-  box-shadow: var(--box-shadow) !important;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-/* 抽屉组件样式优化 - 通过抽屉类控制 */
-:v-deep(.el-drawer) {
-  border-radius: 0 var(--app-border-radius) var(--app-border-radius) 0 !important;
-  box-shadow: var(--box-shadow) !important;
-}
-
-/* 加载遮罩样式优化 */
-:v-deep(.el-loading-mask) {
-  background-color: rgba(var(--white), 0.8) !important;
-}
-
-/* 分页器样式优化 */
-:v-deep(.el-pagination) {
-  padding: var(--spacing-medium) 0 !important;
-}
-
-/* 下拉菜单样式优化 */
-:v-deep(.el-dropdown-menu) {
-  border-radius: 8px !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
-  padding: var(--spacing-small) 0 !important;
-}
-
-/* 下拉菜单样式 - 通过下拉菜单类控制 */
-:v-deep(.el-dropdown-menu) {
-  padding: var(--spacing-small) 0 !important;
-}
 
 /* 标签页样式优化 - 通过标签页类控制 */
 :v-deep(.el-tabs) {

@@ -47,7 +47,7 @@
   --border-radius-sm: 0.25rem;
   --border-radius-xl: 1rem;
 
-   /* borader-radius */
+  /* borader-radius */
   --el-border-radius-base: var(--border-radius-lg);
   --el-border-radius-small: var(--border-radius-sm);
   --el-border-radius-round: 2.5rem;
@@ -72,8 +72,6 @@
   --z-tooltip: 1070;
   --z-toast: 1080;
 
-
-
   /* element-plus 字体 */
   --el-font-family: var(--font-family-primary);
 
@@ -85,20 +83,20 @@
   --el-font-size-base: 14px;
   --el-font-size-sm: 13px;
   --el-font-size-xs: 12px;
-  
+
   /* ===== 字体大小兼容变量 ===== */
   --el-font-size-extra-large: var(--el-font-size-md);
   --el-font-size-large: var(--el-font-size-base);
   --el-font-size-medium: var(--el-font-size-base);
   --el-font-size-small: var(--el-font-size-sm);
   --el-font-size-extra-small: var(--el-font-size-xs);
-  
+
   /* ===== 字体权重变量 ===== */
   --el-font-weight-extra-bold: 600;
   --el-font-weight-bold: 500;
   --el-font-weight-medium: 400;
   --el-font-weight-regular: 300;
-  
+
   /* ===== 行高变量 ===== */
   --c-line-height-xs: 1;
   --c-line-height-sm: 1.2;
@@ -169,7 +167,7 @@
   --el-color-error-light-5: rgba(var(--danger), 0.8);
   --el-color-error-light-7: rgba(var(--danger), 0.4);
   --el-color-error-light-8: rgba(var(--danger), 0.1);
-  --el-color-error-light-9: rgb(255, 240, 237); 
+  --el-color-error-light-9: rgb(255, 240, 237);
   --el-color-error-dark-2: rgba(var(--danger), 0.99);
 
   /* --el-color-info: rgba(var(--info), 1);
@@ -185,12 +183,13 @@
   --el-color-info-light-7: rgb(222, 223, 224);
   --el-color-info-light-8: rgb(233, 233, 235);
   --el-color-info-light-9: rgb(244, 244, 245);
-  --el-color-info-dark-2: 
 
- 
 
-  /* menu 菜单 样式*/
-  --el-menu-active-color: var(--el-color-primary);
+  
+
+  /* menu 菜单 样式*/ --el-menu-active-color: var(
+      --el-color-primary
+    );
   --el-menu-text-color: var(--el-text-color-primary);
   --el-menu-hover-text-color: var(--el-color-primary);
   --el-menu-bg-color: var(--el-fill-color-blank);
@@ -205,9 +204,39 @@
   --el-menu-base-level-padding: 20px;
   --el-menu-level-padding: 20px;
   --el-menu-icon-width: 24px;
+
+  
 }
 
 /* 自定义element-plus 组件样式 */
+/* 下拉菜单样式优化 */
+.el-popper {
+  --el-popper-border-radius: var(--app-border-radius);
+}
+
+/* dialog 对话框 样式 */
+.el-dialog {
+  --el-dialog-border-radius: var(--app-border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+/* 抽屉组件 样式 */
+.el-drawer {
+  border-radius: var(--app-border-radius) 0 0 var(--app-border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+/* 加载遮罩样式优化 */
+.el-loading-mask {
+  background-color: rgba(var(--white), 0.8);
+}
 
 /* 统一移入交互效果 */
 .el-button {
@@ -229,15 +258,13 @@
   --el-button-outline-color: var(--el-color-primary-light-5);
   --el-button-hover-link-text-color: var(--el-text-color-secondary);
   --el-button-active-color: var(--el-text-color-primary); */
-
-
 }
 .el-button:hover {
   transform: translateY(-2px);
   box-shadow: var(--hover-shadow);
 }
 
-.el-table .cell{
+.el-table .cell {
   line-height: normal;
 }
 /* 侧边栏收起按钮:hover 效果 防止动画卡顿 禁用移入效果 */
@@ -256,14 +283,14 @@
   flex-shrink: 0;
 }
 /* 树组件 节点内容高度自适应 防止内容超出高度 */
-.el-tree{
+.el-tree {
   --el-tree-node-content-height: auto;
   --el-tree-node-hover-bg-color: var(--el-fill-color-lighter);
 }
-.el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
   background-color: var(--el-fill-color-light);
 }
-.tree-node-content{
+.tree-node-content {
   padding: 6px 12px;
 }
 
@@ -285,7 +312,7 @@
   --el-card-border-color: rgba(var(--primary), 0.2);
 }
 
-.el-drawer__header{
+.el-drawer__header {
   margin-bottom: 12px;
 }
 
@@ -321,7 +348,7 @@
   margin-right: 0;
   margin-bottom: 0;
 }
-.el-form.el-form--inline .el-form-item__label{
+.el-form.el-form--inline .el-form-item__label {
   align-items: center;
 }
 
@@ -333,7 +360,7 @@
   margin-right: 4px;
 }
 /* 圆角按钮图标样式无需边距 */
-.el-button.is-circle{
+.el-button.is-circle {
   width: auto;
 }
 .el-button.is-circle .el-icon {
@@ -375,12 +402,12 @@
   --el-menu-icon-width: 20px;
 }
 .el-pagination,
-.el-pagination .el-select__wrapper{
+.el-pagination .el-select__wrapper {
   --el-font-size-base: 12px;
-  --el-pagination-font-size:var(--el-font-size-base);
+  --el-pagination-font-size: var(--el-font-size-base);
   font-size: var(--el-font-size-base);
 }
 
-.el-table{
+.el-table {
   --el-font-size-base: 12px;
 }

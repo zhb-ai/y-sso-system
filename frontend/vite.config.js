@@ -42,24 +42,32 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // 手动代码分割策略
-        manualChunks: {
+        manualChunks(id) {
           // Element Plus 单独打包
-          'element-plus': ['element-plus', '@element-plus/icons-vue'],
+          if (id.includes('element-plus') || id.includes('@element-plus/icons-vue')) {
+            return 'element-plus'
+          }
           // Vue 核心库
-          'vue-core': ['vue', 'vue-router', 'pinia'],
+          if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) {
+            return 'vue-core'
+          }
           // 工具库
-          'utils': ['axios', 'crypto-js']
+          if (id.includes('axios') || id.includes('crypto-js')) {
+            return 'utils'
+          }
         },
         // 资源文件命名规则
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.')
+          // 处理 name 可能为 undefined 的情况
+          const name = assetInfo.name || ''
+          const info = name.split('.')
           const ext = info[info.length - 1]
-          if (/\.(png|jpe?g|gif|svg|webp|ico)$/i.test(assetInfo.name)) {
+          if (/\.(png|jpe?g|gif|svg|webp|ico)$/i.test(name)) {
             return 'assets/images/[name]-[hash][extname]'
           }
-          if (/\.(css)$/i.test(assetInfo.name)) {
+          if (/\.(css)$/i.test(name)) {
             return 'assets/css/[name]-[hash][extname]'
           }
           return 'assets/[name]-[hash][extname]'
@@ -69,7 +77,9 @@ export default defineConfig({
     // 压缩选项
     target: 'es2015',
     // 启用 brotli 压缩
-    reportCompressedSize: false
+    reportCompressedSize: false,
+    // 调整 chunk 大小警告限制为 2MB
+    chunkSizeWarningLimit: 2048
   },
   // 后端将静态文件挂载在根路径，资源使用相对路径加载
   // base: '/'

@@ -4,7 +4,7 @@
       <h2>仪表盘</h2>
       <h5>欢迎回来，{{ userInfo?.username || '管理员' }}！</h5>
     </div>
-    
+
     <!-- 统计卡片 -->
     <div class="stats-cards">
       <template v-if="loading">
@@ -127,11 +127,30 @@
 
     <!-- 最近登录记录 -->
     <el-card class="data-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span>最近登录记录</span>
+          <el-tag type="info" size="small" v-if="recentLogins.length > 0">
+            共 {{ pagination.total }} 条
+          </el-tag>
+        </div>
+      </template>
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-if="!loginLoading && recentLogins.length === 0"
+        type="data"
+        :icon="Clock"
+        title="暂无登录记录"
+        description="系统还没有记录任何登录行为，当有用户登录后，这里将显示最近的登录活动"
+        compact
+      />
+
       <el-table
+        v-else
         v-loading="loginLoading"
         :data="recentLogins"
         style="width: 100%"
-        empty-text="暂无登录记录"
       >
         <el-table-column prop="username" label="用户名" width="90" />
         <el-table-column prop="ip_address" label="登录IP" width="120" />
@@ -172,6 +191,8 @@
 import { ref, onMounted, computed, reactive } from 'vue'
 import { dashboardApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { Grid, User, Management, OfficeBuilding, Monitor, Search, RefreshRight, Check, Close, Clock } from '@element-plus/icons-vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const authStore = useAuthStore()
 const userInfo = computed(() => authStore.userInfo)
@@ -327,5 +348,12 @@ onMounted(() => {
 
 .stat-info p {
   min-height: 16px;
+}
+
+/* 卡片头部样式 */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

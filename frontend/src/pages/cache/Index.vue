@@ -246,10 +246,13 @@
         </div>
       </template>
 
-      <el-empty
+      <EmptyState
         v-if="registrationModelList.length === 0"
-        description="暂无自动失效注册信息"
-        :image-size="64"
+        type="data"
+        :icon="DataLine"
+        title="暂无自动失效注册"
+        description="当数据模型配置了自动失效缓存时，相关注册信息将显示在这里"
+        compact
       />
 
       <el-collapse v-else>
@@ -396,10 +399,13 @@
             /></el-icon>
           </el-tooltip>
         </div>
-        <el-empty
+        <EmptyState
           v-if="!entryDetail"
-          description="请选择上方条目查看详情"
-          :image-size="56"
+          type="data"
+          :icon="Collection"
+          title="请选择缓存条目"
+          description="点击上方列表中的条目，查看详细的缓存数据和元信息"
+          compact
         />
         <template v-else>
           <el-descriptions :column="2" border class="entry-detail-meta">
@@ -433,9 +439,10 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, QuestionFilled, RefreshRight } from "@element-plus/icons-vue";
+import { Delete, QuestionFilled, RefreshRight, Collection, DataLine } from "@element-plus/icons-vue";
 import { cacheApi } from "@/api";
 import { handleApiError, getDefaultErrorMessage } from "@/utils/errorHandler";
+import EmptyState from "@/components/EmptyState.vue";
 import {
   CACHE_BACKEND_TAG_TYPE,
   CACHE_FUNCTION_COLUMNS,

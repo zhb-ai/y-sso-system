@@ -55,6 +55,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-if="!loading && roles.length === 0"
+        type="data"
+        :icon="Collection"
+        title="暂无角色"
+        description="角色用于定义用户的权限集合，创建角色后可以为用户分配相应的权限"
+        action-text="新建角色"
+        :action-icon="Plus"
+        @action="handleCreate"
+      />
     </el-card>
 
     <!-- 创建/编辑角色对话框 -->
@@ -231,9 +243,10 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete, User, Key, Refresh, Remove, Medal } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, User, Key, Refresh, Remove, Medal, Collection } from '@element-plus/icons-vue'
 import { roleApi, permissionApi } from '@/api'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
+import EmptyState from '@/components/EmptyState.vue'
 
 // ==================== 角色列表 ====================
 
