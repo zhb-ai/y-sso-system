@@ -503,7 +503,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../styles/components/ui/filters.css';
 
 .perm-group {
   margin-bottom: 16px;

@@ -365,6 +365,9 @@ input:-internal-autofill-selected {
 
 /* -18px 抵消 el-form-item 底部 margin-bottom */
 .el-form.el-form--inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 24px;
 }
 /* 行内表单间距设置 */
@@ -376,6 +379,54 @@ input:-internal-autofill-selected {
   align-items: center;
 }
 
+/* 输入框和选择框固定宽度 */
+.filter-form .el-form-item__content .el-input,
+.filter-form .el-form-item__content .el-select{
+  width: 180px; /* 固定宽度 */
+  min-width: 180px;
+}
+
+/* 筛选卡片样式 */
+.filter-card {
+  padding: 1rem;
+}
+/* 错误提示框样式 */
+.el-message--error {
+    background: linear-gradient(135deg, #fceae7 0%, #f9ddd8 100%) ;
+}
+.el-message--success {
+    background: linear-gradient(135deg, #f3f8e6 0%, #e8f3d6 100%) ;
+}
+.el-message--warning {
+    background: linear-gradient(135deg, #fcf6e6 0%, #f9f0d6 100%) ;
+}
+.el-message--info {
+    background: linear-gradient(135deg, #f0f0fd 0%, #e6e6fc 100%) ;
+}
+
+
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .filter-card {
+    padding: 1rem;
+  }
+  
+  .filter-form {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filter-form .el-input,
+  .filter-form .el-select {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .filter-form .el-form-item {
+    width: 100%;
+  }
+}
 /*
  * 按钮内图标与文字的间距
  * 用于 el-button 中包含 el-icon 和文字的情况

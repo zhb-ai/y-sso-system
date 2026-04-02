@@ -558,7 +558,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../styles/components/ui/filters.css';
 
 .app-info {
   display: flex;

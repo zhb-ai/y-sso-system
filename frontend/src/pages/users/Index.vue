@@ -645,5 +645,4 @@ onMounted(() => {
 })
 </script>
 <style scoped>
- @import '../../styles/components/ui/filters.css';
 </style>

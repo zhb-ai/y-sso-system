@@ -125,12 +125,15 @@
       </el-form>
     </el-card>
 
-    <!-- 最近登录记录 -->
-    <el-card class="data-card" shadow="hover">
+    <!-- 登录记录 -->
+    <el-card class="data-card login-record-card" shadow="hover">
       <template #header>
-        <div class="card-header">
-          <span>最近登录记录</span>
-          <el-tag type="info" size="small" v-if="recentLogins.length > 0">
+        <div class="login-record-header">
+          <div class="header-title">
+            <el-icon class="title-icon"><Clock /></el-icon>
+            <span class="title-text">登录记录</span>
+          </div>
+          <el-tag type="info" size="small" v-if="recentLogins.length > 0" class="count-tag">
             共 {{ pagination.total }} 条
           </el-tag>
         </div>
@@ -322,7 +325,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
- @import '../styles/components/ui/filters.css';
 
 .failure-reason {
   color: var(--el-color-danger);
@@ -349,10 +351,38 @@ onMounted(() => {
   min-height: 16px;
 }
 
-/* 卡片头部样式 */
-.card-header {
+/* 登录记录卡片 - 扁平化标题设计 */
+.login-record-card :deep(.el-card__header) {
+  background-color: transparent;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  border-radius: 0;
+  padding: 16px 20px;
+}
+
+.login-record-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-icon {
+  font-size: var(--el-font-size-lg);
+  color: var(--el-color-primary);
+}
+
+.title-text {
+  font-size: var(--el-font-size-lg);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-text-color-primary);
+}
+
+.count-tag {
+  font-size: var(--el-font-size-xs);
 }
 </style>

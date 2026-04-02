@@ -651,7 +651,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import "../../styles/components/ui/filters.css";
+
+/* 紧凑提示条（用于页面说明/弹窗说明） */
+.compact-hint-alert .el-alert__icon {
+  font-size: 14px;
+}
+
+.compact-hint-alert .el-alert__description {
+  font-size: 12px;
+  line-height: 1.5;
+}
+/* 页面内帮助提示图标（问号/叹号） */
+.hint-icon {
+  color: var(--font-light-color);
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 6px;
+  transition: var(--app-transition);
+  vertical-align: middle;
+}
+
+.hint-icon:hover {
+  color: rgba(var(--primary), 1);
+}
 
 .page-header-actions {
   display: flex;
