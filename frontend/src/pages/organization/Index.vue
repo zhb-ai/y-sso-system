@@ -1544,42 +1544,42 @@ onMounted(() => {
 .filter-form .el-button--warning {
   background: linear-gradient(135deg, rgba(var(--warning), 1), rgba(var(--warning), 0.85));
   border-color: transparent;
-  color: #fff;
+  color: var(--white);
   box-shadow: 0 2px 6px rgba(var(--warning), 0.35);
 }
 
 .filter-form .el-button--warning:hover {
   background: linear-gradient(135deg, rgba(var(--warning), 0.95), rgba(var(--warning), 0.75));
   box-shadow: 0 4px 10px rgba(var(--warning), 0.45);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-1px);
 }
 
 .filter-form .el-button--info {
   background: linear-gradient(135deg, rgba(var(--info), 1), rgba(var(--info), 0.85));
   border-color: transparent;
-  color: #fff;
+  color: var(--white);
   box-shadow: 0 2px 6px rgba(var(--info), 0.35);
 }
 
 .filter-form .el-button--info:hover {
   background: linear-gradient(135deg, rgba(var(--info), 0.95), rgba(var(--info), 0.75));
   box-shadow: 0 4px 10px rgba(var(--info), 0.45);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-1px);
 }
 
 .filter-form .el-button--danger {
   background: linear-gradient(135deg, rgba(var(--danger), 1), rgba(var(--danger), 0.85));
   border-color: transparent;
-  color: #fff;
+  color: var(--white);
   box-shadow: 0 2px 6px rgba(var(--danger), 0.35);
 }
 
 .filter-form .el-button--danger:hover {
   background: linear-gradient(135deg, rgba(var(--danger), 0.95), rgba(var(--danger), 0.75));
   box-shadow: 0 4px 10px rgba(var(--danger), 0.45);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-1px);
 }
 
