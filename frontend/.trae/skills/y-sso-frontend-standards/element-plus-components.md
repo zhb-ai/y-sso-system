@@ -277,6 +277,82 @@
 </template>
 ```
 
+---
+
+## 9. Table 组件 - 时间字段显示规范
+
+### 9.1 时间字段显示标准
+
+表格中的时间字段必须使用统一的显示格式和样式：
+
+**标准写法：**
+```vue
+<el-table-column prop="created_at" label="创建时间" width="160">
+  <template #default="scope">
+    <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+  </template>
+</el-table-column>
+```
+
+**规范要求：**
+
+| 属性 | 要求 | 说明 |
+|-----|------|------|
+| 组件 | `el-text` | 必须使用 Element Plus 的 Text 组件 |
+| 类名 | `time-text` | 必须使用 `time-text` 类名保持样式一致 |
+| 尺寸 | `size="small"` | 使用 small 尺寸，与表格整体风格协调 |
+| 格式化 | `formatDate()` | 使用统一的日期格式化函数 |
+| 列宽 | `width="160"` | 时间列固定宽度 160px |
+
+### 9.2 样式定义
+
+`time-text` 类名在 `src/styles/components/ui/cards.css` 中定义：
+
+```css
+.time-text {
+  color: var(--font-light-color);
+}
+```
+
+### 9.3 使用示例
+
+**创建时间列：**
+```vue
+<el-table-column prop="created_at" label="创建时间" width="160">
+  <template #default="scope">
+    <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+  </template>
+</el-table-column>
+```
+
+**登录时间列：**
+```vue
+<el-table-column prop="login_time" label="登录时间" width="160">
+  <template #default="scope">
+    <el-text class="time-text" size="small">{{ formatDate(scope.row.login_time) }}</el-text>
+  </template>
+</el-table-column>
+```
+
+**更新时间列：**
+```vue
+<el-table-column prop="updated_at" label="更新时间" width="160">
+  <template #default="scope">
+    <el-text class="time-text" size="small">{{ formatDate(scope.row.updated_at) }}</el-text>
+  </template>
+</el-table-column>
+```
+
+### 9.4 注意事项
+
+- ✅ 所有时间字段统一使用 `el-text` 组件
+- ✅ 统一使用 `time-text` 类名
+- ✅ 统一使用 `size="small"` 属性
+- ✅ 统一使用 `formatDate()` 函数格式化时间
+- ✅ 列宽固定为 `160px`
+- ❌ 禁止直接显示原始时间字符串
+- ❌ 禁止混用不同的时间显示样式
+
 ### 8.3 配置说明
 
 **`table-layout="fixed"` 的作用：**

@@ -1,9 +1,6 @@
 /* 部门管理页面样式 */
 
 /* 部门筛选表单 */
-.department-filter-form {
-  width: 100%;
-}
 
 .department-filter-form .el-form-item {
   margin-right: 15px;
@@ -58,23 +55,9 @@
   border-radius: 4px;
 }
 
-.department-name {
-  font-weight: 500;
-  color: var(--el-text-color-primary);
-  font-size: 14px;
-}
-
 /* 部门操作按钮 */
-.department-actions {
-  display: flex;
-  gap: 8px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
 
-.tree-node-content:hover .department-actions {
-  opacity: 1;
-}
+.tree-node-content:hover 
 
 .department-actions .el-button {
   min-width: 60px;
@@ -109,9 +92,6 @@
 }
 
 /* 部门对话框 */
-.department-dialog {
-  border-radius: 8px;
-}
 
 .department-dialog .el-dialog__header {
   padding: 20px 24px;
@@ -155,10 +135,7 @@
     gap: 8px;
   }
   
-  .department-actions {
-    opacity: 1;
-    margin-top: 8px;
-  }
+  
   
   .department-actions .el-button {
     min-width: auto;
@@ -170,17 +147,11 @@
     max-width: 200px;
   }
   
-  .department-dialog {
-    width: 90% !important;
-    margin: 0 auto;
-  }
+  
 }
 
 @media screen and (max-width: 480px) {
-  .department-actions {
-    flex-wrap: wrap;
-    gap: 4px;
-  }
+  
   
   .department-actions .el-button {
     flex: 1;

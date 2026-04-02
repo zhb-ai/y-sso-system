@@ -141,19 +141,6 @@
   margin-bottom: 0;
 }
 
-/* 两栏布局 */
-.section-blocks--two-col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-@media (max-width: 992px) {
-  .section-blocks--two-col {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* 紧凑模式 */
 .section-block--compact .section-block__header {
   padding: 12px 20px;

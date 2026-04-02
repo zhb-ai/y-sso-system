@@ -288,18 +288,11 @@ input:-internal-autofill-selected {
 .el-button .el-icon {
   margin-right: 4px;
 }
-.el-table .cell {
-  line-height: normal;
-}
+
 /* 侧边栏收起按钮:hover 效果 防止动画卡顿 禁用移入效果 */
 .collapse-btn:hover {
   transform: none;
   box-shadow: var(--hover-shadow);
-}
-/* 圆形按钮 */
-.el-button.is-circle {
-  --el-button-hover-bg-color: var(--border_color);
-  --el-button-bg-color: var(--light-gray);
 }
 
 /* 头像组件 当空间不足的时候禁用缩放效果 防止压缩变形 */
@@ -389,6 +382,7 @@ input:-internal-autofill-selected {
 /* 筛选卡片样式 */
 .filter-card {
   padding: 1rem;
+  margin-bottom: 1rem;
 }
 /* 错误提示框样式 */
 .el-message--error {
@@ -435,11 +429,11 @@ input:-internal-autofill-selected {
   margin-right: 4px;
 }
 /* 圆角按钮图标样式无需边距 */
-.el-button.is-circle {
-  width: auto;
-}
 .el-button.is-circle .el-icon {
   margin-right: 0px;
+}
+.el-button.is-circle{
+  width: auto;
 }
 
 /* ===== 菜单组件相关样式 ===== */

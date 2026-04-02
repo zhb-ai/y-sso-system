@@ -53,7 +53,6 @@
 
 /* ===== 数据卡片样式 ===== */
 
-
 /* ===== 应用信息卡片样式 ===== */
 .app-info {
   display: flex;
@@ -98,10 +97,6 @@
 .client-id {
   color: var(--font-color);
   font-size: 13px;
-  font-family: 'Courier New', monospace;
-}
-
-.secret-input {
   font-family: 'Courier New', monospace;
 }
 

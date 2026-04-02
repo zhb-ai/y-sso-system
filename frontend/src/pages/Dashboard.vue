@@ -158,7 +158,11 @@
         <el-table-column prop="username" label="用户名" width="90" />
         <el-table-column prop="ip_address" label="登录IP" width="120" />
         <el-table-column prop="user_agent" label="浏览器信息" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="created_at" label="登录时间" width="160" />
+        <el-table-column prop="created_at" label="登录时间" width="160">
+          <template #default="scope">
+            <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="70" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'" size="small">
@@ -315,6 +319,20 @@ const handleReset = () => {
   loginFilterForm.status = ''
   pagination.value.currentPage = 1
   fetchRecentLogins(1)
+}
+
+// 格式化日期
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
 }
 
 onMounted(() => {

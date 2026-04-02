@@ -13,221 +13,38 @@
   text-align: right !important;
 }
 
-.text-justify {
-  text-align: justify !important;
-}
-
 /* 文本换行 */
-.text-nowrap {
-  white-space: nowrap !important;
-}
-
-.text-wrap {
-  white-space: normal !important;
-}
-
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 /* 多行文本截断 */
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 
 /* 文本转换 */
-.text-lowercase {
-  text-transform: lowercase !important;
-}
-
-.text-uppercase {
-  text-transform: uppercase !important;
-}
-
-.text-capitalize {
-  text-transform: capitalize !important;
-}
 
 /* 字体大小 */
-.text-xs {
-  font-size: 0.75rem !important;
-}
-
-.text-sm {
-  font-size: 0.875rem !important;
-}
-
-.text-base {
-  font-size: 1rem !important;
-}
-
-.text-lg {
-  font-size: 1.125rem !important;
-}
-
-.text-xl {
-  font-size: 1.25rem !important;
-}
-
-.text-2xl {
-  font-size: 1.5rem !important;
-}
-
-.text-3xl {
-  font-size: 1.875rem !important;
-}
 
 /* 字体粗细 */
 .text-light {
   font-weight: 300 !important;
 }
 
-.text-normal {
-  font-weight: 400 !important;
-}
-
-.text-medium {
-  font-weight: 500 !important;
-}
-
-.text-semibold {
-  font-weight: 600 !important;
-}
-
-.text-bold {
-  font-weight: 700 !important;
-}
-
 /* 行高 */
-.text-leading-none {
-  line-height: 1 !important;
-}
-
-.text-leading-tight {
-  line-height: 1.25 !important;
-}
-
-.text-leading-snug {
-  line-height: 1.375 !important;
-}
-
-.text-leading-normal {
-  line-height: 1.5 !important;
-}
-
-.text-leading-relaxed {
-  line-height: 1.625 !important;
-}
-
-.text-leading-loose {
-  line-height: 2 !important;
-}
 
 /* 装饰 */
-.text-underline {
-  text-decoration: underline !important;
-}
-
-.text-line-through {
-  text-decoration: line-through !important;
-}
-
-.text-no-underline {
-  text-decoration: none !important;
-}
 
 /* 字体样式 */
-.text-italic {
-  font-style: italic !important;
-}
-
-.text-not-italic {
-  font-style: normal !important;
-}
 
 /* 字母间距 */
-.text-tracking-tighter {
-  letter-spacing: -0.05em !important;
-}
-
-.text-tracking-tight {
-  letter-spacing: -0.025em !important;
-}
-
-.text-tracking-normal {
-  letter-spacing: 0 !important;
-}
-
-.text-tracking-wide {
-  letter-spacing: 0.025em !important;
-}
-
-.text-tracking-wider {
-  letter-spacing: 0.05em !important;
-}
-
-.text-tracking-widest {
-  letter-spacing: 0.1em !important;
-}
 
 /* 长文本自动换行 */
-.text-break {
-  word-wrap: break-word !important;
-  overflow-wrap: break-word !important;
-  word-break: break-word !important;
-}
 
 /* 保留空白符 */
-.text-pre {
-  white-space: pre !important;
-}
-
-.text-pre-line {
-  white-space: pre-line !important;
-}
-
-.text-pre-wrap {
-  white-space: pre-wrap !important;
-}
 
 /* 等宽数字 - 用于表格和数据对齐 */
-.text-tabular {
-  font-variant-numeric: tabular-nums !important;
-}
 
 /* 最佳阅读宽度 */
-.text-readable {
-  max-width: 65ch;
-}
 
 /* 列表样式 */
-.list-none {
-  list-style: none !important;
-}
 
 .list-disc {
   list-style: disc !important;
 }
 
-.list-decimal {
-  list-style: decimal !important;
-}

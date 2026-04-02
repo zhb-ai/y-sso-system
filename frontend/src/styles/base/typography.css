@@ -113,22 +113,11 @@ a:focus-visible {
 }
 
 /* 字体权重 - 使用CSS变量 */
-.font-weight-light {
-  font-weight: var(--font-weight-light);
-}
 
-.font-weight-normal {
-  font-weight: var(--font-weight-normal);
-}
 
-.font-weight-medium {
-  font-weight: var(--font-weight-medium);
-}
 
-.font-weight-semibold {
-  font-weight: var(--font-weight-semibold);
-}
 
-.font-weight-bold {
-  font-weight: var(--font-weight-bold);
-}
+
+
+
+

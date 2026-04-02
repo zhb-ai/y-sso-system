@@ -288,33 +288,7 @@
 
 /* ==================== 悬浮效果 ==================== */
 
-.hover-lift {
-  transition: transform var(--duration-fast) var(--ease-out-quart),
-              box-shadow var(--duration-fast) var(--ease-out-quart);
-  will-change: transform, box-shadow;
-}
-
-.hover-lift:hover {
-  transform: translate3d(0, -2px, 0);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-.hover-scale {
-  transition: transform var(--duration-fast) var(--ease-out-quart);
-  will-change: transform;
-}
-
-.hover-scale:hover {
-  transform: scale3d(1.02, 1.02, 1);
-}
-
 /* ==================== 过渡延迟类 ==================== */
-
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
 
 /* ==================== 页面切换动画 ==================== */
 
