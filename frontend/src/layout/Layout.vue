@@ -124,7 +124,7 @@
       <!-- 页脚 -->
       <footer class="app-footer">
         <div class="footer-content">
-          <span>© 2025 {{ siteStore.systemName }}</span>
+          <span>© {{ currentYear }} {{ siteStore.systemName }}</span>
         </div>
       </footer>
     </main>
@@ -165,6 +165,9 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const siteStore = useSiteStore()
+
+// 当前年份
+const currentYear = new Date().getFullYear()
 
 // 折叠状态
 const isCollapse = ref(false)

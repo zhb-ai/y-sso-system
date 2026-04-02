@@ -41,7 +41,7 @@ def create_project_user_router() -> APIRouter:
         response_model=ItemResponse[ForceResetPasswordResponse],
         summary="强制重置用户密码",
     )
-    async def force_reset_password(
+    def force_reset_password(
         user_id: int = Query(..., description="用户ID"),
     ):
         """重置用户密码为临时密码（000000），并标记首次登录需修改密码

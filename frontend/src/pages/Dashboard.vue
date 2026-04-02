@@ -37,7 +37,7 @@
           <div class="stat-content">
             <div class="stat-info">
               <h3>{{ userCount }}</h3>
-              <p>活跃用户</p>
+              <p>日活用户</p>
             </div>
             <div class="stat-icon user">
               <el-icon><User /></el-icon>
