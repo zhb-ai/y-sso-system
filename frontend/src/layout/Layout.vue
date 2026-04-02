@@ -345,6 +345,25 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-large);
+  height: 64px;
+  border-bottom: 1px solid var(--border_color);
+  background-color: var(--white);
+}
+.sidebar-collapse .sidebar-header {
+  justify-content: center;
+}
+
+
+.sidebar-nav-item.active {
+  background-color: rgba(var(--primary), 0.1);
+  color: rgba(var(--primary), 1);
+  border-right: 3px solid rgba(var(--primary), 1);
+}
 /* 移动端遮罩层 */
 .sidebar-overlay {
   display: none;
@@ -523,8 +542,16 @@ onUnmounted(() => {
 
 /* 侧边栏折叠样式 */
 .sidebar {
-  width: 250px;
   transition: width 0.3s ease;
+  background-color: var(--white);
+  border-right: 1px solid var(--border_color);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 250px;
+  z-index: var(--z-fixed);
+  overflow-y: auto;
 }
 
 .sidebar.sidebar-collapse {
