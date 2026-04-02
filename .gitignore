@@ -172,7 +172,8 @@ logs/
 *.sqlite3
 
 # Configuration files
-config/local_settings.yaml
+config/*
+!config/settings.yaml_demo
 
 # OS files
 .DS_Store
