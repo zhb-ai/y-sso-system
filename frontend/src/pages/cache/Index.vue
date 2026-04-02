@@ -246,10 +246,13 @@
         </div>
       </template>
 
-      <el-empty
+      <EmptyState
         v-if="registrationModelList.length === 0"
-        description="暂无自动失效注册信息"
-        :image-size="64"
+        type="data"
+        :icon="DataLine"
+        title="暂无自动失效注册"
+        description="当数据模型配置了自动失效缓存时，相关注册信息将显示在这里"
+        compact
       />
 
       <el-collapse v-else>
@@ -396,10 +399,13 @@
             /></el-icon>
           </el-tooltip>
         </div>
-        <el-empty
+        <EmptyState
           v-if="!entryDetail"
-          description="请选择上方条目查看详情"
-          :image-size="56"
+          type="data"
+          :icon="Collection"
+          title="请选择缓存条目"
+          description="点击上方列表中的条目，查看详细的缓存数据和元信息"
+          compact
         />
         <template v-else>
           <el-descriptions :column="2" border class="entry-detail-meta">
@@ -433,9 +439,10 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, QuestionFilled, RefreshRight } from "@element-plus/icons-vue";
+import { Delete, QuestionFilled, RefreshRight, Collection, DataLine } from "@element-plus/icons-vue";
 import { cacheApi } from "@/api";
 import { handleApiError, getDefaultErrorMessage } from "@/utils/errorHandler";
+import EmptyState from "@/components/EmptyState.vue";
 import {
   CACHE_BACKEND_TAG_TYPE,
   CACHE_FUNCTION_COLUMNS,
@@ -644,8 +651,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import "../../styles/components/ui/tables.css";
-@import "../../styles/components/ui/filters.css";
+
+/* 紧凑提示条（用于页面说明/弹窗说明） */
+.compact-hint-alert .el-alert__icon {
+  font-size: 14px;
+}
+
+.compact-hint-alert .el-alert__description {
+  font-size: 12px;
+  line-height: 1.5;
+}
+/* 页面内帮助提示图标（问号/叹号） */
+.hint-icon {
+  color: var(--font-light-color);
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 6px;
+  transition: var(--app-transition);
+  vertical-align: middle;
+}
+
+.hint-icon:hover {
+  color: rgba(var(--primary), 1);
+}
 
 .page-header-actions {
   display: flex;

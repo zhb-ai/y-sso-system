@@ -4,7 +4,7 @@
       <h2>仪表盘</h2>
       <h5>欢迎回来，{{ userInfo?.username || '管理员' }}！</h5>
     </div>
-    
+
     <!-- 统计卡片 -->
     <div class="stats-cards">
       <template v-if="loading">
@@ -125,13 +125,35 @@
       </el-form>
     </el-card>
 
-    <!-- 最近登录记录 -->
-    <el-card class="data-card" shadow="hover">
+    <!-- 登录记录 -->
+    <el-card class="data-card login-record-card" shadow="hover">
+      <template #header>
+        <div class="login-record-header">
+          <div class="header-title">
+            <el-icon class="title-icon"><Clock /></el-icon>
+            <span class="title-text">登录记录</span>
+          </div>
+          <el-tag type="info" size="small" v-if="recentLogins.length > 0" class="count-tag">
+            共 {{ pagination.total }} 条
+          </el-tag>
+        </div>
+      </template>
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-if="!loginLoading && recentLogins.length === 0"
+        type="data"
+        :icon="Clock"
+        title="暂无登录记录"
+        description="系统还没有记录任何登录行为，当有用户登录后，这里将显示最近的登录活动"
+        compact
+      />
+
       <el-table
+        v-else
         v-loading="loginLoading"
         :data="recentLogins"
         style="width: 100%"
-        empty-text="暂无登录记录"
       >
         <el-table-column prop="username" label="用户名" width="90" />
         <el-table-column prop="ip_address" label="登录IP" width="120" />
@@ -172,6 +194,8 @@
 import { ref, onMounted, computed, reactive } from 'vue'
 import { dashboardApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { Grid, User, Management, OfficeBuilding, Monitor, Search, RefreshRight, Check, Close, Clock } from '@element-plus/icons-vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const authStore = useAuthStore()
 const userInfo = computed(() => authStore.userInfo)
@@ -301,8 +325,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
- @import '../styles/components/ui/tables.css';
- @import '../styles/components/ui/filters.css';
 
 .failure-reason {
   color: var(--el-color-danger);
@@ -327,5 +349,40 @@ onMounted(() => {
 
 .stat-info p {
   min-height: 16px;
+}
+
+/* 登录记录卡片 - 扁平化标题设计 */
+.login-record-card :deep(.el-card__header) {
+  background-color: transparent;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  border-radius: 0;
+  padding: 16px 20px;
+}
+
+.login-record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-icon {
+  font-size: var(--el-font-size-lg);
+  color: var(--el-color-primary);
+}
+
+.title-text {
+  font-size: var(--el-font-size-lg);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-text-color-primary);
+}
+
+.count-tag {
+  font-size: var(--el-font-size-xs);
 }
 </style>

@@ -102,71 +102,11 @@ code {
   user-select: none;
 }
 
-.btn-primary {
-  color: var(--white);
-  background-color: rgba(var(--primary), 1);
-  border-color: rgba(var(--primary), 1);
-}
 
-.btn-primary:hover {
-  background-color: rgba(var(--primary), 0.9);
-  border-color: rgba(var(--primary), 0.9);
-}
 
-.btn-secondary {
-  color: var(--white);
-  background-color: rgba(var(--secondary), 1);
-  border-color: rgba(var(--secondary), 1);
-}
 
-.btn-secondary:hover {
-  background-color: rgba(var(--secondary), 0.9);
-  border-color: rgba(var(--secondary), 0.9);
-}
 
-.btn-success {
-  color: var(--white);
-  background-color: rgba(var(--success), 1);
-  border-color: rgba(var(--success), 1);
-}
 
-.btn-success:hover {
-  background-color: rgba(var(--success), 0.9);
-  border-color: rgba(var(--success), 0.9);
-}
-
-.btn-danger {
-  color: var(--white);
-  background-color: rgba(var(--danger), 1);
-  border-color: rgba(var(--danger), 1);
-}
-
-.btn-danger:hover {
-  background-color: rgba(var(--danger), 0.9);
-  border-color: rgba(var(--danger), 0.9);
-}
-
-.btn-warning {
-  color: var(--white);
-  background-color: rgba(var(--warning), 1);
-  border-color: rgba(var(--warning), 1);
-}
-
-.btn-warning:hover {
-  background-color: rgba(var(--warning), 0.9);
-  border-color: rgba(var(--warning), 0.9);
-}
-
-.btn-info {
-  color: var(--white);
-  background-color: rgba(var(--info), 1);
-  border-color: rgba(var(--info), 1);
-}
-
-.btn-info:hover {
-  background-color: rgba(var(--info), 0.9);
-  border-color: rgba(var(--info), 0.9);
-}
 
 /*  04 卡片样式 */
 .card {

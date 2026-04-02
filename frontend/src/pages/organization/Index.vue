@@ -1509,9 +1509,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../styles/components/ui/tables.css';
-@import '../../styles/components/ui/filters.css';
-
 /* ===== 组织架构页面按钮颜色优化 - 增强视觉区分 ===== */
 
 /* 头部主要操作按钮 - 使用鲜明的渐变色 */
@@ -1616,6 +1613,9 @@ onMounted(() => {
 
 .dept-actions .el-button--danger {
   color: rgba(var(--danger), 1);
+}
+.dept-actions .el-button .el-icon{
+  margin-right: 0px;
 }
 
 .dept-actions .el-button--danger:hover {
