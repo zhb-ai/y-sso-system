@@ -14,32 +14,11 @@
 }
 
 /* 组织信息卡片样式 */
-.organization-card {
-  margin-bottom: 20px;
-}
-
-.organization-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
 
 .organization-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: bold;
-}
-
-.organization-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
 }
 
 .info-item label {
@@ -54,13 +33,6 @@
 
 /* 部门管理卡片样式 */
 .department-card {
-  margin-bottom: 20px;
-}
-
-.department-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 20px;
 }
 
@@ -83,21 +55,8 @@
   align-items: center;
 }
 
-.department-count {
-  margin-left: 8px;
-  color: #909399;
-  font-size: 12px;
-}
-
 /* 员工数据卡片样式 */
 .data-card {
-  margin-bottom: 20px;
-}
-
-.employee-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 20px;
 }
 
@@ -123,9 +82,6 @@
 }
 
 /* 同步对话框内容样式 */
-.sync-dialog-content {
-  padding: 20px 0;
-}
 
 /* 员工信息展示样式 - 与员工管理页面保持一致 */
 .employee-info {
@@ -144,10 +100,7 @@
     padding: 0 10px 10px;
   }
   
-  .organization-info {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
+  
   
   .department-tree {
     max-height: 300px;

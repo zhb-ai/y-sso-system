@@ -111,6 +111,7 @@
       v-model="formDialogVisible"
       :title="isEdit ? '编辑 SSO 角色' : '新建 SSO 角色'"
       width="500px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -336,6 +337,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-  @import '../../styles/components/ui/tables.css';
-  @import '../../styles/components/ui/filters.css';
 </style>

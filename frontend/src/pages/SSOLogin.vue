@@ -180,6 +180,7 @@
       v-model="changePasswordVisible"
       title="首次登录 — 请修改密码"
       width="420px"
+      align-center
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :show-close="false"
@@ -497,6 +498,10 @@ async function handlePortalLogin() {
 </script>
 
 <style scoped>
+
+.login-form {
+  margin-bottom: var(--spacing-medium);
+}
 .sso-login-box {
   width: 100%;
   max-width: 400px;
@@ -767,9 +772,18 @@ async function handlePortalLogin() {
   width: 100%;
 }
 
+
 .btn-secondary {
+  color: var(--white);
+  background-color: rgba(var(--secondary), 1);
+  border-color: rgba(var(--secondary), 1);
   margin-top: 10px;
   margin-left: 0;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(var(--secondary), 0.9);
+  border-color: rgba(var(--secondary), 0.9);
 }
 
 .wechat-icon {

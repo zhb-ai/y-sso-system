@@ -1,197 +1,4 @@
-/* 自定义通用组件样式 */
 
-/* 通用按钮样式 */
-.btn {
-  padding: 7px 25px;
-  font-size: var(--btn-font-size);
-  border-radius: var(--bs-border-radius);
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: var(--app-transition);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  outline: none;
-  white-space: nowrap;
-  user-select: none;
-  font-family: var(--font-family-primary);
-  font-weight: 500;
-}
-
-.btn-primary {
-  color: var(--white);
-  background-color: rgba(var(--primary), 1);
-  border-color: rgba(var(--primary), 1);
-}
-
-.btn-primary:hover {
-  background-color: rgba(var(--primary), 0.9);
-  border-color: rgba(var(--primary), 0.9);
-}
-
-.btn-secondary {
-  color: var(--white);
-  background-color: rgba(var(--secondary), 1);
-  border-color: rgba(var(--secondary), 1);
-}
-
-.btn-secondary:hover {
-  background-color: rgba(var(--secondary), 0.9);
-  border-color: rgba(var(--secondary), 0.9);
-}
-
-.btn-success {
-  color: var(--white);
-  background-color: rgba(var(--success), 1);
-  border-color: rgba(var(--success), 1);
-}
-
-.btn-success:hover {
-  background-color: rgba(var(--success), 0.9);
-  border-color: rgba(var(--success), 0.9);
-}
-
-.btn-danger {
-  color: var(--white);
-  background-color: rgba(var(--danger), 1);
-  border-color: rgba(var(--danger), 1);
-}
-
-.btn-danger:hover {
-  background-color: rgba(var(--danger), 0.9);
-  border-color: rgba(var(--danger), 0.9);
-}
-
-.btn-warning {
-  color: var(--white);
-  background-color: rgba(var(--warning), 1);
-  border-color: rgba(var(--warning), 1);
-}
-
-.btn-warning:hover {
-  background-color: rgba(var(--warning), 0.9);
-  border-color: rgba(var(--warning), 0.9);
-}
-
-.btn-info {
-  color: var(--white);
-  background-color: rgba(var(--info), 1);
-  border-color: rgba(var(--info), 1);
-}
-
-.btn-info:hover {
-  background-color: rgba(var(--info), 0.9);
-  border-color: rgba(var(--info), 0.9);
-}
-
-.btn-outline-primary {
-  color: rgba(var(--primary), 1);
-  background-color: transparent;
-  border: 1px solid rgba(var(--primary), 1);
-}
-
-.btn-outline-primary:hover {
-  background-color: rgba(var(--primary), 0.1);
-}
-
-.btn-sm {
-  padding: 4px 12px;
-  font-size: 13px;
-}
-
-.btn-lg {
-  padding: 10px 30px;
-  font-size: 16px;
-}
-
-/* 
- * 现代化按钮样式 - 带愉悦微交互
- */
-.btn-modern {
-  border-radius: var(--bs-border-radius);
-  font-weight: 500;
-  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: var(--box-shadow);
-  border: none;
-  background: rgba(var(--primary), 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-modern::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-}
-
-.btn-modern:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--hover-shadow);
-  background: rgba(var(--primary), 0.9);
-}
-
-.btn-modern:active {
-  transform: translateY(0) scale(0.98);
-  transition: all 0.1s ease;
-}
-
-.btn-modern:active::before {
-  width: 200px;
-  height: 200px;
-}
-
-/* 
- * 重置按钮样式 - 带愉悦微交互
- */
-.btn-reset {
-  border-radius: var(--bs-border-radius);
-  font-weight: 500;
-  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: var(--box-shadow);
-  border: 1px solid var(--border_color);
-  background: var(--white);
-  color: var(--font-color);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-reset::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(var(--primary), 0.1);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-}
-
-.btn-reset:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--hover-shadow);
-  border-color: rgba(var(--primary), 0.5);
-  color: rgba(var(--primary), 1);
-}
-
-.btn-reset:active {
-  transform: translateY(0) scale(0.98);
-  transition: all 0.1s ease;
-}
-
-.btn-reset:active::before {
-  width: 200px;
-  height: 200px;
-}
 
 /*  03 表格组件 */
 .table {
@@ -300,45 +107,6 @@
   color: rgba(var(--success), 1);
 }
 
-/*  06 标签组件 */
-.badge {
-  display: inline-block;
-  padding: 0.35em 0.65em;
-  font-size: 0.75em;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  border-radius: 0.25rem;
-  color: var(--white);
-  background-color: rgba(var(--primary), 1);
-}
-
-.badge-primary {
-  background-color: rgba(var(--primary), 1);
-}
-
-.badge-secondary {
-  background-color: rgba(var(--secondary), 1);
-}
-
-.badge-success {
-  background-color: rgba(var(--success), 1);
-}
-
-.badge-danger {
-  background-color: rgba(var(--danger), 1);
-}
-
-.badge-warning {
-  background-color: rgba(var(--warning), 1);
-  color: var(--dark);
-}
-
-.badge-info {
-  background-color: rgba(var(--info), 1);
-}
 
 /*  07 警告提示组件 */
 .alert {
@@ -347,42 +115,6 @@
   margin-bottom: 1rem;
   border: 1px solid transparent;
   border-radius: var(--app-border-radius);
-}
-
-.alert-primary {
-  color: rgba(var(--primary), 1);
-  background-color: rgba(var(--primary), 0.1);
-  border-color: rgba(var(--primary), 0.2);
-}
-
-.alert-secondary {
-  color: rgba(var(--secondary), 1);
-  background-color: rgba(var(--secondary), 0.1);
-  border-color: rgba(var(--secondary), 0.2);
-}
-
-.alert-success {
-  color: rgba(var(--success), 1);
-  background-color: rgba(var(--success), 0.1);
-  border-color: rgba(var(--success), 0.2);
-}
-
-.alert-danger {
-  color: rgba(var(--danger), 1);
-  background-color: rgba(var(--danger), 0.1);
-  border-color: rgba(var(--danger), 0.2);
-}
-
-.alert-warning {
-  color: rgba(var(--warning), 1);
-  background-color: rgba(var(--warning), 0.1);
-  border-color: rgba(var(--warning), 0.2);
-}
-
-.alert-info {
-  color: rgba(var(--info), 1);
-  background-color: rgba(var(--info), 0.1);
-  border-color: rgba(var(--info), 0.2);
 }
 
 /*  08 分页组件 */
@@ -434,34 +166,6 @@
   color: var(--white);
 }
 
-/* Dashboard pagination container - centered alignment */
-.dashboard-pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-/*  09 导航组件 */
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  padding-left: 0;
-  margin-bottom: 0;
-  list-style: none;
-}
-
-.nav-link {
-  display: block;
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  transition: var(--app-transition);
-  color: var(--font-color);
-  border-radius: var(--bs-border-radius);
-}
-
-.nav-link:hover {
-  background-color: var(--light-gray);
-}
 
 .nav-link.active {
   color: rgba(var(--primary), 1);
@@ -473,48 +177,10 @@
   position: relative;
 }
 
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: var(--z-dropdown);
-  display: none;
-  min-width: 10rem;
-  padding: 0.5rem 0;
-  margin: 0.125rem 0 0;
-  font-size: var(--font-size);
-  color: var(--font-color);
-  text-align: left;
-  list-style: none;
-  background-clip: padding-box;
-  border: 1px solid var(--border_color);
-  border-radius: var(--bs-border-radius);
-  background-color: var(--white);
-  box-shadow: var(--box-shadow);
-}
-
 .dropdown-menu.show {
   display: block;
 }
 
-.dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 0.5rem 1rem;
-  clear: both;
-  font-weight: 400;
-  color: var(--font-color);
-  text-align: inherit;
-  white-space: nowrap;
-  background-color: transparent;
-  border: 0;
-  transition: var(--app-transition);
-}
-
-.dropdown-item:hover {
-  background-color: var(--light-gray);
-  text-decoration: none;
-}
 
 /* 11 模态框组件 */
 .modal {
@@ -593,51 +259,6 @@
   border-bottom-left-radius: calc(var(--app-border-radius) - 1px);
 }
 
-/* 12 进度条组件 */
-.progress {
-  display: flex;
-  height: 1rem;
-  overflow: hidden;
-  font-size: 0.75rem;
-  background-color: var(--light-gray);
-  border-radius: 0.25rem;
-}
-
-.progress-bar {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-  color: var(--white);
-  text-align: center;
-  white-space: nowrap;
-  background-color: rgba(var(--primary), 1);
-  transition: width 0.6s ease;
-}
-
-.progress-bar-primary {
-  background-color: rgba(var(--primary), 1);
-}
-
-.progress-bar-secondary {
-  background-color: rgba(var(--secondary), 1);
-}
-
-.progress-bar-success {
-  background-color: rgba(var(--success), 1);
-}
-
-.progress-bar-danger {
-  background-color: rgba(var(--danger), 1);
-}
-
-.progress-bar-warning {
-  background-color: rgba(var(--warning), 1);
-}
-
-.progress-bar-info {
-  background-color: rgba(var(--info), 1);
-}
 
 /* 13 工具提示组件 */
 .tooltip {

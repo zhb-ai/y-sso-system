@@ -173,6 +173,12 @@
               </div>
             </template>
           </el-table-column>
+          <el-table-column prop="code" label="员工编码" min-width="120">
+            <template #default="{ row }">
+              <el-tag v-if="row.code" type="primary" size="small" effect="light">{{ row.code }}</el-tag>
+              <el-tag v-else type="info" size="small" effect="light">未设置</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="emp_no" label="工号" width="100" />
           <el-table-column prop="position" label="职位" min-width="100" />
           <el-table-column prop="mobile" label="手机" min-width="120" />
@@ -254,7 +260,7 @@
     </div>
     
     <!-- 组织编辑对话框 -->
-    <el-dialog v-model="orgDialogVisible" :title="orgForm.id ? '编辑组织' : '新建组织'" width="500px" destroy-on-close>
+    <el-dialog v-model="orgDialogVisible" :title="orgForm.id ? '编辑组织' : '新建组织'" width="500px" align-center destroy-on-close>
       <div class="section-blocks" style="gap: 0;">
         <div class="section-block">
           <div class="section-block__header">
@@ -285,7 +291,7 @@
     </el-dialog>
     
     <!-- 部门编辑对话框 -->
-    <el-dialog v-model="deptDialogVisible" :title="deptForm.id ? '编辑部门' : '新建部门'" width="500px" destroy-on-close>
+    <el-dialog v-model="deptDialogVisible" :title="deptForm.id ? '编辑部门' : '新建部门'" width="500px" align-center destroy-on-close>
       <div class="section-blocks" style="gap: 0;">
         <div class="section-block">
           <div class="section-block__header">
@@ -324,14 +330,14 @@
     </el-dialog>
     
     <!-- 员工编辑对话框 -->
-    <el-dialog
-      v-model="employeeDialogVisible"
-      :title="employeeForm.id ? '编辑员工' : '新建员工'"
-      width="650px"
+    <el-dialog 
+      v-model="employeeDialogVisible" 
+      :title="employeeForm.id ? '编辑员工' : '新建员工'" 
+      width="820px"
+      align-center
       destroy-on-close
     >
-      <div class="section-blocks" style="gap: 0;">
-        <!-- 基本信息 -->
+      <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0;">
         <div class="section-block" style="margin-bottom: 16px;">
           <div class="section-block__header">
             <div class="section-block__title">
@@ -348,12 +354,17 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="手机">
-                    <el-input v-model="employeeForm.mobile" placeholder="请输入手机号" autocomplete="off" />
+                  <el-form-item label="员工编号">
+                    <el-input v-model="employeeForm.code" placeholder="请输入员工编号" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
+                <el-col :span="12">
+                  <el-form-item label="手机号">
+                    <el-input v-model="employeeForm.mobile" placeholder="请输入手机号" />
+                  </el-form-item>
+                </el-col>
                 <el-col :span="12">
                   <el-form-item label="邮箱">
                     <el-input v-model="employeeForm.email" placeholder="请输入邮箱" autocomplete="off" />
@@ -362,9 +373,9 @@
                 <el-col :span="12">
                   <el-form-item label="性别">
                     <el-radio-group v-model="employeeForm.gender">
-                      <el-radio :label="0">未知</el-radio>
-                      <el-radio :label="1">男</el-radio>
-                      <el-radio :label="2">女</el-radio>
+                      <el-radio :value="1">男</el-radio>
+                      <el-radio :value="2">女</el-radio>
+                      <el-radio :value="0">未知</el-radio>
                     </el-radio-group>
                   </el-form-item>
                 </el-col>
@@ -373,41 +384,175 @@
           </div>
         </div>
 
-        <!-- 新建员工时显示加入组织选项 -->
         <template v-if="!employeeForm.id">
-          <div class="section-block">
+          <div class="section-block" style="margin-bottom: 16px;">
             <div class="section-block__header">
               <div class="section-block__title">
                 <el-icon><OfficeBuilding /></el-icon>
-                <span>加入组织</span>
+                <span>加入组织（可选）</span>
               </div>
             </div>
             <div class="section-block__content">
               <el-form :model="employeeForm" label-width="80px">
                 <el-row :gutter="20">
                   <el-col :span="12">
+                    <el-form-item label="组织">
+                      <el-input :model-value="currentOrg?.name || '-'" disabled />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
                     <el-form-item label="工号">
                       <el-input v-model="employeeForm.emp_no" placeholder="请输入工号" autocomplete="off" />
                     </el-form-item>
                   </el-col>
+                </el-row>
+                <el-row :gutter="20">
                   <el-col :span="12">
                     <el-form-item label="职位">
                       <el-input v-model="employeeForm.position" placeholder="请输入职位" autocomplete="off" />
                     </el-form-item>
                   </el-col>
+                  <el-col :span="12">
+                    <el-form-item label="部门">
+                      <el-tree-select
+                        v-model="employeeForm.dept_id"
+                        :data="departmentTree"
+                        :props="{ label: 'name', value: 'id', children: 'children' }"
+                        placeholder="选择部门"
+                        clearable
+                        check-strictly
+                        style="width: 100%"
+                      />
+                    </el-form-item>
+                  </el-col>
                 </el-row>
-                <el-form-item label="加入部门">
-                  <el-tree-select
-                    v-model="employeeForm.dept_id"
-                    :data="departmentTree"
-                    :props="{ label: 'name', value: 'id', children: 'children' }"
-                    placeholder="选择要加入的部门（可选）"
-                    clearable
-                    check-strictly
-                    style="width: 100%"
-                  />
+              </el-form>
+            </div>
+          </div>
+
+          <div class="section-block">
+            <div class="section-block__header">
+              <div class="section-block__title">
+                <el-icon><Key /></el-icon>
+                <span>用户账号</span>
+              </div>
+            </div>
+            <div class="section-block__content">
+              <el-form :model="employeeForm" label-width="80px">
+                <el-form-item>
+                  <el-checkbox v-model="employeeForm.create_account">同时创建用户账号</el-checkbox>
+                  <el-text type="info" size="small" style="margin-left: 8px">
+                    创建后将自动分配「内部员工」角色
+                  </el-text>
                 </el-form-item>
               </el-form>
+            </div>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="section-block" style="margin-bottom: 16px;">
+            <div class="section-block__header">
+              <div class="section-block__title">
+                <el-icon><User /></el-icon>
+                <span>雇佣状态</span>
+              </div>
+            </div>
+            <div class="section-block__content">
+              <div class="inline-summary inline-summary--stacked">
+                <div class="inline-summary">
+                  <el-tag :type="empStatusType(currentEmployee?.emp_status)">
+                    {{ empStatusLabel(currentEmployee?.emp_status) }}
+                  </el-tag>
+                  <el-button size="small" :type="currentEmployee?.emp_status === 3 ? 'success' : 'default'" :plain="currentEmployee?.emp_status !== 3" :disabled="currentEmployee?.emp_status === 3" @click="handleChangeEmpStatus(currentEmployee || {}, 3)">在职</el-button>
+                  <el-button size="small" :type="currentEmployee?.emp_status === 2 ? 'warning' : 'default'" :plain="currentEmployee?.emp_status !== 2" :disabled="currentEmployee?.emp_status === 2" @click="handleChangeEmpStatus(currentEmployee || {}, 2)">试用期</el-button>
+                  <el-button size="small" :type="currentEmployee?.emp_status === 1 ? 'primary' : 'default'" :plain="currentEmployee?.emp_status !== 1" :disabled="currentEmployee?.emp_status === 1" @click="handleChangeEmpStatus(currentEmployee || {}, 1)">待入职</el-button>
+                  <el-button size="small" :type="currentEmployee?.emp_status === 0 ? 'warning' : 'default'" :plain="currentEmployee?.emp_status !== 0" :disabled="currentEmployee?.emp_status === 0" @click="handleChangeEmpStatus(currentEmployee || {}, 0)">停职</el-button>
+                  <el-button size="small" :type="currentEmployee?.emp_status === -1 ? 'info' : 'default'" :plain="currentEmployee?.emp_status !== -1" :disabled="currentEmployee?.emp_status === -1" @click="handleChangeEmpStatus(currentEmployee || {}, -1)">离职</el-button>
+                </div>
+                <el-text type="info">基于当前组织直接调整该员工在本组织内的雇佣状态。</el-text>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-block">
+            <div class="section-block__content edit-manage-tabs">
+              <el-tabs v-model="editManageTab" stretch>
+                <el-tab-pane name="account">
+                  <template #label>
+                    <span class="edit-manage-tabs__label">
+                      <el-icon><Key /></el-icon>
+                      <span>用户账号</span>
+                    </span>
+                  </template>
+                  <template v-if="currentEmployee?.user_id">
+                    <div class="inline-summary">
+                      <el-tag :type="accountStatusType(currentEmployee.account_status)">
+                        {{ accountStatusLabel(currentEmployee.account_status) }}
+                      </el-tag>
+                      <el-button size="small" :type="currentEmployee.account_status === 1 ? 'success' : 'default'" :plain="currentEmployee.account_status !== 1" :disabled="currentEmployee.account_status === 1" @click="handleChangeAccountStatus(currentEmployee, 1)">激活</el-button>
+                      <el-button size="small" :type="currentEmployee.account_status === -1 ? 'danger' : 'default'" :plain="currentEmployee.account_status !== -1" :disabled="currentEmployee.account_status === -1" @click="handleChangeAccountStatus(currentEmployee, -1)">禁用</el-button>
+                      <el-text type="info">已在弹窗内支持直接切换账号状态。</el-text>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="inline-summary">
+                      <el-button type="primary" @click="handleCreateAccount(currentEmployee || employeeForm)" :disabled="!canCreateAccountInDialog">创建账号</el-button>
+                      <el-text type="info">
+                        {{ canCreateAccountInDialog ? '创建后将自动分配「内部员工」角色。' : '当前员工未处于可创建账号的在职状态。' }}
+                      </el-text>
+                    </div>
+                  </template>
+                </el-tab-pane>
+
+                <el-tab-pane name="org">
+                  <template #label>
+                    <span class="edit-manage-tabs__label">
+                      <el-icon><OfficeBuilding /></el-icon>
+                      <span>组织管理</span>
+                    </span>
+                  </template>
+                  <div class="section-block__table">
+                    <el-table :data="currentEmployee?.organizations || []" size="small" max-height="260">
+                      <el-table-column prop="org_name" label="组织" min-width="140" />
+                      <el-table-column prop="emp_no" label="工号" width="120" />
+                      <el-table-column prop="position" label="职位" width="120" />
+                      <el-table-column label="主组织" width="90" align="center">
+                        <template #default="{ row }">
+                          <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
+                          <span v-else class="text-gray">—</span>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                    <div v-if="!currentEmployee?.organizations?.length" class="section-block__empty">
+                      <el-empty description="暂未加入任何组织" :image-size="60" />
+                    </div>
+                  </div>
+                </el-tab-pane>
+
+                <el-tab-pane name="dept">
+                  <template #label>
+                    <span class="edit-manage-tabs__label">
+                      <el-icon><Folder /></el-icon>
+                      <span>部门管理</span>
+                    </span>
+                  </template>
+                  <div class="section-block__table">
+                    <el-table :data="currentEmployee?.departments || []" size="small" max-height="260">
+                      <el-table-column prop="dept_name" label="部门" min-width="180" />
+                      <el-table-column label="主部门" width="90" align="center">
+                        <template #default="{ row }">
+                          <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
+                          <span v-else class="text-gray">—</span>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                    <div v-if="!currentEmployee?.departments?.length" class="section-block__empty">
+                      <el-empty description="暂未加入任何部门" :image-size="60" />
+                    </div>
+                  </div>
+                </el-tab-pane>
+              </el-tabs>
             </div>
           </div>
         </template>
@@ -417,12 +562,42 @@
         <el-button type="primary" @click="submitEmployeeForm" :loading="submitLoading">确定</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="accountResultVisible"
+      title="用户账号已创建"
+      width="480px"
+      align-center
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        :title="'账号已创建，默认密码 ' + accountResult.raw_password + '，首次登录时需强制修改密码'"
+        type="success"
+        :closable="false"
+        show-icon
+        style="margin-bottom: 16px"
+      />
+      <el-descriptions :column="1" border>
+        <el-descriptions-item label="员工姓名">{{ accountResult.employee_name }}</el-descriptions-item>
+        <el-descriptions-item label="用户名">
+          <code>{{ accountResult.username }}</code>
+        </el-descriptions-item>
+        <el-descriptions-item label="默认密码">
+          <code>{{ accountResult.raw_password }}</code>
+          <el-tag size="small" style="margin-left: 8px">首次登录需修改</el-tag>
+        </el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button type="primary" @click="accountResultVisible = false">知道了</el-button>
+      </template>
+    </el-dialog>
     
     <!-- 添加员工到部门对话框 -->
     <el-dialog 
       v-model="addToDeptDialogVisible" 
       title="添加员工到部门" 
       width="700px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -526,6 +701,7 @@
       v-model="wechatBindDialogVisible" 
       :title="wechatBindMode === 'bind' ? '绑定企业微信' : '企业微信配置'" 
       width="560px"
+      align-center
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -662,14 +838,20 @@ const deptDialogVisible = ref(false)
 const employeeDialogVisible = ref(false)
 const addToDeptDialogVisible = ref(false)
 const submitLoading = ref(false)
+const editDetailLoading = ref(false)
+const editManageTab = ref('account')
+const currentEmployee = ref(null)
 
 // 表单
 const orgForm = reactive({ id: null, name: '', code: '', note: '' })
 const deptForm = reactive({ id: null, name: '', parent_id: null, sort_order: 0 })
 const employeeForm = reactive({ 
-  id: null, name: '', mobile: '', email: '', gender: 0,
-  emp_no: '', position: '', dept_id: null
+  id: null, name: '', code: '', mobile: '', email: '', gender: 0,
+  emp_no: '', position: '', dept_id: null, create_account: false
 })
+
+const accountResultVisible = ref(false)
+const accountResult = reactive({ employee_name: '', username: '', raw_password: '' })
 
 // 筛选条件
 const empStatusFilter = ref(null)
@@ -701,6 +883,43 @@ const wechatWebhookUrl = computed(() => {
     ? `${baseUrl}/api/v1/wechat-work/webhook/${currentOrgId.value}`
     : ''
 })
+
+const getPrimaryOrgRel = (employee = {}) => {
+  const orgs = employee.organizations || []
+  return orgs.find(org => org.org_id === currentOrgId.value) || orgs.find(org => org.is_primary) || orgs[0] || null
+}
+
+const mergeEmployeeDetail = (detail = {}, fallback = {}) => {
+  const merged = {
+    ...fallback,
+    ...detail
+  }
+  const primaryOrg = getPrimaryOrgRel(merged)
+
+  return {
+    ...merged,
+    user_id: detail.user_id ?? fallback.user_id ?? null,
+    account_status: detail.account_status ?? fallback.account_status ?? null,
+    primary_org_id: detail.primary_org_id ?? fallback.primary_org_id ?? primaryOrg?.org_id ?? currentOrgId.value ?? null,
+    emp_status: detail.emp_status ?? primaryOrg?.status ?? fallback.emp_status ?? fallback.status ?? null,
+  }
+}
+
+const canCreateAccountInDialog = computed(() => {
+  if (!employeeForm.id || !currentEmployee.value || currentEmployee.value.user_id) return false
+  const orgStatuses = (currentEmployee.value.organizations || [])
+    .map(org => Number(org.status))
+    .filter(status => !Number.isNaN(status))
+  if (orgStatuses.length) return orgStatuses.some(status => status > 0)
+  return Number(currentEmployee.value.emp_status) > 0
+})
+
+const refreshCurrentEmployee = async (employeeId, fallback = {}) => {
+  if (!employeeId) return null
+  const res = await employeeApi.get(employeeId)
+  currentEmployee.value = mergeEmployeeDetail(res.data, fallback)
+  return currentEmployee.value
+}
 
 // 加载企微绑定状态
 const loadWechatConfig = async () => {
@@ -985,22 +1204,38 @@ const submitDeptForm = async () => {
 // 创建员工
 const handleCreateEmployee = () => {
   Object.assign(employeeForm, {
-    id: null, name: '', mobile: '', email: '', gender: 0,
-    emp_no: '', position: '', dept_id: selectedDept.value?.id || null
+    id: null, name: '', code: '', mobile: '', email: '', gender: 0,
+    emp_no: '', position: '', dept_id: selectedDept.value?.id || null, create_account: false
   })
+  currentEmployee.value = null
+  editManageTab.value = 'account'
   employeeDialogVisible.value = true
 }
 
 // 编辑员工
-const handleEditEmployee = (emp) => {
+const handleEditEmployee = async (emp) => {
   Object.assign(employeeForm, {
     id: emp.id,
     name: emp.name,
+    code: emp.code || '',
     mobile: emp.mobile || '',
     email: emp.email || '',
     gender: emp.gender || 0
   })
+  editManageTab.value = 'account'
   employeeDialogVisible.value = true
+  editDetailLoading.value = true
+  try {
+    await refreshCurrentEmployee(emp.id, {
+      ...emp,
+      emp_status: emp.status,
+      primary_org_id: currentOrgId.value
+    })
+  } catch (e) {
+    ElMessage.error('加载员工详情失败')
+  } finally {
+    editDetailLoading.value = false
+  }
 }
 
 // 提交员工表单
@@ -1015,6 +1250,7 @@ const submitEmployeeForm = async () => {
       // 编辑
       await employeeApi.update(employeeForm.id, {
         name: employeeForm.name,
+        code: employeeForm.code,
         mobile: employeeForm.mobile,
         email: employeeForm.email,
         gender: employeeForm.gender
@@ -1024,6 +1260,7 @@ const submitEmployeeForm = async () => {
       // 新建员工
       const res = await employeeApi.create({
         name: employeeForm.name,
+        code: employeeForm.code,
         mobile: employeeForm.mobile,
         email: employeeForm.email,
         gender: employeeForm.gender
@@ -1047,6 +1284,20 @@ const submitEmployeeForm = async () => {
             dept_id: employeeForm.dept_id,
             set_primary: true
           })
+        }
+      }
+      if (newEmpId && employeeForm.create_account) {
+        try {
+          const accountRes = await employeeApi.createAccount({ employee_id: newEmpId })
+          const data = accountRes.data
+          Object.assign(accountResult, {
+            employee_name: data.employee_name,
+            username: data.username,
+            raw_password: data.raw_password
+          })
+          accountResultVisible.value = true
+        } catch (accountErr) {
+          ElMessage.warning('员工已创建，但用户账号创建失败：' + (accountErr.message || '未知错误'))
         }
       }
       ElMessage.success('创建成功')
@@ -1136,8 +1387,10 @@ const handleCreateAndAddEmployee = () => {
   addToDeptDialogVisible.value = false
   Object.assign(employeeForm, {
     id: null, name: '', mobile: '', email: '', gender: 0,
-    emp_no: '', position: '', dept_id: selectedDept.value?.id
+    emp_no: '', position: '', dept_id: selectedDept.value?.id, create_account: false
   })
+  currentEmployee.value = null
+  editManageTab.value = 'account'
   employeeDialogVisible.value = true
 }
 
@@ -1178,7 +1431,8 @@ const accountStatusType = (status) => {
 
 // 修改雇佣状态
 const handleChangeEmpStatus = async (row, newStatus) => {
-  if (row.status === newStatus) return
+  const currentStatus = row.status ?? row.emp_status
+  if (currentStatus === newStatus) return
   try {
     await ElMessageBox.confirm(
       `确定将「${row.name}」的雇佣状态改为「${empStatusLabel(newStatus)}」吗？`,
@@ -1186,6 +1440,17 @@ const handleChangeEmpStatus = async (row, newStatus) => {
     )
     await employeeApi.updateOrgStatus(row.id, currentOrgId.value, newStatus)
     ElMessage.success('状态更新成功')
+    if (currentEmployee.value?.id === row.id) {
+      currentEmployee.value = {
+        ...currentEmployee.value,
+        emp_status: newStatus,
+        status: newStatus,
+        primary_org_id: currentOrgId.value,
+        organizations: (currentEmployee.value.organizations || []).map(org => (
+          org.org_id === currentOrgId.value ? { ...org, status: newStatus } : org
+        ))
+      }
+    }
     loadDeptEmployees()
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '操作失败')
@@ -1202,9 +1467,43 @@ const handleChangeAccountStatus = async (row, newStatus) => {
     )
     await employeeApi.updateAccountStatus(row.id, newStatus)
     ElMessage.success('账号状态更新成功')
+    if (currentEmployee.value?.id === row.id) {
+      currentEmployee.value = {
+        ...currentEmployee.value,
+        account_status: newStatus
+      }
+    }
     loadDeptEmployees()
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '操作失败')
+  }
+}
+
+const handleCreateAccount = async (row) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定为员工「${row.name}」创建用户账号吗？`,
+      '创建账号',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'info' }
+    )
+    const res = await employeeApi.createAccount({ employee_id: row.id })
+    const data = res.data
+    Object.assign(accountResult, {
+      employee_name: data.employee_name,
+      username: data.username,
+      raw_password: data.raw_password
+    })
+    accountResultVisible.value = true
+    if (currentEmployee.value?.id === row.id) {
+      currentEmployee.value = {
+        ...currentEmployee.value,
+        user_id: data.user_id,
+        account_status: 1
+      }
+    }
+    loadDeptEmployees()
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '创建账号失败')
   }
 }
 
@@ -1214,8 +1513,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../styles/components/ui/tables.css';
-
 /* ===== 组织架构页面按钮颜色优化 - 增强视觉区分 ===== */
 
 /* 头部主要操作按钮 - 使用鲜明的渐变色 */
@@ -1247,42 +1544,42 @@ onMounted(() => {
 .filter-form .el-button--warning {
   background: linear-gradient(135deg, rgba(var(--warning), 1), rgba(var(--warning), 0.85));
   border-color: transparent;
-  color: #fff;
+  color: var(--white);
   box-shadow: 0 2px 6px rgba(var(--warning), 0.35);
 }
 
 .filter-form .el-button--warning:hover {
   background: linear-gradient(135deg, rgba(var(--warning), 0.95), rgba(var(--warning), 0.75));
   box-shadow: 0 4px 10px rgba(var(--warning), 0.45);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-1px);
 }
 
 .filter-form .el-button--info {
   background: linear-gradient(135deg, rgba(var(--info), 1), rgba(var(--info), 0.85));
   border-color: transparent;
-  color: #fff;
+  color: var(--white);
   box-shadow: 0 2px 6px rgba(var(--info), 0.35);
 }
 
 .filter-form .el-button--info:hover {
   background: linear-gradient(135deg, rgba(var(--info), 0.95), rgba(var(--info), 0.75));
   box-shadow: 0 4px 10px rgba(var(--info), 0.45);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-1px);
 }
 
 .filter-form .el-button--danger {
   background: linear-gradient(135deg, rgba(var(--danger), 1), rgba(var(--danger), 0.85));
   border-color: transparent;
-  color: #fff;
+  color: var(--white);
   box-shadow: 0 2px 6px rgba(var(--danger), 0.35);
 }
 
 .filter-form .el-button--danger:hover {
   background: linear-gradient(135deg, rgba(var(--danger), 0.95), rgba(var(--danger), 0.75));
   box-shadow: 0 4px 10px rgba(var(--danger), 0.45);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-1px);
 }
 
@@ -1320,6 +1617,9 @@ onMounted(() => {
 
 .dept-actions .el-button--danger {
   color: rgba(var(--danger), 1);
+}
+.dept-actions .el-button .el-icon{
+  margin-right: 0px;
 }
 
 .dept-actions .el-button--danger:hover {
@@ -1509,6 +1809,25 @@ onMounted(() => {
 .status-arrow {
   font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
+}
+.inline-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.inline-summary--stacked {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 10px;
+}
+.edit-manage-tabs {
+  padding-top: 4px;
+}
+.edit-manage-tabs__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 @media (max-width: 1024px) {

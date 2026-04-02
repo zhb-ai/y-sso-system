@@ -128,7 +128,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
                     "如果组织已绑定，会更新配置。",
         dependencies=mgmt_deps,
     )
-    async def bind_wechat_work(data: BindWechatWorkRequest):
+    def bind_wechat_work(data: BindWechatWorkRequest):
         """绑定企业微信配置"""
         try:
             result = config_service.bind(
@@ -151,7 +151,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
         description="清除组织的企业微信绑定配置。不会删除已同步的部门和员工数据。",
         dependencies=mgmt_deps,
     )
-    async def unbind_wechat_work(data: UnbindWechatWorkRequest):
+    def unbind_wechat_work(data: UnbindWechatWorkRequest):
         """解绑企业微信配置"""
         try:
             result = config_service.unbind(data.org_id)
@@ -166,7 +166,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
         description="查看指定组织的企业微信绑定状态和配置信息（Secret 脱敏显示）",
         dependencies=mgmt_deps,
     )
-    async def get_wechat_work_config(
+    def get_wechat_work_config(
         org_id: int = Query(..., description="组织 ID"),
     ):
         """查看企微绑定配置"""
@@ -186,7 +186,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
                     "同步结果包含新建、更新、删除的数量统计",
         dependencies=mgmt_deps,
     )
-    async def init_sync(data: InitSyncRequest):
+    def init_sync(data: InitSyncRequest):
         """初始化全量同步"""
         try:
             org = _get_wechat_org(data.org_id)
@@ -203,7 +203,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
         description="手动触发与企业微信的组织架构对齐，功能等同于初始化同步",
         dependencies=mgmt_deps,
     )
-    async def manual_sync(data: ManualSyncRequest):
+    def manual_sync(data: ManualSyncRequest):
         """手动触发同步"""
         try:
             org = _get_wechat_org(data.org_id)
@@ -220,7 +220,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
         description="查询指定组织的企业微信同步状态和配置信息",
         dependencies=mgmt_deps,
     )
-    async def sync_status(
+    def sync_status(
         org_id: int = Query(..., description="组织 ID"),
     ):
         """查询同步状态"""
@@ -257,7 +257,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
                     "解密 echostr 并原样返回",
         response_class=PlainTextResponse,
     )
-    async def verify_webhook(
+    def verify_webhook(
         org_id: int,
         msg_signature: str = Query(..., description="签名"),
         timestamp: str = Query(..., description="时间戳"),

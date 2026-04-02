@@ -156,9 +156,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-container {
-  padding: 0 20px 20px;
-}
+
 
 .page-header {
   margin-bottom: 20px;

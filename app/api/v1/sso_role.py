@@ -77,7 +77,7 @@ def create_sso_role_router() -> APIRouter:
         summary="获取 SSO 角色列表",
         description="获取所有 SSO 角色，可选仅返回启用的角色",
     )
-    async def list_sso_roles(
+    def list_sso_roles(
         active_only: bool = Query(False, description="是否仅返回启用的角色"),
     ):
         """获取 SSO 角色列表"""
@@ -89,7 +89,7 @@ def create_sso_role_router() -> APIRouter:
         response_model=ItemResponse[SSORoleResponse],
         summary="获取 SSO 角色详情",
     )
-    async def get_sso_role(
+    def get_sso_role(
         code: str = Query(..., description="SSO 角色编码"),
     ):
         """根据编码获取 SSO 角色详情"""
@@ -104,7 +104,7 @@ def create_sso_role_router() -> APIRouter:
         response_model=ItemResponse[SSORoleResponse],
         summary="创建 SSO 角色",
     )
-    async def create_sso_role(data: SSORoleCreateRequest):
+    def create_sso_role(data: SSORoleCreateRequest):
         """创建 SSO 角色"""
         try:
             role = sso_role_service.create_role(
@@ -122,7 +122,7 @@ def create_sso_role_router() -> APIRouter:
         response_model=ItemResponse[SSORoleResponse],
         summary="更新 SSO 角色",
     )
-    async def update_sso_role(
+    def update_sso_role(
         data: SSORoleUpdateRequest,
         code: str = Query(..., description="SSO 角色编码"),
     ):
@@ -139,7 +139,7 @@ def create_sso_role_router() -> APIRouter:
         response_model=OkResponse,
         summary="删除 SSO 角色",
     )
-    async def delete_sso_role(
+    def delete_sso_role(
         code: str = Query(..., description="SSO 角色编码"),
     ):
         """删除 SSO 角色（软删除）"""
@@ -156,7 +156,7 @@ def create_sso_role_router() -> APIRouter:
         response_model=ItemResponse[SSORoleResponse],
         summary="获取用户的 SSO 角色列表",
     )
-    async def get_user_sso_roles(
+    def get_user_sso_roles(
         user_id: int = Query(..., description="用户ID"),
     ):
         """获取指定用户的所有 SSO 角色"""
@@ -168,7 +168,7 @@ def create_sso_role_router() -> APIRouter:
         response_model=OkResponse,
         summary="给用户分配 SSO 角色",
     )
-    async def assign_sso_role(data: AssignSSORoleRequest):
+    def assign_sso_role(data: AssignSSORoleRequest):
         """给用户分配 SSO 角色"""
         try:
             sso_role_service.assign_role(
@@ -184,7 +184,7 @@ def create_sso_role_router() -> APIRouter:
         response_model=OkResponse,
         summary="移除用户的 SSO 角色",
     )
-    async def unassign_sso_role(data: AssignSSORoleRequest):
+    def unassign_sso_role(data: AssignSSORoleRequest):
         """移除用户的 SSO 角色"""
         try:
             sso_role_service.unassign_role(
@@ -201,7 +201,7 @@ def create_sso_role_router() -> APIRouter:
         summary="全量设置用户的 SSO 角色",
         description="覆盖式设置，传入空列表则清空用户的所有 SSO 角色",
     )
-    async def set_user_sso_roles(data: SetUserSSORolesRequest):
+    def set_user_sso_roles(data: SetUserSSORolesRequest):
         """全量设置用户的 SSO 角色"""
         try:
             sso_role_service.set_user_sso_roles(

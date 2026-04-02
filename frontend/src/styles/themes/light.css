@@ -39,10 +39,7 @@
   --input-focus-border: rgba(72, 190, 206, 0.5);
   --input-focus-shadow: rgba(72, 190, 206, 0.25);
   
-  /* 按钮 */
-  --btn-primary-bg: rgba(72, 190, 206, 1);
-  --btn-primary-border: rgba(72, 190, 206, 1);
-  --btn-primary-color: #ffffff;
+
   
   /* 阴影 */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

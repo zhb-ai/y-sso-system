@@ -67,7 +67,7 @@ def create_config_router() -> APIRouter:
         description="查看当前运行时的 JWT 配置（来自 settings.yaml，密钥脱敏显示）。"
                     "JWT 配置只能通过修改 settings.yaml 并重启服务来变更。",
     )
-    async def get_jwt_settings():
+    def get_jwt_settings():
         """查看 JWT 认证配置"""
         from app.config import settings
 
@@ -88,7 +88,7 @@ def create_config_router() -> APIRouter:
         summary="获取站点基本信息",
         description="获取系统名称、描述、Logo 等基本信息",
     )
-    async def get_site_settings():
+    def get_site_settings():
         """获取站点基本信息"""
         defaults = {
             "system_name": "单点登录系统",
@@ -107,7 +107,7 @@ def create_config_router() -> APIRouter:
         summary="更新站点基本信息",
         description="更新系统名称、描述、Logo 等基本信息",
     )
-    async def update_site_settings(data: SiteSettingsRequest):
+    def update_site_settings(data: SiteSettingsRequest):
         """更新站点基本信息"""
         try:
             current = SystemConfig.get_value("site_settings", default={})

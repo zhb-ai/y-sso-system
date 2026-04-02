@@ -66,7 +66,7 @@ def create_permission_router(
         response_model=OkResponse,
         summary="获取权限树（按模块分组）",
     )
-    async def get_permission_tree():
+    def get_permission_tree():
         """获取所有权限，按模块分组为树形结构"""
         tree = perm_service.get_permission_tree()
         result = [
@@ -86,7 +86,7 @@ def create_permission_router(
         summary="自动扫描路由，同步到权限表",
         description="扫描 FastAPI 已注册路由，自动生成模块级权限条目。已存在的权限不会重复创建。",
     )
-    async def scan_permissions():
+    def scan_permissions():
         """扫描路由并同步权限"""
         try:
             result = perm_service.scan_and_sync()
@@ -101,7 +101,7 @@ def create_permission_router(
         response_model=ItemResponse[PermissionResponse],
         summary="获取角色已分配的权限",
     )
-    async def get_role_permissions(
+    def get_role_permissions(
         code: str = Query(..., description="角色编码"),
     ):
         """获取角色已关联的权限列表"""
@@ -116,7 +116,7 @@ def create_permission_router(
         response_model=OkResponse,
         summary="设置角色权限（全量覆盖）",
     )
-    async def set_role_permissions(
+    def set_role_permissions(
         data: SetPermissionsRequest,
         code: str = Query(..., description="角色编码"),
     ):

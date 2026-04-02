@@ -163,8 +163,8 @@
     </el-card>
     
     <!-- 员工编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" width="600px" destroy-on-close>
-      <div class="section-blocks" style="gap: 0;">
+    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" width="820px" align-center destroy-on-close>
+      <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0;">
         <!-- 基本信息 -->
         <div class="section-block" style="margin-bottom: 16px;">
           <div class="section-block__header">
@@ -203,9 +203,9 @@
                 <el-col :span="24">
                   <el-form-item label="性别">
                     <el-radio-group v-model="form.gender">
-                      <el-radio :label="1">男</el-radio>
-                      <el-radio :label="2">女</el-radio>
-                      <el-radio :label="0">未知</el-radio>
+                      <el-radio :value="1">男</el-radio>
+                      <el-radio :value="2">女</el-radio>
+                      <el-radio :value="0">未知</el-radio>
                     </el-radio-group>
                   </el-form-item>
                 </el-col>
@@ -291,6 +291,282 @@
             </div>
           </div>
         </template>
+
+        <!-- 编辑员工时的聚合操作 -->
+        <template v-else>
+          <div class="section-block" style="margin-bottom: 16px;">
+            <div class="section-block__header">
+              <div class="section-block__title">
+                <el-icon><User /></el-icon>
+                <span>雇佣状态</span>
+              </div>
+            </div>
+            <div class="section-block__content">
+              <template v-if="currentEmployee?.primary_org_id">
+                <div class="inline-summary inline-summary--stacked">
+                  <div class="inline-summary">
+                    <el-tag :type="empStatusType(currentEmployee.emp_status)">
+                      {{ empStatusLabel(currentEmployee.emp_status) }}
+                    </el-tag>
+                    <el-button
+                      size="small"
+                      :type="currentEmployee.emp_status === 3 ? 'success' : 'default'"
+                      :plain="currentEmployee.emp_status !== 3"
+                      :disabled="currentEmployee.emp_status === 3"
+                      @click="handleChangeEmpStatus(currentEmployee, 3)"
+                    >
+                      在职
+                    </el-button>
+                    <el-button
+                      size="small"
+                      :type="currentEmployee.emp_status === 2 ? 'warning' : 'default'"
+                      :plain="currentEmployee.emp_status !== 2"
+                      :disabled="currentEmployee.emp_status === 2"
+                      @click="handleChangeEmpStatus(currentEmployee, 2)"
+                    >
+                      试用期
+                    </el-button>
+                    <el-button
+                      size="small"
+                      :type="currentEmployee.emp_status === 1 ? 'primary' : 'default'"
+                      :plain="currentEmployee.emp_status !== 1"
+                      :disabled="currentEmployee.emp_status === 1"
+                      @click="handleChangeEmpStatus(currentEmployee, 1)"
+                    >
+                      待入职
+                    </el-button>
+                    <el-button
+                      size="small"
+                      :type="currentEmployee.emp_status === 0 ? 'warning' : 'default'"
+                      :plain="currentEmployee.emp_status !== 0"
+                      :disabled="currentEmployee.emp_status === 0"
+                      @click="handleChangeEmpStatus(currentEmployee, 0)"
+                    >
+                      停职
+                    </el-button>
+                    <el-button
+                      size="small"
+                      :type="currentEmployee.emp_status === -1 ? 'info' : 'default'"
+                      :plain="currentEmployee.emp_status !== -1"
+                      :disabled="currentEmployee.emp_status === -1"
+                      @click="handleChangeEmpStatus(currentEmployee, -1)"
+                    >
+                      离职
+                    </el-button>
+                  </div>
+                  <el-text type="info">基于主组织直接调整当前员工的雇佣状态。</el-text>
+                </div>
+              </template>
+              <template v-else>
+                <el-alert
+                  title="该员工尚未设置主组织，暂时无法在此修改雇佣状态"
+                  type="warning"
+                  :closable="false"
+                  show-icon
+                />
+              </template>
+            </div>
+          </div>
+
+          <div class="section-block">
+            <div class="section-block__content edit-manage-tabs">
+              <el-tabs v-model="editManageTab" stretch>
+                <el-tab-pane name="account">
+                  <template #label>
+                    <span class="edit-manage-tabs__label">
+                      <el-icon><Key /></el-icon>
+                      <span>用户账号</span>
+                    </span>
+                  </template>
+                  <template v-if="currentEmployee?.user_id">
+                    <div class="inline-summary">
+                      <el-tag :type="accountStatusType(currentEmployee.account_status)">
+                        {{ accountStatusLabel(currentEmployee.account_status) }}
+                      </el-tag>
+                      <el-button
+                        size="small"
+                        :type="currentEmployee.account_status === 1 ? 'success' : 'default'"
+                        :plain="currentEmployee.account_status !== 1"
+                        :disabled="currentEmployee.account_status === 1"
+                        @click="handleChangeAccountStatus(currentEmployee, 1)"
+                      >
+                        激活
+                      </el-button>
+                      <el-button
+                        size="small"
+                        :type="currentEmployee.account_status === -1 ? 'danger' : 'default'"
+                        :plain="currentEmployee.account_status !== -1"
+                        :disabled="currentEmployee.account_status === -1"
+                        @click="handleChangeAccountStatus(currentEmployee, -1)"
+                      >
+                        禁用
+                      </el-button>
+                      <el-text type="info">已在弹窗内支持直接切换账号状态。</el-text>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="inline-summary">
+                      <el-button
+                        type="primary"
+                        @click="handleCreateAccount(currentEmployee || form)"
+                        :disabled="!canCreateAccountInDialog"
+                      >
+                        创建账号
+                      </el-button>
+                      <el-text type="info">
+                        {{ canCreateAccountInDialog ? '创建后将自动分配「内部员工」角色。' : '当前员工未处于可创建账号的在职状态。' }}
+                      </el-text>
+                    </div>
+                  </template>
+                </el-tab-pane>
+
+                <el-tab-pane name="org">
+                  <template #label>
+                    <span class="edit-manage-tabs__label">
+                      <el-icon><OfficeBuilding /></el-icon>
+                      <span>组织管理</span>
+                    </span>
+                  </template>
+                  <div class="section-block__table">
+                    <el-table :data="currentEmployee?.organizations || []" size="small" max-height="260">
+                      <el-table-column prop="org_name" label="组织" min-width="140" />
+                      <el-table-column prop="emp_no" label="工号" width="120" />
+                      <el-table-column prop="position" label="职位" width="120" />
+                      <el-table-column label="主组织" width="90" align="center">
+                        <template #default="{ row }">
+                          <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
+                          <span v-else class="text-gray">—</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="操作" width="170" align="center">
+                        <template #default="{ row }">
+                          <el-button
+                            v-if="!row.is_primary"
+                            type="primary"
+                            size="small"
+                            link
+                            @click="setPrimaryOrg(row)"
+                          >
+                            设为主组织
+                          </el-button>
+                          <el-button type="danger" size="small" link @click="removeFromOrg(row)">移除</el-button>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                    <div v-if="!currentEmployee?.organizations?.length" class="section-block__empty">
+                      <el-empty description="暂未加入任何组织" :image-size="60" />
+                    </div>
+                  </div>
+
+                  <div class="section-block__add" style="margin-top: 16px;">
+                    <el-form :inline="true" :model="addOrgForm" size="default" class="section-block__add-form">
+                      <el-form-item label="组织">
+                        <el-select v-model="addOrgForm.org_id" placeholder="选择组织" style="width: 150px">
+                          <el-option v-for="org in availableOrgs" :key="org.id" :label="org.name" :value="org.id" />
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="工号">
+                        <el-input v-model="addOrgForm.emp_no" placeholder="工号" style="width: 110px" />
+                      </el-form-item>
+                      <el-form-item label="职位">
+                        <el-input v-model="addOrgForm.position" placeholder="职位" style="width: 110px" />
+                      </el-form-item>
+                      <el-form-item>
+                        <el-checkbox v-model="addOrgForm.set_primary">设为主组织</el-checkbox>
+                      </el-form-item>
+                      <el-form-item>
+                        <el-button type="primary" @click="addToOrg" :disabled="!addOrgForm.org_id">加入</el-button>
+                      </el-form-item>
+                    </el-form>
+                  </div>
+                </el-tab-pane>
+
+                <el-tab-pane name="dept">
+                  <template #label>
+                    <span class="edit-manage-tabs__label">
+                      <el-icon><Folder /></el-icon>
+                      <span>部门管理</span>
+                    </span>
+                  </template>
+                  <el-alert
+                    v-if="!currentEmployee?.organizations?.length"
+                    title="请先为该员工分配组织，才能加入部门"
+                    type="warning"
+                    :closable="false"
+                    show-icon
+                    style="margin-bottom: 16px;"
+                  />
+
+                  <div v-else class="section-block__add" style="margin-bottom: 16px;">
+                    <el-form :inline="true" :model="addDeptForm" size="default" class="section-block__add-form">
+                      <el-form-item label="组织">
+                        <el-select
+                          v-model="selectedOrgForDept"
+                          placeholder="选择组织"
+                          @change="handleOrgForDeptChange"
+                          style="width: 150px"
+                        >
+                          <el-option
+                            v-for="org in currentEmployee.organizations"
+                            :key="org.org_id"
+                            :label="org.org_name"
+                            :value="org.org_id"
+                          />
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="部门">
+                        <el-tree-select
+                          v-model="addDeptForm.dept_id"
+                          :data="departmentTree"
+                          :props="{ label: 'name', value: 'id', children: 'children' }"
+                          placeholder="选择部门"
+                          check-strictly
+                          :disabled="!selectedOrgForDept"
+                          style="width: 200px"
+                        />
+                      </el-form-item>
+                      <el-form-item>
+                        <el-checkbox v-model="addDeptForm.set_primary">设为主部门</el-checkbox>
+                      </el-form-item>
+                      <el-form-item>
+                        <el-button type="primary" @click="addToDept" :disabled="!addDeptForm.dept_id">加入</el-button>
+                      </el-form-item>
+                    </el-form>
+                  </div>
+
+                  <div class="section-block__table">
+                    <el-table :data="currentEmployee?.departments || []" size="small" max-height="260">
+                      <el-table-column prop="dept_name" label="部门" min-width="180" />
+                      <el-table-column label="主部门" width="90" align="center">
+                        <template #default="{ row }">
+                          <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
+                          <span v-else class="text-gray">—</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="操作" width="170" align="center">
+                        <template #default="{ row }">
+                          <el-button
+                            v-if="!row.is_primary"
+                            type="primary"
+                            size="small"
+                            link
+                            @click="setPrimaryDept(row)"
+                          >
+                            设为主部门
+                          </el-button>
+                          <el-button type="danger" size="small" link @click="removeFromDept(row)">移除</el-button>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                    <div v-if="!currentEmployee?.departments?.length" class="section-block__empty">
+                      <el-empty description="暂未加入任何部门" :image-size="60" />
+                    </div>
+                  </div>
+                </el-tab-pane>
+              </el-tabs>
+            </div>
+          </div>
+        </template>
       </div>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -299,7 +575,7 @@
     </el-dialog>
     
     <!-- 管理组织对话框 -->
-    <el-dialog v-model="orgDialogVisible" title="管理员工组织" width="700px">
+    <el-dialog v-model="orgDialogVisible" title="管理员工组织" width="700px" align-center>
       <div v-if="currentEmployee" class="section-blocks">
         <!-- 员工信息 -->
         <div class="section-block__info">
@@ -383,7 +659,7 @@
     </el-dialog>
     
     <!-- 管理部门对话框 -->
-    <el-dialog v-model="deptDialogVisible" title="管理员工部门" width="650px">
+    <el-dialog v-model="deptDialogVisible" title="管理员工部门" width="650px" align-center>
       <div v-if="currentEmployee" class="section-blocks">
         <!-- 员工信息 -->
         <div class="section-block__info">
@@ -487,6 +763,7 @@
       v-model="accountResultVisible"
       title="用户账号已创建"
       width="480px"
+      align-center
       :close-on-click-modal="false"
     >
       <el-alert
@@ -535,11 +812,13 @@ const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const dialogVisible = ref(false)
 const orgDialogVisible = ref(false)
 const deptDialogVisible = ref(false)
+const editDetailLoading = ref(false)
+const editManageTab = ref('account')
 const currentEmployee = ref(null)
 
 // 表单
 const form = reactive({ 
-  id: null, name: '', mobile: '', email: '', gender: 0,
+  id: null, name: '', code: '', mobile: '', email: '', gender: 0,
   org_id: null, emp_no: '', position: '', dept_id: null,
   create_account: false,
 })
@@ -557,6 +836,106 @@ const availableOrgs = computed(() => {
   const joinedOrgIds = (currentEmployee.value.organizations || []).map(o => o.org_id)
   return organizations.value.filter(o => !joinedOrgIds.includes(o.id))
 })
+
+const canCreateAccountInDialog = computed(() => {
+  if (!form.id || !currentEmployee.value || currentEmployee.value.user_id) return false
+  const orgStatuses = (currentEmployee.value.organizations || [])
+    .map(org => Number(org.status))
+    .filter(status => !Number.isNaN(status))
+  if (orgStatuses.length) {
+    return orgStatuses.some(status => status > 0)
+  }
+  return Number(currentEmployee.value.emp_status) > 0
+})
+
+const resetRelationForms = () => {
+  Object.assign(addOrgForm, { org_id: null, emp_no: '', position: '', set_primary: false })
+  Object.assign(addDeptForm, { dept_id: null, set_primary: false })
+  selectedOrgForDept.value = null
+  departmentTree.value = []
+}
+
+const getPrimaryOrgRel = (employee = {}) => {
+  const orgs = employee.organizations || []
+  return orgs.find(org => org.is_primary) || orgs[0] || null
+}
+
+const mergeEmployeeDetail = (detail = {}, fallback = {}) => {
+  const merged = {
+    ...fallback,
+    ...detail
+  }
+  const primaryOrg = getPrimaryOrgRel(merged)
+
+  return {
+    ...merged,
+    user_id: detail.user_id ?? fallback.user_id ?? null,
+    primary_org_id: detail.primary_org_id ?? fallback.primary_org_id ?? primaryOrg?.org_id ?? null,
+    account_status: detail.account_status ?? fallback.account_status ?? null,
+    emp_status: detail.emp_status ?? primaryOrg?.status ?? fallback.emp_status ?? null,
+  }
+}
+
+const applyEmployeeOverrides = (employee, overrides = {}, preferredOrgId = null) => {
+  if (!employee) return employee
+
+  const nextEmployee = {
+    ...employee,
+    ...overrides
+  }
+
+  if (overrides.emp_status !== undefined && Array.isArray(nextEmployee.organizations)) {
+    const targetOrgId = preferredOrgId || nextEmployee.primary_org_id || getPrimaryOrgRel(nextEmployee)?.org_id
+    nextEmployee.organizations = nextEmployee.organizations.map(org => {
+      if (org.org_id !== targetOrgId) return org
+      return {
+        ...org,
+        status: overrides.emp_status
+      }
+    })
+  }
+
+  return nextEmployee
+}
+
+const syncSelectedOrgForDept = async (employee, preferredOrgId = null) => {
+  const orgs = employee?.organizations || []
+  if (!orgs.length) {
+    selectedOrgForDept.value = null
+    departmentTree.value = []
+    addDeptForm.dept_id = null
+    return
+  }
+
+  const hasPreferredOrg = preferredOrgId && orgs.some(org => org.org_id === preferredOrgId)
+  const nextOrgId = hasPreferredOrg
+    ? preferredOrgId
+    : (orgs.find(org => org.is_primary)?.org_id || orgs[0].org_id)
+
+  if (selectedOrgForDept.value !== nextOrgId) {
+    addDeptForm.dept_id = null
+  }
+  selectedOrgForDept.value = nextOrgId
+  await loadDeptTree(nextOrgId)
+}
+
+const refreshCurrentEmployee = async ({ employeeId, fallback = {}, syncDept = false, preferredOrgId = null, overrides = {} } = {}) => {
+  const targetEmployeeId = employeeId || currentEmployee.value?.id
+  if (!targetEmployeeId) return null
+
+  const res = await employeeApi.get(targetEmployeeId)
+  currentEmployee.value = applyEmployeeOverrides(
+    mergeEmployeeDetail(res.data, fallback),
+    overrides,
+    preferredOrgId
+  )
+
+  if (syncDept) {
+    await syncSelectedOrgForDept(currentEmployee.value, preferredOrgId)
+  }
+
+  return currentEmployee.value
+}
 
 // 加载员工列表
 const loadEmployees = async () => {
@@ -648,12 +1027,15 @@ const handleCreate = () => {
     org_id: null, emp_no: '', position: '', dept_id: null,
     create_account: false,
   })
+  currentEmployee.value = null
+  editManageTab.value = 'account'
+  resetRelationForms()
   createDeptTree.value = []
   dialogVisible.value = true
 }
 
 // 编辑员工
-const handleEdit = (row) => {
+const handleEdit = async (row) => {
   Object.assign(form, {
     id: row.id,
     name: row.name,
@@ -662,7 +1044,21 @@ const handleEdit = (row) => {
     email: row.email || '',
     gender: row.gender || 0
   })
+  editManageTab.value = 'account'
+  resetRelationForms()
   dialogVisible.value = true
+  editDetailLoading.value = true
+  try {
+    await refreshCurrentEmployee({
+      employeeId: row.id,
+      fallback: row,
+      syncDept: true
+    })
+  } catch (e) {
+    ElMessage.error('加载员工详情失败')
+  } finally {
+    editDetailLoading.value = false
+  }
 }
 
 // 删除员工
@@ -695,6 +1091,12 @@ const submitForm = async () => {
         gender: form.gender
       })
       ElMessage.success('更新成功')
+      await refreshCurrentEmployee({
+        employeeId: form.id,
+        fallback: currentEmployee.value || form,
+        syncDept: true,
+        preferredOrgId: selectedOrgForDept.value
+      })
     } else {
       // 新建
       const res = await employeeApi.create({
@@ -769,6 +1171,17 @@ const handleCreateAccount = async (row) => {
       raw_password: data.raw_password
     })
     accountResultVisible.value = true
+    if (currentEmployee.value?.id === row.id) {
+      await refreshCurrentEmployee({
+        employeeId: row.id,
+        fallback: {
+          ...row,
+          account_status: newStatus
+        },
+        syncDept: dialogVisible.value || deptDialogVisible.value,
+        preferredOrgId: selectedOrgForDept.value
+      })
+    }
     loadEmployees()
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '创建账号失败')
@@ -778,9 +1191,8 @@ const handleCreateAccount = async (row) => {
 // 管理组织
 const handleManageOrg = async (row) => {
   try {
-    const res = await employeeApi.get(row.id)
-    currentEmployee.value = res.data
-    Object.assign(addOrgForm, { org_id: null, emp_no: '', position: '', set_primary: false })
+    resetRelationForms()
+    await refreshCurrentEmployee({ employeeId: row.id, fallback: row })
     orgDialogVisible.value = true
   } catch (e) {
     ElMessage.error('加载员工详情失败')
@@ -790,40 +1202,13 @@ const handleManageOrg = async (row) => {
 // 管理部门
 const handleManageDept = async (row) => {
   try {
-    // 1. 获取员工详情
-    const res = await employeeApi.get(row.id)
-    currentEmployee.value = res.data
-    Object.assign(addDeptForm, { dept_id: null, set_primary: false })
-    
-    // 2. 清空部门树
-    departmentTree.value = []
-    selectedOrgForDept.value = null
-    
-    // 3. 检查员工是否有加入组织
-    const orgs = res.data.organizations || []
-    
-    if (orgs.length > 0) {
-      // 4. 选择第一个组织（优先使用主组织）
-      let firstOrgId = null
-      
-      // 优先找主组织
-      const primaryOrg = orgs.find(o => o.is_primary)
-      if (primaryOrg) {
-        firstOrgId = primaryOrg.org_id
-      } else {
-        firstOrgId = orgs[0].org_id
-      }
-      
-      // 5. 设置选中的组织
-      selectedOrgForDept.value = firstOrgId
-      
-      // 6. 根据选中的组织加载部门树
-      if (firstOrgId) {
-        await loadDeptTree(firstOrgId)
-      }
-    }
+    resetRelationForms()
+    await refreshCurrentEmployee({
+      employeeId: row.id,
+      fallback: row,
+      syncDept: true
+    })
 
-    // 7. 打开对话框
     deptDialogVisible.value = true
   } catch (e) {
     ElMessage.error('加载员工详情失败')
@@ -851,8 +1236,10 @@ const addToOrg = async () => {
       ...addOrgForm
     })
     ElMessage.success('加入成功')
-    const res = await employeeApi.get(currentEmployee.value.id)
-    currentEmployee.value = res.data
+    await refreshCurrentEmployee({
+      syncDept: true,
+      preferredOrgId: addOrgForm.org_id || selectedOrgForDept.value
+    })
     Object.assign(addOrgForm, { org_id: null, emp_no: '', position: '', set_primary: false })
     loadEmployees()
   } catch (e) {
@@ -865,8 +1252,10 @@ const setPrimaryOrg = async (row) => {
   try {
     await employeeApi.setPrimaryOrg(currentEmployee.value.id, row.org_id)
     ElMessage.success('已设为主组织')
-    const res = await employeeApi.get(currentEmployee.value.id)
-    currentEmployee.value = res.data
+    await refreshCurrentEmployee({
+      syncDept: true,
+      preferredOrgId: row.org_id
+    })
     loadEmployees()
   } catch (e) {
     ElMessage.error(e.message || '设置失败')
@@ -879,8 +1268,10 @@ const removeFromOrg = async (row) => {
     await ElMessageBox.confirm(`确定将员工从「${row.org_name}」移除吗？`, '确认移除', { type: 'warning' })
     await employeeApi.removeFromOrg(currentEmployee.value.id, row.org_id)
     ElMessage.success('移除成功')
-    const res = await employeeApi.get(currentEmployee.value.id)
-    currentEmployee.value = res.data
+    await refreshCurrentEmployee({
+      syncDept: true,
+      preferredOrgId: selectedOrgForDept.value === row.org_id ? null : selectedOrgForDept.value
+    })
     loadEmployees()
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '移除失败')
@@ -899,8 +1290,10 @@ const addToDept = async () => {
       ...addDeptForm
     })
     ElMessage.success('加入成功')
-    const res = await employeeApi.get(currentEmployee.value.id)
-    currentEmployee.value = res.data
+    await refreshCurrentEmployee({
+      syncDept: true,
+      preferredOrgId: selectedOrgForDept.value
+    })
     Object.assign(addDeptForm, { dept_id: null, set_primary: false })
     loadEmployees()
   } catch (e) {
@@ -913,8 +1306,10 @@ const setPrimaryDept = async (row) => {
   try {
     await employeeApi.setPrimaryDept(currentEmployee.value.id, row.dept_id)
     ElMessage.success('已设为主部门')
-    const res = await employeeApi.get(currentEmployee.value.id)
-    currentEmployee.value = res.data
+    await refreshCurrentEmployee({
+      syncDept: true,
+      preferredOrgId: selectedOrgForDept.value
+    })
     loadEmployees()
   } catch (e) {
     ElMessage.error(e.message || '设置失败')
@@ -927,8 +1322,10 @@ const removeFromDept = async (row) => {
     await ElMessageBox.confirm(`确定将员工从「${row.dept_name}」部门移除吗？`, '确认移除', { type: 'warning' })
     await employeeApi.removeFromDept(currentEmployee.value.id, row.dept_id)
     ElMessage.success('移除成功')
-    const res = await employeeApi.get(currentEmployee.value.id)
-    currentEmployee.value = res.data
+    await refreshCurrentEmployee({
+      syncDept: true,
+      preferredOrgId: selectedOrgForDept.value
+    })
     loadEmployees()
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '移除失败')
@@ -960,7 +1357,7 @@ const accountStatusType = (status) => {
 // 修改雇佣状态（基于主组织）
 const handleChangeEmpStatus = async (row, newStatus) => {
   if (row.emp_status === newStatus) return
-  const orgId = row.primary_org_id
+  const orgId = row.primary_org_id || currentEmployee.value?.organizations?.find(org => org.is_primary)?.org_id
   if (!orgId) {
     ElMessage.warning('该员工未分配主组织，无法修改雇佣状态')
     return
@@ -972,6 +1369,22 @@ const handleChangeEmpStatus = async (row, newStatus) => {
     )
     await employeeApi.updateOrgStatus(row.id, orgId, newStatus)
     ElMessage.success('状态更新成功')
+    if (currentEmployee.value?.id === row.id) {
+      await refreshCurrentEmployee({
+        employeeId: row.id,
+        fallback: {
+          ...row,
+          primary_org_id: orgId,
+          emp_status: newStatus
+        },
+        syncDept: dialogVisible.value || deptDialogVisible.value,
+        preferredOrgId: selectedOrgForDept.value || orgId,
+        overrides: {
+          primary_org_id: orgId,
+          emp_status: newStatus
+        }
+      })
+    }
     loadEmployees()
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '操作失败')
@@ -988,6 +1401,20 @@ const handleChangeAccountStatus = async (row, newStatus) => {
     )
     await employeeApi.updateAccountStatus(row.id, newStatus)
     ElMessage.success('账号状态更新成功')
+    if (currentEmployee.value?.id === row.id) {
+      await refreshCurrentEmployee({
+        employeeId: row.id,
+        fallback: {
+          ...row,
+          account_status: newStatus
+        },
+        syncDept: dialogVisible.value || deptDialogVisible.value,
+        preferredOrgId: selectedOrgForDept.value,
+        overrides: {
+          account_status: newStatus
+        }
+      })
+    }
     loadEmployees()
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '操作失败')
@@ -1001,8 +1428,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../styles/components/ui/tables.css';
-@import '../../styles/components/ui/filters.css';
 
 .employee-info {
   display: flex;
@@ -1024,5 +1449,24 @@ onMounted(() => {
 .status-arrow {
   font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
+}
+.inline-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.inline-summary--stacked {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 10px;
+}
+.edit-manage-tabs {
+  padding-top: 4px;
+}
+.edit-manage-tabs__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>

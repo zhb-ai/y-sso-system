@@ -65,6 +65,36 @@ python dev_server.py --host 127.0.0.1 --port 8001 --reload --debug --log-level i
 - **API 文档**：http://localhost:8000/docs
 - **健康检查**：http://localhost:8000/health
 
+## 运行测试
+
+### 1. 运行全部测试
+```bash
+venv\Scripts\python.exe -m pytest tests/ -v -s --no-header --tb=short
+```
+
+### 2. 运行指定测试文件
+```bash
+venv\Scripts\python.exe -m pytest tests/test_api/test_sso_portal.py -v -s --no-header --tb=short
+```
+
+### 3. 运行指定测试类或方法
+```bash
+# 运行指定测试类
+venv\Scripts\python.exe -m pytest tests/test_api/test_sso_portal.py::TestSSOPortalEventLoopBlocking -v -s
+
+# 运行指定测试方法
+venv\Scripts\python.exe -m pytest tests/test_api/test_sso_portal.py::TestSSOPortalEventLoopBlocking::test_sso_apps_concurrent_requests_not_serialized -v -s
+```
+
+### 参数说明
+
+| 参数 | 说明 |
+|------|------|
+| `-v` | 详细输出，显示每个测试用例名称和结果 |
+| `-s` | 显示 print 输出（不捕获 stdout） |
+| `--no-header` | 不显示 pytest 版本头信息 |
+| `--tb=short` | 简短格式显示错误回溯 |
+
 ## 注意事项
 
 1. 确保已安装所有依赖包：`pip install -r requirements.txt`

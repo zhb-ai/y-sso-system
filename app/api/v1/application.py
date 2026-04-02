@@ -108,7 +108,7 @@ def create_application_router() -> APIRouter:
         summary="获取应用列表",
         description="分页查询 SSO 客户端应用列表，支持按名称/编码搜索、按状态筛选",
     )
-    async def list_applications(
+    def list_applications(
         keyword: Optional[str] = Query(None, description="搜索关键词（名称/编码）"),
         is_active: Optional[bool] = Query(None, description="是否激活"),
         page: int = Query(1, ge=1, description="页码"),
@@ -129,7 +129,7 @@ def create_application_router() -> APIRouter:
         summary="获取应用详情",
         description="根据应用ID获取详情",
     )
-    async def get_application(
+    def get_application(
         app_id: int = Query(..., description="应用ID"),
     ):
         """获取应用详情"""
@@ -147,7 +147,7 @@ def create_application_router() -> APIRouter:
         summary="创建应用",
         description="创建新的 SSO 客户端应用，创建成功后返回 client_id 和 client_secret，密钥仅此次返回",
     )
-    async def create_application(data: CreateApplicationRequest):
+    def create_application(data: CreateApplicationRequest):
         """创建应用"""
         try:
             application = app_service.create_application(
@@ -170,7 +170,7 @@ def create_application_router() -> APIRouter:
         summary="更新应用",
         description="更新应用信息",
     )
-    async def update_application(
+    def update_application(
         data: UpdateApplicationRequest,
         app_id: int = Query(..., description="应用ID"),
     ):
@@ -188,7 +188,7 @@ def create_application_router() -> APIRouter:
         summary="删除应用",
         description="删除应用（软删除）",
     )
-    async def delete_application(
+    def delete_application(
         app_id: int = Query(..., description="应用ID"),
     ):
         """删除应用"""
@@ -204,7 +204,7 @@ def create_application_router() -> APIRouter:
         summary="启用应用",
         description="启用指定应用",
     )
-    async def enable_application(
+    def enable_application(
         app_id: int = Query(..., description="应用ID"),
     ):
         """启用应用"""
@@ -220,7 +220,7 @@ def create_application_router() -> APIRouter:
         summary="禁用应用",
         description="禁用指定应用",
     )
-    async def disable_application(
+    def disable_application(
         app_id: int = Query(..., description="应用ID"),
     ):
         """禁用应用"""
@@ -236,7 +236,7 @@ def create_application_router() -> APIRouter:
         summary="重置客户端密钥",
         description="重置客户端密钥，重置后返回新的 client_secret，密钥仅此次返回，旧密钥立即失效",
     )
-    async def reset_client_secret(
+    def reset_client_secret(
         app_id: int = Query(..., description="应用ID"),
     ):
         """重置客户端密钥"""

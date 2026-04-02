@@ -59,7 +59,7 @@ def create_employee_account_router(employee_model: Type) -> APIRouter:
             "创建后自动分配「内部员工」角色。"
         ),
     )
-    async def create_employee_account(data: CreateAccountRequest):
+    def create_employee_account(data: CreateAccountRequest):
         """为员工创建用户账号"""
         try:
             user_info = account_service.create_account_for_employee(

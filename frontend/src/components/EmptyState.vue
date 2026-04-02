@@ -39,7 +39,7 @@
 defineProps({
   /**
    * 空状态类型
-   * @values data, search, error, permission
+   * @values data, search, error, permission, create, network
    */
   type: {
     type: String,
@@ -221,5 +221,25 @@ defineEmits(['action'])
 
 .empty-state--permission .empty-state__icon .el-icon {
   color: #d4a72c;
+}
+
+/* 创建/首次使用空状态 - 使用绿色系 */
+.empty-state--create .empty-state__icon {
+  background: linear-gradient(135deg, #f0f9e8 0%, #f7fcf4 100%);
+  border-color: rgba(174, 204, 52, 0.2);
+}
+
+.empty-state--create .empty-state__icon .el-icon {
+  color: #aecc34;
+}
+
+/* 网络错误空状态 - 使用灰色系 */
+.empty-state--network .empty-state__icon {
+  background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+  border-color: rgba(139, 132, 118, 0.2);
+}
+
+.empty-state--network .empty-state__icon .el-icon {
+  color: #8b8476;
 }
 </style>
