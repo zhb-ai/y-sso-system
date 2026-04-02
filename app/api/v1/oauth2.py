@@ -76,7 +76,7 @@ def create_oauth2_provider_router(
             "否则重定向到前端 SSO 登录页。"
         ),
     )
-    async def authorize(
+    def authorize(
         request: Request,
         response_type: str = Query(..., description="响应类型，必须为 code"),
         client_id: str = Query(..., description="客户端 ID"),
@@ -154,7 +154,7 @@ def create_oauth2_provider_router(
             "生成授权码并返回重定向 URL。"
         ),
     )
-    async def authorize_confirm(
+    def authorize_confirm(
         data: AuthorizeConfirmRequest,
         current_user=Depends(get_current_user),
     ):
@@ -216,7 +216,7 @@ def create_oauth2_provider_router(
             "客户端认证支持 HTTP Basic Auth 和表单参数两种方式。"
         ),
     )
-    async def token(
+    def token(
         grant_type: str = Form(..., description="授权类型"),
         code: str = Form(None, description="授权码（authorization_code 时必填）"),
         redirect_uri: str = Form(None, description="重定向URI（authorization_code 时必填）"),
@@ -308,7 +308,7 @@ def create_oauth2_provider_router(
             "返回格式符合 OIDC UserInfo 规范。"
         ),
     )
-    async def userinfo(request: Request):
+    def userinfo(request: Request):
         # 从 Authorization 头提取 Bearer Token
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
@@ -344,7 +344,7 @@ def create_oauth2_provider_router(
         summary="OAuth2 授权服务器元数据",
         description="返回 RFC 8414 授权服务器元数据，便于客户端自动发现端点。",
     )
-    async def authorization_server_metadata(request: Request):
+    def authorization_server_metadata(request: Request):
         base_url = str(request.base_url).rstrip("/")
         prefix = "/api/v1/oauth2"
 

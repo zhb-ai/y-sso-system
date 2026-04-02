@@ -95,7 +95,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         summary="获取角色列表",
         description="获取所有角色（轻量模型，不分页）",
     )
-    async def list_roles():
+    def list_roles():
         """获取角色列表"""
         roles = role_service.list_roles()
         return Resp.OK(RoleResponse.from_list(roles))
@@ -105,7 +105,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         response_model=ItemResponse[RoleResponse],
         summary="获取角色详情",
     )
-    async def get_role(
+    def get_role(
         code: str = Query(..., description="角色编码"),
     ):
         """根据角色编码获取详情"""
@@ -120,7 +120,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         response_model=ItemResponse[RoleResponse],
         summary="创建角色",
     )
-    async def create_role(data: RoleCreateRequest):
+    def create_role(data: RoleCreateRequest):
         """创建角色"""
         try:
             role = role_service.create_role(
@@ -137,7 +137,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         response_model=ItemResponse[RoleResponse],
         summary="更新角色",
     )
-    async def update_role(
+    def update_role(
         data: RoleUpdateRequest,
         code: str = Query(..., description="角色编码"),
     ):
@@ -154,7 +154,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         response_model=OkResponse,
         summary="删除角色",
     )
-    async def delete_role(
+    def delete_role(
         code: str = Query(..., description="角色编码"),
     ):
         """删除角色（软删除）"""
@@ -171,7 +171,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         response_model=ItemResponse[UserRoleResponse],
         summary="获取某角色下的用户列表",
     )
-    async def list_role_users(
+    def list_role_users(
         code: str = Query(..., description="角色编码"),
     ):
         """获取拥有指定角色的所有用户"""
@@ -186,7 +186,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         response_model=OkResponse,
         summary="给用户分配角色",
     )
-    async def assign_role(data: AssignRoleRequest):
+    def assign_role(data: AssignRoleRequest):
         """给用户分配角色"""
         try:
             role_service.assign_role(
@@ -202,7 +202,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         response_model=OkResponse,
         summary="移除用户角色",
     )
-    async def unassign_role(data: AssignRoleRequest):
+    def unassign_role(data: AssignRoleRequest):
         """移除用户的指定角色"""
         try:
             role_service.unassign_role(
@@ -218,7 +218,7 @@ def create_role_router(role_model: Type, user_model: Type) -> APIRouter:
         response_model=ItemResponse[RoleResponse],
         summary="获取用户的角色列表",
     )
-    async def list_user_roles(
+    def list_user_roles(
         user_id: int = Query(..., description="用户ID"),
     ):
         """获取指定用户的所有角色"""

@@ -42,8 +42,16 @@ async def lifespan(app: FastAPI):
     )
 
     # 自动扫描路由并同步权限表
+    # lifespan 是 async def，但启动阶段没有并发请求，同步 ORM 调用是安全的
+    from contextlib import nullcontext
     from app.startup import auto_sync_permissions
-    auto_sync_permissions(app)
+    try:
+        from yweb.orm import allow_sync
+    except ImportError:
+        allow_sync = None
+
+    with allow_sync() if allow_sync else nullcontext():
+        auto_sync_permissions(app)
 
     yield
 

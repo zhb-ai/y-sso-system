@@ -30,7 +30,7 @@ def create_sso_portal_router(application_model) -> APIRouter:
         response_model=OkResponse,
         summary="获取可用应用列表（SSO 门户）",
     )
-    async def sso_available_apps():
+    def sso_available_apps():
         """SSO 门户：获取所有激活的应用列表
 
         仅需要登录认证，不需要管理权限。

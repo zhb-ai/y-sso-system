@@ -54,7 +54,7 @@ def create_project_auth_router(
     # ==================== 自助修改密码 ====================
 
     @router.post("/change-password", response_model=OkResponse, summary="修改密码")
-    async def change_password(data: ChangePasswordRequest, user=Depends(get_current_user)):
+    def change_password(data: ChangePasswordRequest, user=Depends(get_current_user)):
         """用户自助修改密码
 
         验证旧密码后设置新密码，同时清除「首次登录强制修改」标记。
@@ -73,7 +73,7 @@ def create_project_auth_router(
         summary="获取企微扫码登录参数",
         description="返回前端渲染企微 Web 登录组件所需的参数",
     )
-    async def wechat_work_login_config(request: Request):
+    def wechat_work_login_config(request: Request):
         """获取企微扫码登录参数"""
         if not wechat_auth_service:
             return Resp.OK(data={"enabled": False})
@@ -88,7 +88,7 @@ def create_project_auth_router(
         summary="企微授权码登录",
         description="用企微授权码（扫码或企微内部授权均可）换取本系统 JWT Token",
     )
-    async def wechat_work_login(data: WechatWorkLoginRequest, request: Request):
+    def wechat_work_login(data: WechatWorkLoginRequest, request: Request):
         """企微授权码登录"""
         try:
             if not wechat_auth_service:
@@ -112,7 +112,7 @@ def create_project_auth_router(
         summary="获取企微内部静默授权 URL",
         description="在企业微信内部打开时，通过此接口获取静默授权跳转链接，实现免登录",
     )
-    async def wechat_work_oauth_url(
+    def wechat_work_oauth_url(
         redirect_uri: str = Query(..., description="授权成功后的前端回调地址"),
         state: Optional[str] = Query("", description="状态参数"),
     ):
