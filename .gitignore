@@ -178,5 +178,8 @@ config/*
 # OS files
 .DS_Store
 Thumbs.db
-
-
+web/
+ssl/
+*.tar.gz
+*.zip
+*.rar
