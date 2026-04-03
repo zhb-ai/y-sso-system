@@ -179,4 +179,5 @@ config/*
 .DS_Store
 Thumbs.db
 web/
+ssl/
 
