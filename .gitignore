@@ -180,4 +180,6 @@ config/*
 Thumbs.db
 web/
 ssl/
-
+*.tar.gz
+*.zip
+*.rar
