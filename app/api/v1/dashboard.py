@@ -43,7 +43,10 @@ def create_dashboard_router(dashboard_service) -> APIRouter:
         summary="获取仪表盘统计数据",
     )
     def get_statistics():
-        """获取系统概览统计：应用数、用户数、员工数、部门数"""
+        """获取系统概览统计：应用数、过去24小时活跃用户数、员工数、部门数
+
+        user_count: 过去24小时内登录过的用户数量（基于 last_login_at）
+        """
         stats = dashboard_service.get_statistics()
         return Resp.OK(DashboardStatistics.from_dict(stats))
 

@@ -3,6 +3,8 @@
 跨聚合查询服务：汇总各业务模块的统计数据。
 """
 
+from datetime import datetime, timedelta
+
 from yweb.log import get_logger
 
 logger = get_logger()
@@ -31,10 +33,17 @@ class DashboardAppService:
 
         Returns:
             包含 application_count, user_count, employee_count, department_count 的字典
+            user_count: 过去24小时内活跃用户数（基于 last_login_at 筛选）
         """
+        since = datetime.now() - timedelta(hours=24)
+        daily_active_count = (
+            self.user_model.query
+            .filter(self.user_model.last_login_at >= since)
+            .count()
+        )
         stats = {
             "application_count": self.application_model.query.count(),
-            "user_count": self.user_model.query.count(),
+            "user_count": daily_active_count,
             "employee_count": 0,
             "department_count": 0,
         }
