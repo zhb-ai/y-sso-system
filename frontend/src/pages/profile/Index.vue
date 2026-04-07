@@ -199,8 +199,8 @@ const handleChangePassword = async () => {
 
   passwordLoading.value = true
   try {
-    await userApi.update(userForm.id, {
-      current_password: passwordForm.currentPassword,
+    await userApi.updatePassword({
+      old_password: passwordForm.currentPassword,
       new_password: passwordForm.newPassword
     })
     ElMessage.success('密码修改成功')
