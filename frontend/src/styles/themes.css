@@ -214,7 +214,7 @@ input:-internal-autofill-selected {
 
 .el-select {
   min-width: 150px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 .el-switch {
   --el-switch-on-color: var(--el-color-primary);
@@ -530,7 +530,7 @@ input:-internal-autofill-selected {
   --el-table-border: 1px solid var(--el-table-border-color);
   --el-table-text-color: var(--font-color);
   --el-table-header-text-color: var(--font-medium-color);
-  --el-table-row-hover-bg-color: var(--el-fill-color-light);
+  --el-table-row-hover-bg-color: var(--el-color-primary-light-9);
   --el-table-current-row-bg-color: var(--el-color-primary-light-9);
   --el-table-header-bg-color: var(--light-gray);
   --el-table-fixed-box-shadow: var(--el-box-shadow-light);
