@@ -224,3 +224,13 @@
 | 需要自动化测试 | webapp-testing |
 | 需要 E2E 测试 | webapp-testing |
 | 需要回归测试 | webapp-testing |
+
+
+# 只运行应用管理的功能测试
+npx playwright test applications.spec.js --project=chromium --grep "功能测试"
+
+# 只运行新增应用测试
+npx playwright test applications.spec.js --project=chromium --grep "新增应用"
+
+# 在 UI 模式下运行
+npx playwright test applications.spec.js --ui

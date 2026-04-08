@@ -68,7 +68,7 @@ e2e/
 | 页面 | 测试文件 | 登录方式 |
 |------|----------|----------|
 | 登录页 | `login.spec.js` | 无需登录 |
-| 单点登录页 | `sso-login.spec.js` | 无需登录 |
+| 单点登录页 | `sso-login.spec.js` | 显示登录 |
 | 仪表盘 | `dashboard.spec.js` | 显式登录 |
 | 应用管理 | `applications.spec.js` | 显式登录 |
 | 用户管理 | `users.spec.js` | 显式登录 |

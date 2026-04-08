@@ -160,7 +160,7 @@
               <el-icon><Connection /></el-icon> SSO
             </el-button>
             <el-button
-              type="warning"
+              :type="scope.row.status === 'active' ? 'danger' : 'success'"
               size="small"
               link
               @click="handleToggleStatus(scope.row)"
