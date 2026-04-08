@@ -212,7 +212,7 @@ export const userApi = {
   enable: (userId) => api.post('/v1/users/enable', null, { params: { user_id: userId } }),
   disable: (userId) => api.post('/v1/users/disable', null, { params: { user_id: userId } }),
   resetPassword: (userId) => api.post('/v1/users/force-reset-password', null, { params: { user_id: userId } }),
-  updatePassword: (data) => api.post('/v1/users/change-password', data),
+  updatePassword: (data) => api.post('/v1/auth/change-password', data),
 }
 
 export const roleApi = {
