@@ -20,19 +20,34 @@
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="用户名" prop="username">
-                  <el-input v-model="userForm.username" placeholder="请输入用户名" autocomplete="off" />
+                  <el-input
+                    v-model="userForm.username"
+                    placeholder="请输入用户名"
+                    autocomplete="off"
+                    :input-attrs="{ autocomplete: 'off', 'data-lpignore': 'true', 'data-form-type': 'other' }"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="姓名" prop="name">
-                  <el-input v-model="userForm.name" placeholder="请输入姓名" autocomplete="off" />
+                  <el-input
+                    v-model="userForm.name"
+                    placeholder="请输入姓名"
+                    autocomplete="off"
+                    :input-attrs="{ autocomplete: 'off', 'data-lpignore': 'true', 'data-form-type': 'other' }"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="邮箱" prop="email">
-                  <el-input v-model="userForm.email" placeholder="请输入邮箱（选填）" autocomplete="off" />
+                  <el-input
+                    v-model="userForm.email"
+                    placeholder="请输入邮箱（选填）"
+                    autocomplete="off"
+                    :input-attrs="{ autocomplete: 'off', 'data-lpignore': 'true', 'data-form-type': 'other' }"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
@@ -40,8 +55,8 @@
                   <el-input
                     v-model="userForm.phone"
                     placeholder="请输入手机号"
-                    autocomplete="new-phone"
-                    :input-attrs="{ autocomplete: 'new-phone', 'data-lpignore': 'true' }"
+                    autocomplete="off"
+                    :input-attrs="{ autocomplete: 'off', 'data-lpignore': 'true', 'data-form-type': 'other' }"
                   />
                 </el-form-item>
               </el-col>
@@ -55,7 +70,7 @@
                     placeholder="请输入初始密码"
                     show-password
                     autocomplete="new-password"
-                    :input-attrs="{ autocomplete: 'new-password' }"
+                    :input-attrs="{ autocomplete: 'new-password', 'data-lpignore': 'true', 'data-form-type': 'other' }"
                   />
                 </el-form-item>
               </el-col>

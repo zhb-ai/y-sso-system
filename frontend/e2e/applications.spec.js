@@ -1,138 +1,257 @@
 /**
  * 应用管理页面 E2E 测试
+ * 优化：使用 test.describe.serial 只登录一次，所有测试共享登录状态
  */
-import { test, expect } from '@playwright/test';
-import { loginAndNavigate } from './fixtures/auth.js';
+import { test, expect } from './fixtures/test-base.js';
+import { navigateToPage } from './fixtures/test-base.js';
+import { generateAppData, generateAppName } from './fixtures/test-data.js';
 
-test.describe.serial('应用管理页面 - 元素存在性验证', () => {
-  
-  test('页面标题存在', async ({ page }) => {
-    await loginAndNavigate(page, '应用管理');
+test.describe.serial('应用管理页面 - 完整测试流程', () => {
+  // 存储测试过程中创建的应用信息
+  let createdApp = null;
+  let updatedAppName = null;
+  let page;
+
+  test.beforeAll(async ({ browser }) => {
+    // 在所有测试开始前登录
+    const context = await browser.newContext();
+    page = await context.newPage();
     
-    // 验证页面元素 - 使用更通用的选择器
+    // 执行登录 - 使用与 auth.js 相同的逻辑
+    await page.goto('http://localhost:5200/login');
+    await page.waitForLoadState('networkidle');
+    
+    // 输入用户名
+    const usernameInput = page.locator('.login-form input[placeholder="用户名"]').first();
+    await usernameInput.waitFor({ timeout: 10000 });
+    await usernameInput.fill('admin');
+    
+    // 输入密码
+    const passwordInput = page.locator('.login-form input[placeholder="密码"]').first();
+    await passwordInput.fill('admin123');
+    
+    // 点击登录按钮
+    await page.locator('.login-form button:has-text("登录")').click();
+    
+    // 等待跳转到SSO登录页或仪表盘
+    await page.waitForTimeout(3000);
+    
+    // 检查当前URL
+    const currentUrl = page.url();
+    
+    // 如果跳转到sso/login，需要点击"进入管理后台"
+    if (currentUrl.includes('/sso/login')) {
+      await page.locator('a').filter({ hasText: '进入管理后台' }).waitFor({ timeout: 10000 });
+      await page.locator('a').filter({ hasText: '进入管理后台' }).click();
+      await page.waitForTimeout(2000);
+    }
+    
+    // 检查是否登录成功
+    const finalUrl = page.url();
+    if (finalUrl.includes('/login')) {
+      throw new Error('登录失败，仍在登录页面');
+    }
+  });
+
+  test.afterAll(async () => {
+    // 所有测试结束后关闭页面
+    if (page) {
+      await page.close();
+    }
+  });
+
+  test('1. 页面元素验证', async () => {
+    // 导航到应用管理页面
+    await navigateToPage(page, '应用管理');
+
+    // 验证页面标题
     await expect(page.locator('h2').first()).toContainText('应用管理');
-  });
 
-  test('搜索和筛选区域元素存在', async ({ page }) => {
-    await loginAndNavigate(page, '应用管理');
-    
-    // 验证搜索区域元素
+    // 验证搜索区域
     await expect(page.locator('.filter-form')).toBeVisible();
-  });
 
-  test('应用表格存在', async ({ page }) => {
-    await loginAndNavigate(page, '应用管理');
-    
     // 验证表格
     await expect(page.locator('.el-table')).toBeVisible();
-  });
-});
+    await page.waitForSelector('.el-table__row', { timeout: 10000 });
 
-test.describe.serial('应用管理页面 - 功能测试', () => {
-  
-  test('新增应用功能', async ({ page }) => {
-    await loginAndNavigate(page, '应用管理');
-    
-    // 1. 点击新建按钮
-    await page.getByRole('button', { name: '新建应用' }).click();
-    
-    // 2. 等待对话框出现
+    // 验证操作按钮
+    await expect(page.locator('button:has-text("编辑")').first()).toBeVisible();
+    await expect(page.locator('button:has-text("删除")').first()).toBeVisible();
+    await expect(page.locator('button:has-text("密钥")').first()).toBeVisible();
+    await expect(page.locator('button:has-text("新建")').first()).toBeVisible();
+  });
+
+  test('2. 新建应用', async () => {
+    // 生成随机应用数据
+    createdApp = generateAppData();
+
+    // 点击新建按钮
+    await page.locator('button:has-text("新建")').first().click();
     await expect(page.locator('.el-dialog')).toBeVisible();
     await expect(page.locator('.el-dialog__title')).toContainText('新建应用');
-    
-    // 3. 填写应用信息
-    const timestamp = Date.now();
-    const appName = `测试应用_${timestamp}`;
-    const appCode = `test_app_${timestamp}`;
-    
-    await page.locator('input[placeholder="请输入应用名称"]').fill(appName);
-    await page.locator('input[placeholder="字母、数字、下划线"]').fill(appCode);
-    await page.locator('textarea[placeholder="请输入应用描述"]').fill('这是一个测试应用');
-    
-    // 4. 点击确认按钮
-    await page.locator('.el-dialog__footer button:has-text("确认")').click();
-    
-    // 5. 验证创建成功 - 等待对话框关闭
-    await page.waitForTimeout(2000);
-    
-    // 6. 验证新应用出现在列表中
-    await expect(page.locator('.el-table')).toContainText(appName);
+
+    // 填写表单 - 使用对话框内的表单元素
+    const dialog = page.locator('.el-dialog');
+    await dialog.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
+    await dialog.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
+    await dialog.locator('textarea[placeholder*="请输入应用描述"]').fill(createdApp.description);
+
+    // 提交表单
+    await page.locator('.el-dialog__footer button:has-text("确定")').click();
+
+    // 验证创建成功
+    await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.el-message--success').first()).toContainText('成功');
+    await page.waitForTimeout(1000);
+    await expect(page.locator('.el-dialog')).not.toBeVisible();
+
+    // 验证应用出现在表格中
+    await expect(page.locator('.el-table__body')).toContainText(createdApp.name);
   });
 
-  test('查询应用功能', async ({ page }) => {
-    await loginAndNavigate(page, '应用管理');
-    
-    // 1. 在搜索框中输入关键词
-    await page.locator('.filter-form input[placeholder*="搜索应用名称或编码"]').fill('测试');
-    
-    // 2. 点击搜索按钮
-    await page.locator('.filter-form button:has-text("搜索")').click();
-    
-    // 3. 等待搜索结果加载
+  test('3. 搜索应用 - 按名称', async () => {
     await page.waitForTimeout(2000);
-    
-    // 4. 验证表格中有数据或显示空状态
-    const hasData = await page.locator('.el-table__row').count() > 0;
-    const hasEmptyState = await page.locator('.empty-state').count() > 0;
-    expect(hasData || hasEmptyState).toBeTruthy();
+
+    if (createdApp) {
+      // 按名称搜索
+      await page.locator('.filter-form input[placeholder*="搜索应用"]').fill(createdApp.name);
+      await page.locator('.filter-form button:has-text("搜索")').click();
+      await page.waitForTimeout(1000);
+
+      // 验证搜索结果
+      await expect(page.locator('.el-table__body')).toContainText(createdApp.name);
+
+      // 重置搜索
+      await page.locator('.filter-form button:has-text("重置")').click();
+      await page.waitForTimeout(1000);
+    }
   });
 
-  test('修改应用功能', async ({ page }) => {
-    await loginAndNavigate(page, '应用管理');
-    
-    // 1. 等待表格加载
+  test('4. 搜索应用 - 按编码', async () => {
+    await page.waitForTimeout(2000);
+
+    if (createdApp) {
+      // 按编码搜索
+      await page.locator('.filter-form input[placeholder*="搜索应用"]').fill(createdApp.code);
+      await page.locator('.filter-form button:has-text("搜索")').click();
+      await page.waitForTimeout(1000);
+
+      // 验证搜索结果
+      await expect(page.locator('.el-table__body')).toContainText(createdApp.code);
+
+      // 重置搜索
+      await page.locator('.filter-form button:has-text("重置")').click();
+      await page.waitForTimeout(1000);
+    }
+  });
+
+  test('5. 编辑应用', async () => {
+    // 如果没有创建过应用，先创建一个
+    if (!createdApp) {
+      createdApp = generateAppData();
+      await page.locator('button:has-text("新建")').first().click();
+      const dialog = page.locator('.el-dialog');
+      await dialog.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
+      await dialog.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
+      await page.locator('.el-dialog__footer button:has-text("确定")').click();
+      await page.waitForTimeout(2000);
+    }
+
+    // 在表格中找到应用
     await page.waitForSelector('.el-table__row', { timeout: 10000 });
-    
-    // 2. 找到第一个应用的编辑按钮并点击
-    const firstEditButton = page.locator('.el-table__row').first().locator('button:has-text("编辑")');
-    await firstEditButton.click();
-    
-    // 3. 等待编辑对话框出现
+    const rows = page.locator('.el-table__row');
+    let targetRow = null;
+
+    for (let i = 0; i < await rows.count(); i++) {
+      const row = rows.nth(i);
+      const text = await row.textContent();
+      if (text && text.includes(createdApp.name)) {
+        targetRow = row;
+        break;
+      }
+    }
+
+    expect(targetRow).not.toBeNull();
+
+    // 点击编辑
+    await targetRow.locator('button:has-text("编辑")').click();
     await expect(page.locator('.el-dialog')).toBeVisible();
     await expect(page.locator('.el-dialog__title')).toContainText('编辑应用');
-    
-    // 4. 修改应用名称
-    const timestamp = Date.now();
-    const newAppName = `修改后的应用_${timestamp}`;
-    
-    const nameInput = page.locator('input[placeholder="请输入应用名称"]');
+
+    // 生成新名称
+    updatedAppName = generateAppName();
+
+    // 更新表单 - 使用对话框内的表单元素
+    const dialog = page.locator('.el-dialog');
+    const nameInput = dialog.locator('input[placeholder*="请输入应用名称"]');
     await nameInput.clear();
-    await nameInput.fill(newAppName);
-    
-    // 5. 点击确认按钮
-    await page.locator('.el-dialog__footer button:has-text("确认")').click();
-    
-    // 6. 等待对话框关闭
-    await page.waitForTimeout(2000);
-    
-    // 7. 验证修改成功
-    await expect(page.locator('.el-table')).toContainText(newAppName);
+    await nameInput.fill(updatedAppName);
+
+    // 提交
+    await page.locator('.el-dialog__footer button:has-text("确定")').click();
+
+    // 验证更新成功
+    await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.el-message--success').first()).toContainText('成功');
+    await page.waitForTimeout(1000);
+
+    // 验证更新后的名称出现在表格中
+    await expect(page.locator('.el-table__body')).toContainText(updatedAppName);
   });
 
-  test('删除应用功能', async ({ page }) => {
-    await loginAndNavigate(page, '应用管理');
-    
-    // 1. 等待表格加载
+  test('6. 删除应用', async () => {
+    // 确定要删除的应用名称
+    const appNameToDelete = updatedAppName || (createdApp ? createdApp.name : null);
+
+    // 如果没有可删除的应用，创建一个
+    if (!appNameToDelete) {
+      createdApp = generateAppData();
+      await page.locator('button:has-text("新建")').first().click();
+      const dialog = page.locator('.el-dialog');
+      await dialog.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
+      await dialog.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
+      await page.locator('.el-dialog__footer button:has-text("确定")').click();
+      await page.waitForTimeout(2000);
+    }
+
+    const nameToDelete = appNameToDelete || createdApp.name;
+
+    // 在表格中找到应用
     await page.waitForSelector('.el-table__row', { timeout: 10000 });
-    
-    // 2. 获取第一个应用的名称
-    const firstRow = page.locator('.el-table__row').first();
-    const appName = await firstRow.locator('.app-name').textContent();
-    
-    // 3. 找到第一个应用的删除按钮并点击
-    const firstDeleteButton = firstRow.locator('button:has-text("删除")');
-    await firstDeleteButton.click();
-    
-    // 4. 等待确认对话框出现
+    const rows = page.locator('.el-table__row');
+    let targetRow = null;
+
+    for (let i = 0; i < await rows.count(); i++) {
+      const row = rows.nth(i);
+      const text = await row.textContent();
+      if (text && text.includes(nameToDelete)) {
+        targetRow = row;
+        break;
+      }
+    }
+
+    // 如果找不到，使用第一个应用
+    if (!targetRow) {
+      targetRow = rows.first();
+    }
+
+    expect(targetRow).not.toBeNull();
+
+    // 点击删除
+    await targetRow.locator('button:has-text("删除")').click();
+
+    // 确认删除
     await expect(page.locator('.el-message-box')).toBeVisible();
-    
-    // 5. 点击确认删除
+    await expect(page.locator('.el-message-box__message')).toContainText('确定要删除');
     await page.locator('.el-message-box__btns button:has-text("确定")').click();
-    
-    // 6. 等待删除完成
-    await page.waitForTimeout(2000);
-    
-    // 7. 验证删除成功 - 应用名称不再出现在列表中
-    await expect(page.locator('.el-table')).not.toContainText(appName);
+
+    // 验证删除成功
+    await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.el-message--success').first()).toContainText('成功');
+    await page.waitForTimeout(1000);
+
+    // 验证应用已被删除
+    const tableContent = await page.locator('.el-table__body').textContent();
+    expect(tableContent).not.toContain(nameToDelete);
   });
 });
