@@ -1628,22 +1628,7 @@ onMounted(() => {
   background-color: rgba(var(--danger), 0.1);
 }
 
-/* 员工列表操作按钮 */
-.el-table .el-button--primary {
-  color: rgba(var(--primary), 1);
-}
 
-.el-table .el-button--primary:hover {
-  color: rgba(var(--primary), 0.8);
-}
-
-.el-table .el-button--danger {
-  color: rgba(var(--danger), 1);
-}
-
-.el-table .el-button--danger:hover {
-  color: rgba(var(--danger), 0.8);
-}
 
 /* 添加部门按钮 - 更鲜明的蓝色 */
 .dept-card-header .el-button--primary {

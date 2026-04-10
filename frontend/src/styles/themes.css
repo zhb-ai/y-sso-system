@@ -485,7 +485,9 @@ input:-internal-autofill-selected {
   position: relative;
   overflow: hidden;
 }
-
+.el-table--small .cell{
+  padding: 2px 8px;
+}
 .el-table .el-table__cell {
   padding: 1rem 0;
 }
