@@ -164,6 +164,7 @@
           :data="deptEmployees"
           style="width: 100%"
           row-key="id"
+          tooltip-effect="light"
         >
           <el-table-column prop="name" label="姓名" min-width="80">
             <template #default="{ row }">
@@ -1556,15 +1557,15 @@ onMounted(() => {
 }
 
 .filter-form .el-button--info {
-  background: linear-gradient(135deg, rgba(var(--info), 1), rgba(var(--info), 0.85));
+  background: linear-gradient(135deg, rgba(83, 90, 231, 1));
   border-color: transparent;
   color: var(--white);
-  box-shadow: 0 2px 6px rgba(var(--info), 0.35);
+  box-shadow: 0 2px 6px rgba(83, 90, 231, 0.35);
 }
 
 .filter-form .el-button--info:hover {
-  background: linear-gradient(135deg, rgba(var(--info), 0.95), rgba(var(--info), 0.75));
-  box-shadow: 0 4px 10px rgba(var(--info), 0.45);
+  background: linear-gradient(135deg, rgba(83, 90, 231, 0.95), rgba(83, 90, 231, 0.75));
+  box-shadow: 0 4px 10px rgba(83, 90, 231, 0.45);
   color: var(--white);
   transform: translateY(-1px);
 }

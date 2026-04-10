@@ -22,7 +22,7 @@
 }
 
 .bg-info {
-  background-color: rgba(var(--info), 1) !important;
+  background-color: rgba(83, 90, 231, 1) !important;
 }
 
 .bg-light {
@@ -59,7 +59,7 @@
 }
 
 .text-info {
-  color: rgba(var(--info), 1) !important;
+  color: rgba(83, 90, 231, 1) !important;
 }
 
 .text-light {
