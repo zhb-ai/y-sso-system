@@ -29,7 +29,7 @@
   --el-color-primary-light-5: color-mix(in srgb, var(--color-primary) 65%, white);
   --el-color-primary-light-7: color-mix(in srgb, var(--color-primary) 45%, white);
   --el-color-primary-light-8: color-mix(in srgb, var(--color-primary) 25%, white);
-  --el-color-primary-light-9: color-mix(in srgb, var(--color-primary) 0.5%, white);
+  --el-color-primary-light-9: color-mix(in srgb, var(--color-primary) 5%, white);
   --el-color-primary-dark-2: color-mix(in srgb, var(--color-primary) 95%, black);
 
   /* Success 颜色系列 */
@@ -38,7 +38,7 @@
   --el-color-success-light-5: color-mix(in srgb, var(--color-success) 65%, white);
   --el-color-success-light-7: color-mix(in srgb, var(--color-success) 45%, white);
   --el-color-success-light-8: color-mix(in srgb, var(--color-success) 25%, white);
-  --el-color-success-light-9: color-mix(in srgb, var(--color-success) 0.5%, white);
+  --el-color-success-light-9: color-mix(in srgb, var(--color-success) 5%, white);
   --el-color-success-dark-2: color-mix(in srgb, var(--color-success) 95%, black);
 
   /* Warning 颜色系列 */
@@ -47,7 +47,7 @@
   --el-color-warning-light-5: color-mix(in srgb, var(--color-warning) 65%, white);
   --el-color-warning-light-7: color-mix(in srgb, var(--color-warning) 45%, white);
   --el-color-warning-light-8: color-mix(in srgb, var(--color-warning) 25%, white);
-  --el-color-warning-light-9: color-mix(in srgb, var(--color-warning) 0.5%, white);
+  --el-color-warning-light-9: color-mix(in srgb, var(--color-warning) 5%, white);
   --el-color-warning-dark-2: color-mix(in srgb, var(--color-warning) 95%, black);
 
   /* Danger 颜色系列 */
@@ -56,7 +56,7 @@
   --el-color-danger-light-5: color-mix(in srgb, var(--color-danger) 65%, white);
   --el-color-danger-light-7: color-mix(in srgb, var(--color-danger) 45%, white);
   --el-color-danger-light-8: color-mix(in srgb, var(--color-danger) 25%, white);
-  --el-color-danger-light-9: color-mix(in srgb, var(--color-danger) 0.5%, white);
+  --el-color-danger-light-9: color-mix(in srgb, var(--color-danger) 5%, white);
   --el-color-danger-dark-2: color-mix(in srgb, var(--color-danger) 95%, black);
 
   /* Error 颜色系列 (与 danger 相同) */
@@ -65,7 +65,7 @@
   --el-color-error-light-5: color-mix(in srgb, var(--color-danger) 65%, white);
   --el-color-error-light-7: color-mix(in srgb, var(--color-danger) 45%, white);
   --el-color-error-light-8: color-mix(in srgb, var(--color-danger) 25%, white);
-  --el-color-error-light-9: color-mix(in srgb, var(--color-danger) 0.5%, white);
+  --el-color-error-light-9: color-mix(in srgb, var(--color-danger) 5%, white);
   --el-color-error-dark-2: color-mix(in srgb, var(--color-danger) 95%, black);
 
   /* Info 颜色系列 */
@@ -74,8 +74,8 @@
   --el-color-info-light-5: color-mix(in srgb, var(--color-info) 65%, white);
   --el-color-info-light-7: color-mix(in srgb, var(--color-info) 45%, white);
   --el-color-info-light-8: color-mix(in srgb, var(--color-info) 25%, white);
-  --el-color-info-light-9: color-mix(in srgb, var(--color-info) 0.5%, white);
-  --el-color-info-dark-2: color-mix(in srgb, var(--color-info) 85%, black); */
+  --el-color-info-light-9: color-mix(in srgb, var(--color-info) 5%, white);
+  --el-color-info-dark-2: color-mix(in srgb, var(--color-info) 95%, black); */
 
   /* ============================================
      其他颜色变量
@@ -253,7 +253,7 @@ input:-internal-autofill-selected {
 
 .el-input {
   --el-border-radius-base: var(--border-radius-lg);
-  --el-border-color-hover: rgba(var(--primary), 0.5);
+  --el-border-color-hover: var(--el-color-primary-light-9);
 }
 
 /* ============================================
