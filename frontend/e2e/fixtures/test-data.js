@@ -174,3 +174,70 @@ export function generateUserData() {
     password: 'Test@123456'
   };
 }
+
+/**
+ * 生成随机员工姓名
+ * @returns {string}
+ */
+export function generateEmployeeName() {
+  return generateDisplayName();
+}
+
+/**
+ * 生成随机工号
+ * @returns {string}
+ */
+export function generateEmployeeNo() {
+  const prefix = 'EMP';
+  const randomNum = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+  return `${prefix}${randomNum}`;
+}
+
+/**
+ * 生成完整的员工数据对象
+ * @returns {Object}
+ */
+export function generateEmployeeData() {
+  const name = generateEmployeeName();
+  const username = generateUsername();
+  return {
+    name: name,
+    email: generateEmail(username),
+    phone: generatePhone(),
+    employeeNo: generateEmployeeNo()
+  };
+}
+
+/**
+ * 生成随机部门名称
+ * @returns {string}
+ */
+export function generateDepartmentName() {
+  const prefixes = ['技术', '销售', '市场', '人事', '财务', '运营', '研发', '测试', '运维', '行政'];
+  const suffixes = ['部', '组', '中心', '科室', '部门'];
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+  const randomNum = Math.floor(Math.random() * 1000);
+  return `${prefix}${suffix}${randomNum}`;
+}
+
+/**
+ * 生成随机部门编码
+ * @returns {string}
+ */
+export function generateDepartmentCode() {
+  const prefix = 'DEPT';
+  const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `${prefix}${randomNum}`;
+}
+
+/**
+ * 生成完整的部门数据对象
+ * @returns {Object}
+ */
+export function generateDepartmentData() {
+  return {
+    name: generateDepartmentName(),
+    code: generateDepartmentCode()
+  };
+}

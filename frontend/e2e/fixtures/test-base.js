@@ -4,6 +4,7 @@
  */
 import { test as base, expect } from '@playwright/test';
 import { login, navigateToMenu } from './auth.js';
+import { ROUTES, getFullUrl } from './test-config.js';
 
 /**
  * 扩展的 test 对象，包含认证相关的 fixtures
@@ -27,15 +28,16 @@ export { expect };
  */
 export function getMenuPathMap() {
   return {
-    '仪表盘': '/dashboard',
-    '应用管理': '/applications',
-    '用户管理': '/users',
-    '角色管理': '/roles',
-    'SSO 角色': '/sso-roles',
-    '组织架构': '/organization',
-    '员工管理': '/employees',
-    '系统设置': '/settings',
-    '缓存管理': '/cache'
+    '仪表盘': ROUTES.DASHBOARD,
+    '应用管理': ROUTES.APPLICATIONS,
+    '用户管理': ROUTES.USERS,
+    '角色管理': ROUTES.ROLES,
+    'SSO 角色': ROUTES.SSO_ROLES,
+    '组织架构': ROUTES.ORGANIZATION,
+    '员工管理': ROUTES.EMPLOYEES,
+    '系统设置': ROUTES.SETTINGS,
+    '缓存管理': ROUTES.CACHE,
+    '个人资料': ROUTES.PROFILE
   };
 }
 
@@ -46,13 +48,13 @@ export function getMenuPathMap() {
  */
 export async function navigateToPage(page, menuName) {
   const menuPathMap = getMenuPathMap();
-  
+
   if (menuName === '仪表盘') {
-    await page.goto('http://localhost:5200/dashboard');
+    await page.goto(getFullUrl(ROUTES.DASHBOARD));
     await page.waitForTimeout(2000);
     return;
   }
-  
+
   // 尝试点击菜单项
   try {
     const menuItem = page.locator('.el-menu-item, .el-sub-menu__title').filter({ hasText: menuName });
@@ -63,7 +65,7 @@ export async function navigateToPage(page, menuName) {
     // 如果菜单点击失败，使用直接URL导航
     const path = menuPathMap[menuName];
     if (path) {
-      await page.goto(`http://localhost:5200${path}`);
+      await page.goto(getFullUrl(path));
       await page.waitForTimeout(3000);
     } else {
       throw new Error(`无法导航到菜单: ${menuName}`);

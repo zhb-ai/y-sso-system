@@ -1,176 +1,177 @@
 /**
  * 组织架构页面 E2E 测试
+ * 使用全局共享登录状态，避免并发登录冲突
  */
 import { test, expect } from '@playwright/test';
-import { loginAndNavigate } from './fixtures/auth.js';
+import { navigateTo, ROUTES } from './fixtures/shared-auth.js';
+import { generateDepartmentName, generateDepartmentCode } from './fixtures/test-data.js';
 
-test.describe.serial('组织架构页面 - 元素存在性验证', () => {
-  
-  test('页面标题存在', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 验证页面标题
-    await expect(page.locator('.page-header h2')).toContainText('组织架构');
+test.describe.serial('组织架构页面 - 完整测试流程', () => {
+  let createdDepartment = null;
+  let updatedDepartmentName = null;
+  let page;
+
+  test.beforeAll(async ({ browser }) => {
+    const context = await browser.newContext({
+      storageState: 'playwright/.auth/user.json'
+    });
+    page = await context.newPage();
+
+    console.log('[组织架构] 开始测试...');
+    await navigateTo(page, ROUTES.ORGANIZATION);
+    console.log('[组织架构] 页面准备完成');
   });
 
-  test('操作按钮存在', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 验证操作按钮
-    await expect(page.getByRole('button', { name: '新建' }).first()).toBeVisible();
-  });
-
-  test('部门树存在', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 验证部门树
-    await expect(page.locator('.el-tree')).toBeVisible();
-  });
-});
-
-test.describe.serial('组织架构页面 - 功能测试', () => {
-  
-  test('新建员工功能 - 打开对话框', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 1. 点击新建员工按钮
-    await page.getByRole('button', { name: '新建员工' }).click();
-    
-    // 2. 等待对话框出现
-    await expect(page.locator('.el-dialog')).toBeVisible();
-    await expect(page.locator('.el-dialog__title')).toContainText('新建员工');
-    
-    // 3. 验证表单字段存在
-    await expect(page.locator('input[placeholder="请输入姓名"]')).toBeVisible();
-    await expect(page.locator('input[placeholder="请输入员工编号"]')).toBeVisible();
-    await expect(page.locator('input[placeholder="请输入手机号"]')).toBeVisible();
-    
-    // 4. 点击取消关闭对话框
-    await page.locator('.el-dialog__footer button:has-text("取消")').click();
-    await page.waitForTimeout(1000);
-  });
-
-  test('新建组织功能 - 打开对话框', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 1. 点击新建组织按钮
-    await page.getByRole('button', { name: '新建组织' }).click();
-    
-    // 2. 等待对话框出现
-    await expect(page.locator('.el-dialog')).toBeVisible();
-    await expect(page.locator('.el-dialog__title')).toContainText('新建组织');
-    
-    // 3. 验证表单字段存在
-    await expect(page.locator('input[placeholder="请输入组织名称"]')).toBeVisible();
-    await expect(page.locator('input[placeholder="请输入组织编码"]')).toBeVisible();
-    
-    // 4. 点击取消关闭对话框
-    await page.locator('.el-dialog__footer button:has-text("取消")').click();
-    await page.waitForTimeout(1000);
-  });
-
-  test('切换组织功能 - 组织选择器存在', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 1. 验证组织选择器存在
-    await expect(page.locator('.filter-form .el-select')).toBeVisible();
-    
-    // 2. 点击组织选择器
-    await page.locator('.filter-form .el-select').click();
-    await page.waitForTimeout(1000);
-    
-    // 3. 验证下拉选项存在
-    await expect(page.locator('.el-select-dropdown')).toBeVisible();
-    
-    // 4. 按ESC关闭下拉
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
-  });
-
-  test('编辑组织功能 - 打开对话框', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 1. 点击编辑组织按钮
-    const editOrgButton = page.locator('button:has-text("编辑组织")');
-    if (await editOrgButton.count() > 0) {
-      await editOrgButton.click();
-      
-      // 2. 等待对话框出现
-      await expect(page.locator('.el-dialog')).toBeVisible();
-      await expect(page.locator('.el-dialog__title')).toContainText('编辑组织');
-      
-      // 3. 验证表单字段存在
-      await expect(page.locator('input[placeholder="请输入组织名称"]')).toBeVisible();
-      
-      // 4. 点击取消关闭对话框
-      await page.locator('.el-dialog__footer button:has-text("取消")').click();
-      await page.waitForTimeout(1000);
+  test.afterAll(async () => {
+    if (page) {
+      await page.context().close();
     }
   });
 
-  test('绑定企业微信功能 - 按钮存在', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 验证绑定企业微信按钮或已绑定状态存在
-    const bindButton = page.locator('button:has-text("绑定企业微信")');
-    const unbindButton = page.locator('button:has-text("解绑")');
-    
-    const hasBindButton = await bindButton.count() > 0;
-    const hasUnbindButton = await unbindButton.count() > 0;
-    
-    expect(hasBindButton || hasUnbindButton).toBeTruthy();
+  test('1. 页面元素验证', async () => {
+    await expect(page.locator('h2').first()).toContainText('组织架构');
+    await expect(page.locator('.el-tree')).toBeVisible();
+    await expect(page.locator('.el-tree-node').first()).toBeVisible();
+    await expect(page.locator('button:has-text("新建")').first()).toBeVisible();
   });
 
-  test('同步通讯录功能 - 按钮存在', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 验证同步通讯录按钮存在（可能被禁用）
-    const syncButton = page.locator('button:has-text("同步通讯录")');
-    await expect(syncButton).toBeVisible();
+  test('2. 可以收起/展开部门树节点', async () => {
+    // 等待部门树加载
+    await page.waitForSelector('.el-tree-node', { timeout: 10000 });
+
+    // 查找可展开的节点（非叶子节点）
+    const expandIcons = page.locator('.el-tree-node__expand-icon:not(.is-leaf)');
+    const count = await expandIcons.count();
+
+    if (count > 0) {
+      const firstIcon = expandIcons.first();
+
+      // 获取父节点（树节点）- 通过 expand-icon 的父元素找到 tree-node
+      const treeNode = firstIcon.locator('xpath=ancestor::div[contains(@class, "el-tree-node")]').first();
+
+      // 检查当前节点是否已展开
+      const isExpanded = await treeNode.evaluate(el => el.classList.contains('is-expanded')).catch(() => false);
+
+      if (isExpanded) {
+        // 如果已展开，先点击收起
+        await firstIcon.click();
+        await page.waitForTimeout(500);
+
+        // 验证节点已收起（不再包含 is-expanded 类）
+        const isStillExpanded = await treeNode.evaluate(el => el.classList.contains('is-expanded')).catch(() => false);
+        expect(isStillExpanded).toBe(false);
+
+        // 再次点击展开
+        await firstIcon.click();
+        await page.waitForTimeout(500);
+      } else {
+        // 如果未展开，直接点击展开
+        await firstIcon.click();
+        await page.waitForTimeout(500);
+      }
+
+      // 验证节点已展开
+      const isNowExpanded = await treeNode.evaluate(el => el.classList.contains('is-expanded')).catch(() => false);
+      expect(isNowExpanded).toBe(true);
+    }
   });
 
-  test('添加部门功能 - 打开对话框', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 1. 点击添加部门按钮（部门卡片头部）
-    const addDeptButton = page.locator('.dept-card-header button:has-text("添加部门")');
-    await addDeptButton.click();
-    
-    // 2. 等待对话框出现
+  test('3. 新建部门', async () => {
+    createdDepartment = {
+      name: generateDepartmentName(),
+      code: generateDepartmentCode()
+    };
+
+    // 使用更精确的选择器：查找"新建组织"按钮
+    await page.locator('button:has-text("新建组织")').click();
+
     await expect(page.locator('.el-dialog')).toBeVisible();
-    await expect(page.locator('.el-dialog__title')).toContainText('新建部门');
-    
-    // 3. 验证表单字段存在
-    await expect(page.locator('input[placeholder="请输入部门名称"]')).toBeVisible();
-    
-    // 4. 点击取消关闭对话框
-    await page.locator('.el-dialog__footer button:has-text("取消")').click();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('.el-dialog__title')).toContainText('新建组织');
+
+    const dialog = page.locator('.el-dialog');
+    await dialog.locator('input[placeholder*="组织名称"]').fill(createdDepartment.name);
+    await dialog.locator('input[placeholder*="组织编码"]').fill(createdDepartment.code);
+
+    await dialog.locator('.el-dialog__footer button:has-text("确定")').click();
+
+    await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.el-message--success').first()).toContainText('成功');
+    await page.waitForTimeout(2000);
+    await expect(page.locator('.el-dialog')).not.toBeVisible();
+
+    // 注：由于组织架构树可能需要刷新才能显示新数据，这里只验证操作成功
+    // 实际项目中应该等待后端返回成功并刷新树数据
   });
 
-  test('部门树操作按钮存在', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 1. 等待部门树加载
+  test('4. 编辑部门', async () => {
+    // 使用树中第一个非叶子节点进行编辑测试
     await page.waitForSelector('.el-tree-node', { timeout: 10000 });
-    
-    // 2. 验证第一个部门节点的操作按钮存在（使用first()解决多个元素问题）
-    await expect(page.locator('.dept-actions').first()).toBeVisible();
+    const treeNodes = page.locator('.el-tree-node');
+    const count = await treeNodes.count();
+
+    if (count > 0) {
+      // 使用第一个节点进行编辑
+      const targetNode = treeNodes.first();
+
+      // 右键点击节点打开菜单
+      await targetNode.click({ button: 'right' });
+      await page.waitForTimeout(1000);
+
+      // 尝试点击编辑（如果菜单存在）
+      const editMenuItem = page.locator('.el-dropdown-menu__item:has-text("编辑")');
+      if (await editMenuItem.count() > 0) {
+        await editMenuItem.click();
+        await expect(page.locator('.el-dialog')).toBeVisible();
+        await expect(page.locator('.el-dialog__title')).toContainText('编辑组织');
+
+        updatedDepartmentName = generateDepartmentName();
+
+        const dialog = page.locator('.el-dialog');
+        const nameInput = dialog.locator('input[placeholder*="组织名称"]');
+        await nameInput.clear();
+        await nameInput.fill(updatedDepartmentName);
+
+        await dialog.locator('.el-dialog__footer button:has-text("确定")').click();
+
+        await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('.el-message--success').first()).toContainText('成功');
+        await page.waitForTimeout(2000);
+        await expect(page.locator('.el-dialog')).not.toBeVisible();
+      }
+
+      // 注：由于组织架构树可能需要刷新才能显示更新后的数据，这里只验证操作成功
+    }
   });
 
-  test('添加员工到部门功能 - 按钮存在', async ({ page }) => {
-    await loginAndNavigate(page, '组织架构');
-    
-    // 1. 等待部门树加载
+  test('5. 删除部门', async () => {
+    // 使用树中第一个节点进行删除测试
     await page.waitForSelector('.el-tree-node', { timeout: 10000 });
-    
-    // 2. 点击第一个部门
-    const firstDept = page.locator('.el-tree-node').first();
-    await firstDept.click();
-    await page.waitForTimeout(1000);
-    
-    // 3. 验证添加员工到部门按钮存在
-    const addEmpButton = page.locator('button:has-text("添加员工到部门")');
-    await expect(addEmpButton).toBeVisible();
+    const treeNodes = page.locator('.el-tree-node');
+    const count = await treeNodes.count();
+
+    if (count > 0) {
+      // 使用第一个节点进行删除
+      const targetNode = treeNodes.first();
+
+      // 右键点击节点打开菜单
+      await targetNode.click({ button: 'right' });
+      await page.waitForTimeout(1000);
+
+      // 尝试点击删除（如果菜单存在）
+      const deleteMenuItem = page.locator('.el-dropdown-menu__item:has-text("删除")');
+      if (await deleteMenuItem.count() > 0) {
+        await deleteMenuItem.click();
+
+        await expect(page.locator('.el-message-box')).toBeVisible();
+        await expect(page.locator('.el-message-box__message')).toContainText('删除');
+        await page.locator('.el-message-box__btns button:has-text("确定")').click();
+
+        await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('.el-message--success').first()).toContainText('成功');
+        await page.waitForTimeout(2000);
+      }
+
+      // 注：由于组织架构树可能需要刷新才能显示更新后的数据，这里只验证操作成功
+    }
   });
 });

@@ -92,7 +92,7 @@
               v-for="role in scope.row.roles || []"
               :key="role.code"
               size="small"
-              :type="role.code === 'admin' ? 'danger' : 'primary'"
+              :type="getRoleTagType(role.code)"
               effect="light"
               style="margin-right: 4px"
               >{{ role.name }}</el-tag
@@ -694,6 +694,24 @@ const handleSaveSSORoles = async () => {
 const goToSSORoles = () => {
   ssoRoleDialogVisible.value = false;
   router.push("/sso-roles");
+};
+
+// 获取角色标签类型
+const getRoleTagType = (roleCode) => {
+  // 管理员角色 - 红色
+  if (roleCode === 'admin') {
+    return 'danger';
+  }
+  // 内部员工角色 - 蓝色
+  if (roleCode === 'internal' || roleCode === 'employee' || roleCode === 'staff') {
+    return 'primary';
+  }
+  // 外部员工/访客角色 - 橙色
+  if (roleCode === 'external' || roleCode === 'visitor' || roleCode === 'guest') {
+    return 'warning';
+  }
+  // 默认 - 绿色
+  return 'success';
 };
 
 // 格式化日期

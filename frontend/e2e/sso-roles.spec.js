@@ -1,10 +1,10 @@
 /**
  * SSO角色管理页面 E2E 测试
- * 优化：使用 test.describe.serial 只登录一次，所有测试共享登录状态
+ * 优化：直接访问SSO角色页面，如果token不存在或失效则自动登录
  */
-import { test, expect } from './fixtures/test-base.js';
-import { navigateToPage } from './fixtures/test-base.js';
+import { test, expect, smartNavigate } from './fixtures/smart-test-base.js';
 import { generateRoleData, generateRoleName, generateRoleDescription } from './fixtures/test-data.js';
+import { ROUTES } from './fixtures/test-config.js';
 
 /**
  * 生成SSO角色专用随机数据
@@ -23,59 +23,27 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
   let createdRole = null;
   let updatedRoleName = null;
   let page;
+  let context;
 
   test.beforeAll(async ({ browser }) => {
-    // 在所有测试开始前登录
-    const context = await browser.newContext();
+    // 创建新的浏览器上下文
+    context = await browser.newContext();
     page = await context.newPage();
-    
-    // 执行登录 - 使用与 auth.js 相同的逻辑
-    await page.goto('http://localhost:5200/login');
-    await page.waitForLoadState('networkidle');
-    
-    // 输入用户名
-    const usernameInput = page.locator('.login-form input[placeholder="用户名"]').first();
-    await usernameInput.waitFor({ timeout: 10000 });
-    await usernameInput.fill('admin');
-    
-    // 输入密码
-    const passwordInput = page.locator('.login-form input[placeholder="密码"]').first();
-    await passwordInput.fill('admin123');
-    
-    // 点击登录按钮
-    await page.locator('.login-form button:has-text("登录")').click();
-    
-    // 等待跳转到SSO登录页或仪表盘
-    await page.waitForTimeout(3000);
-    
-    // 检查当前URL
-    const currentUrl = page.url();
-    
-    // 如果跳转到sso/login，需要点击"进入管理后台"
-    if (currentUrl.includes('/sso/login')) {
-      await page.locator('a').filter({ hasText: '进入管理后台' }).waitFor({ timeout: 10000 });
-      await page.locator('a').filter({ hasText: '进入管理后台' }).click();
-      await page.waitForTimeout(2000);
-    }
-    
-    // 检查是否登录成功
-    const finalUrl = page.url();
-    if (finalUrl.includes('/login')) {
-      throw new Error('登录失败，仍在登录页面');
-    }
+
+    // 直接访问SSO角色页面，smartNavigate会自动处理登录
+    console.log('[SSO角色] 开始测试，直接访问页面...');
+    await smartNavigate(page, ROUTES.SSO_ROLES, { checkAuth: true });
+    console.log('[SSO角色] 页面准备完成');
   });
 
   test.afterAll(async () => {
-    // 所有测试结束后关闭页面
-    if (page) {
-      await page.close();
+    // 所有测试结束后关闭上下文
+    if (context) {
+      await context.close();
     }
   });
 
   test('1. 页面元素验证', async () => {
-    // 导航到SSO角色页面
-    await navigateToPage(page, 'SSO 角色');
-
     // 验证页面标题
     await expect(page.locator('.page-header h2')).toContainText('SSO');
 

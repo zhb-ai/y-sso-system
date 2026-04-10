@@ -7,18 +7,21 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
-  
-  /* 禁用完全并行运行测试 - 因为测试需要登录状态 */
-  fullyParallel: false,
-  
+
+  /* 全局设置 - 执行一次登录 */
+  globalSetup: './e2e/fixtures/global-setup.js',
+
+  /* 启用完全并行运行测试 - 每个测试文件独立运行 */
+  fullyParallel: true,
+
   /* 在 CI 中禁止 test.only */
   forbidOnly: !!process.env.CI,
-  
+
   /* 重试次数 */
   retries: process.env.CI ? 2 : 0,
-  
-  /* 工作进程数 - 设置为1确保串行执行 */
-  workers: 1,
+
+  /* 工作进程数 - 根据 CPU 核心数自动调整，最多4个 */
+  workers: process.env.CI ? 2 : 4,
   
   /* 报告器配置 */
   reporter: [
@@ -30,22 +33,25 @@ export default defineConfig({
   use: {
     /* 基础 URL */
     baseURL: 'http://localhost:5200',
-    
+
+    /* 使用全局登录状态 */
+    storageState: 'playwright/.auth/user.json',
+
     /* 收集追踪信息 */
     trace: 'on-first-retry',
-    
+
     /* 失败时截图 */
     screenshot: 'only-on-failure',
-    
+
     /* 失败时录制视频 */
     video: 'on-first-retry',
-    
+
     /* 视口大小 */
     viewport: { width: 1280, height: 720 },
-    
+
     /* 动作超时 */
     actionTimeout: 15000,
-    
+
     /* 导航超时 */
     navigationTimeout: 30000,
   },

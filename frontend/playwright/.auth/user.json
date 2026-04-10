@@ -1,0 +1,22 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:5200",
+      "localStorage": [
+        {
+          "name": "token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6IiIsInJvbGVzIjpbImFkbWluIl0sInRva2VuX3R5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NzU3OTAxOTgsImlhdCI6MTc3NTc5MDEzOH0.UdLKF1hcEpKd-7fA_sff_YguS0Xd-xt1JI9T117y_bk"
+        },
+        {
+          "name": "refreshToken",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInRva2VuX3R5cGUiOiJyZWZyZXNoIiwiZXhwIjoxNzc2Mzk0OTM4LCJpYXQiOjE3NzU3OTAxMzh9.q5J6yuw0IDEdVWJ7rjNtgSTosVAODql2gjsCbHsgPnA"
+        },
+        {
+          "name": "userInfo",
+          "value": "{\"id\":1,\"username\":\"admin\",\"email\":\"\",\"phone\":\"\",\"is_active\":true,\"roles\":[\"admin\"],\"sso_roles\":[],\"must_change_password\":false}"
+        }
+      ]
+    }
+  ]
+}
