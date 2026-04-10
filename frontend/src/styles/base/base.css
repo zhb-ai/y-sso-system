@@ -264,7 +264,7 @@ code {
 }
 
 .text-info {
-  color: rgba(var(--info), 1);
+  color: rgba(83, 90, 231, 1);
 }
 
 .text-light {
@@ -306,7 +306,7 @@ code {
 }
 
 .bg-info {
-  background-color: rgba(var(--info), 1);
+  background-color: rgba(83, 90, 231, 1);
   color: var(--white);
 }
 

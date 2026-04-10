@@ -32,6 +32,11 @@
             <el-form-item label="手机号" prop="phone">
               <el-input v-model="userForm.phone" placeholder="请输入手机号" size="large" autocomplete="off" />
             </el-form-item>
+            <!-- <el-form-item label="激活状态" prop="status">
+              <el-tag :type="userForm.status === 'active' ? 'success' : 'danger'" size="large">
+                {{ userForm.status === 'active' ? '已激活' : '未激活' }}
+              </el-tag>
+            </el-form-item> -->
 
             <el-form-item>
               <el-button type="primary" @click="handleSubmit" :loading="submitLoading" size="large">
@@ -102,8 +107,10 @@ import { userApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 import { User, Lock } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
+const router = useRouter()
 const userFormRef = ref(null)
 const passwordFormRef = ref(null)
 const submitLoading = ref(false)
@@ -114,7 +121,8 @@ const userForm = reactive({
   username: '',
   name: '',
   email: '',
-  phone: ''
+  phone: '',
+  status: 'active'
 })
 
 const passwordForm = reactive({
@@ -165,6 +173,7 @@ const loadUserInfo = () => {
     userForm.name = authStore.userInfo.name || ''
     userForm.email = authStore.userInfo.email || ''
     userForm.phone = authStore.userInfo.phone || ''
+    userForm.status = authStore.userInfo.is_active ? 'active' : 'inactive'
   }
 }
 
@@ -177,14 +186,16 @@ const handleSubmit = async () => {
     const updateData = {
       name: userForm.name,
       email: userForm.email,
-      phone: userForm.phone
+      phone: userForm.phone,
+      status: userForm.status
     }
 
     await userApi.update(userForm.id, updateData)
-    ElMessage.success('个人资料更新成功')
+    ElMessage.success('个人资料更新成功，请重新登录')
 
-    // 更新本地用户信息
-    await authStore.getCurrentUser()
+    // 退出登录并跳转到登录页
+    authStore.logout()
+    router.push('/login')
   } catch (error) {
     const errorMsg = getDefaultErrorMessage(error, '更新失败')
     handleApiError(error, errorMsg)
@@ -199,8 +210,8 @@ const handleChangePassword = async () => {
 
   passwordLoading.value = true
   try {
-    await userApi.update(userForm.id, {
-      current_password: passwordForm.currentPassword,
+    await userApi.updatePassword({
+      old_password: passwordForm.currentPassword,
       new_password: passwordForm.newPassword
     })
     ElMessage.success('密码修改成功')

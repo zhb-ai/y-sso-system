@@ -1,54 +1,35 @@
 :root {
-  /* Ra-admin 基础颜色变量 */
-  --primary: 72, 190, 206;
-  --secondary: 139, 132, 118;
-  --success: 174, 204, 52;
-  --danger: 229, 94, 64;
-  --warning: 235, 195, 63;
-  --info: 83, 90, 231;
-  --light: 229, 227, 224;
-  --dark: 72, 68, 61;
-  --black: 0, 0, 0;
-  --light-gray: #f4f7f8;
-  --white: #ffffff;
-  
-  /* 字体颜色 */
-  --font-color: #15264b;
-  --font-title-color: #1c3264;
-  --font-secondary-color: #22242c;
-  --font-medium-color: #858594;
-  --font-light-color: #a0a0b0;
-  
-  /* 背景颜色 */
-  --body-color: #f9f9f9;
-  --bodybg-color: #f9f9f9;
-  --light-gray-alt: #f1f3f5;
-  --table-stripe-color: 245, 247, 250;
-  
-  /* 边框和阴影 */
-  --border_color: #ebedf0;
-  --box-shadow: 0px 0px 21px 3px rgba(var(--secondary), 0.05);
-  --hover-shadow: 0 0.5rem 2rem var(--light-gray);
-  
-  /* 过渡效果 */
-  --app-transition: all 0.3s ease;
-  
-  /* 动画缓动曲线 */
+  /* ============================================
+     Ra-admin 基础颜色变量
+     注意：以下变量在 themes.css 中定义，这里保留注释作为参考：
+     --primary, --secondary, --success, --danger, --warning, --info,
+     --light, --dark, --black, --light-gray, --white,
+     --font-color, --font-title-color, --font-secondary-color,
+     --font-medium-color, --font-light-color,
+     --body-color, --bodybg-color, --light-gray-alt, --table-stripe-color,
+     --border_color, --box-shadow, --hover-shadow
+     ============================================ */
+
+  /* ============================================
+     动画缓动曲线
+     ============================================ */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
-  /* 动画时长 */
+
+  /* ============================================
+     动画时长
+     ============================================ */
   --duration-instant: 100ms;
   --duration-fast: 150ms;
   --duration-normal: 200ms;
   --duration-slow: 300ms;
   --duration-slower: 500ms;
-  
-  /* 字体大小 - 使用 1.25 黄金比例 */
-  --font-size: 0.875rem;      /* 14px */
-  --p-font-size: 0.875rem;    /* 14px */
+
+  /* ============================================
+     字体大小 - 使用 1.25 黄金比例
+     ============================================ */
   --text-xs: 0.75rem;         /* 12px */
   --text-sm: 0.8125rem;       /* 13px */
   --text-base: 0.875rem;      /* 14px */
@@ -56,70 +37,35 @@
   --text-xl: 1.125rem;        /* 18px */
   --text-2xl: 1.25rem;        /* 20px */
   --text-3xl: 1.5rem;         /* 24px */
-  
-  /* 标题层级 - 1.25 比例 */
-  --h6-font-size: 1rem;       /* 16px */
-  --h5-font-size: 1.125rem;   /* 18px */
-  --h4-font-size: 1.25rem;    /* 20px */
-  --h3-font-size: 1.563rem;   /* 25px */
-  --h2-font-size: 1.953rem;   /* 31px */
-  --h1-font-size: 2.441rem;   /* 39px */
-  
-  --btn-font-size: 0.9375rem; /* 15px */
-  
-  /* 行高 */
-  --p-line-height: 1.6;
+
+  /* ============================================
+     标题层级 - 1.25 比例
+     注意：以下在 themes.css 中定义，值不同：
+     --h1-font-size, --h2-font-size, --h3-font-size,
+     --h4-font-size, --h5-font-size, --h6-font-size
+     ============================================ */
+
+  /* ============================================
+     行高
+     ============================================ */
   --heading-line-height: 1.2;
-  
-  /* 字体权重 */
+
+  /* ============================================
+     字体权重
+     ============================================ */
   --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
-  /* 字母间距 */
+
+  /* ============================================
+     字母间距
+     ============================================ */
   --heading-letter-spacing: -0.01em;
-  
-  /* 文本最大宽度 - 最佳阅读体验 */
+
+  /* ============================================
+     文本最大宽度 - 最佳阅读体验
+     ============================================ */
   --text-max-width: 65ch;
-  
-  /* 字体家族 */
-  --font-family-primary: "Golos Text", sans-serif;
-  --font-family-mono: "SF Mono", Monaco, Inconsolata, "Roboto Mono", Consolas, "Courier New", monospace;
-  
-  /* 链接颜色 */
-  --link-color: rgba(var(--primary), 1);
-  
-  /* 边框半径 */
-  --app-border-radius: 0.8rem;
-  --bs-border-radius: 0.5rem;
-  --border-radius: 0.375rem;
-  --border-radius-lg: 0.5rem;
-  --border-radius-sm: 0.25rem;
-  --border-radius-xl: 1rem;
-  
-  /* 间距变量 */
-  --spacing-small: 0.5rem;
-  --spacing-medium: 1rem;
-  --spacing-large: 1.5rem;
-  --spacing-base: 1rem;
-  
-  /* 断点系统 - 与 Bootstrap 一致 */
-  --breakpoint-xs: 0;
-  --breakpoint-sm: 576px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 992px;
-  --breakpoint-xl: 1200px;
-  --breakpoint-2xl: 1400px;
-  
-  /* Z-index 层级 */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
-  --z-toast: 1080;
 }

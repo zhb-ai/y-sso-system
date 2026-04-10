@@ -38,6 +38,7 @@ def _build_login_response(user, access_token, refresh_token):
         "token_type": "bearer",
         "user": {
             "id": user.id,
+            "name": user.name,
             "username": user.username,
             "email": user.email,
             "phone": user.phone,

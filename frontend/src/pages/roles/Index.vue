@@ -14,6 +14,7 @@
         :data="roles"
         style="width: 100%"
         row-key="id"
+        tooltip-effect="light"
       >
         <el-table-column prop="id" label="ID" width="80" align="center">
           <template #default="scope">
@@ -26,7 +27,7 @@
             <el-tag type="primary" size="small" effect="light">{{ scope.row.code }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="角色描述" min-width="180" />
+        <el-table-column prop="description" label="角色描述" min-width="180" show-overflow-tooltip />
         <el-table-column prop="created_at" label="创建时间" width="180" align="center">
           <template #default="scope">
             <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>

@@ -34,6 +34,7 @@
 | **polish** | 最终润色（对齐、间距、一致性检查） | "polish", "最终检查", "shipping前检查" |
 | **critique** | 设计评估和反馈 | "评估设计", "critique this", "设计反馈" |
 | **frontend-design** | 前端设计原则参考 | 需要设计指导时 |
+| **webapp-testing** | 设置和运行 E2E 测试（Playwright） | "create E2E tests", "set up testing", "automated browser tests", "测试", "e2e" |
 
 ---
 
@@ -188,6 +189,18 @@
 **维度**：视觉层次、信息架构、情感共鸣  
 **使用场景**：需要专业设计反馈时
 
+#### 22. webapp-testing - E2E 测试
+**功能**：设置和运行端到端测试  
+**技术**：Playwright，支持 Chromium/Firefox/Safari/移动端  
+**包含**：
+- 测试框架安装和配置
+- Page Object Model 模式
+- 认证 Fixtures
+- 用户流程测试
+- 视觉回归测试
+- CI/CD 集成（GitHub Actions）  
+**使用场景**：需要自动化测试、回归测试、用户流程验证时
+
 ---
 
 ### 快速参考：常见问题对应的 Skill
@@ -208,3 +221,10 @@
 | 准备发布 | polish, harden |
 | 用户难以入门 | onboard |
 | 代码重复太多 | extract |
+| 需要自动化测试 | webapp-testing |
+| 需要 E2E 测试 | webapp-testing |
+| 需要回归测试 | webapp-testing |
+
+
+# 在 UI 模式下运行测试
+npx playwright test applications.spec.js --ui

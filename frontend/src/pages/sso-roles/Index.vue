@@ -67,6 +67,7 @@
         :data="filteredRoles"
         style="width: 100%"
         row-key="id"
+        tooltip-effect="light"
       >
         <el-table-column prop="id" label="ID" width="80" align="center">
           <template #default="scope">
