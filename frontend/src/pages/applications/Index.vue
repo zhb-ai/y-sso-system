@@ -107,8 +107,11 @@
             <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" align="center" fixed="right" class-name="table-cell-flex-center">
+        <el-table-column label="操作" width="320" align="center" fixed="right" class-name="table-cell-flex-center">
           <template #default="scope">
+            <el-button type="info" size="small" link @click="handleShowIntegrationConfig(scope.row)">
+              <el-icon><Document /></el-icon> 对接配置
+            </el-button>
             <el-button type="primary" size="small" link @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon> 编辑
             </el-button>
@@ -259,6 +262,109 @@
         <el-button type="primary" @click="secretDialogVisible = false">我已保存，关闭</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="integrationDialogVisible"
+      title="第三方系统对接配置"
+      width="820px"
+      destroy-on-close
+    >
+      <el-alert
+        title="以下信息可直接提供给第三方系统实施同学；客户端密钥仅在创建或重置时可见。"
+        type="info"
+        :closable="false"
+        show-icon
+        class="integration-alert"
+      />
+
+      <el-descriptions v-loading="integrationLoading" :column="1" border>
+        <el-descriptions-item label="应用名称">
+          <span>{{ integrationInfo.app_name }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="Issuer URL">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.issuer }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.issuer)">
+              <el-icon><CopyDocument /></el-icon> 复制
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="Discovery URL">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.discovery_url }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.discovery_url)">
+              <el-icon><CopyDocument /></el-icon> 复制
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="Authorization Endpoint">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.authorization_endpoint }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.authorization_endpoint)">
+              <el-icon><CopyDocument /></el-icon> 复制
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="Token Endpoint">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.token_endpoint }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.token_endpoint)">
+              <el-icon><CopyDocument /></el-icon> 复制
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="UserInfo Endpoint">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.userinfo_endpoint }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.userinfo_endpoint)">
+              <el-icon><CopyDocument /></el-icon> 复制
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="JWKS URI">
+          <span>{{ integrationInfo.jwks_uri || '当前未启用' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="客户端 ID">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.client_id }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.client_id)">
+              <el-icon><CopyDocument /></el-icon> 复制
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="客户端密钥">
+          <div class="secret-field">
+            <code class="secret-text secret-text--danger">{{ integrationInfo.client_secret || '当前列表不展示客户端密钥，如需重新获取请点击“密钥”按钮重置。' }}</code>
+            <el-button
+              size="small"
+              type="primary"
+              link
+              :disabled="!integrationInfo.client_secret"
+              @click="handleCopy(integrationInfo.client_secret)"
+            >
+              <el-icon><CopyDocument /></el-icon> 复制
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="Grant Types">
+          <span>{{ integrationInfo.grant_types_supported.join(', ') }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="Scopes">
+          <span>{{ integrationInfo.scopes_supported.join(', ') }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="PKCE">
+          <span>{{ integrationInfo.pkce_supported ? '已支持' : '暂未支持' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="Token 签名算法">
+          <span>{{ integrationInfo.token_signing_algorithm }}</span>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <template #footer>
+        <el-button @click="handleCopyIntegrationConfig">复制全部</el-button>
+        <el-button type="primary" @click="integrationDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -266,7 +372,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid, Collection } from '@element-plus/icons-vue'
-import { applicationApi } from '@/api'
+import { applicationApi, configApi } from '@/api'
 import EmptyState from '@/components/EmptyState.vue'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 
@@ -319,6 +425,24 @@ const secretInfo = reactive({
   client_secret: ''
 })
 
+const integrationDialogVisible = ref(false)
+const integrationLoading = ref(false)
+const integrationInfo = reactive({
+  app_name: '',
+  issuer: '',
+  discovery_url: '',
+  authorization_endpoint: '',
+  token_endpoint: '',
+  userinfo_endpoint: '',
+  jwks_uri: '',
+  client_id: '',
+  client_secret: '',
+  grant_types_supported: [],
+  scopes_supported: [],
+  pkce_supported: false,
+  token_signing_algorithm: ''
+})
+
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '-'
@@ -341,6 +465,25 @@ const handleCopy = async (text) => {
   } catch (error) {
     ElMessage.error('复制失败，请手动复制')
   }
+}
+
+const handleCopyIntegrationConfig = async () => {
+  const lines = [
+    `应用名称: ${integrationInfo.app_name}`,
+    `Issuer URL: ${integrationInfo.issuer}`,
+    `Discovery URL: ${integrationInfo.discovery_url}`,
+    `Authorization Endpoint: ${integrationInfo.authorization_endpoint}`,
+    `Token Endpoint: ${integrationInfo.token_endpoint}`,
+    `UserInfo Endpoint: ${integrationInfo.userinfo_endpoint}`,
+    `JWKS URI: ${integrationInfo.jwks_uri || '当前未启用'}`,
+    `客户端 ID: ${integrationInfo.client_id}`,
+    `客户端密钥: ${integrationInfo.client_secret || '当前列表不展示，需通过重置密钥重新获取'}`,
+    `Grant Types: ${integrationInfo.grant_types_supported.join(', ')}`,
+    `Scopes: ${integrationInfo.scopes_supported.join(', ')}`,
+    `PKCE: ${integrationInfo.pkce_supported ? '已支持' : '暂未支持'}`,
+    `Token 签名算法: ${integrationInfo.token_signing_algorithm}`
+  ]
+  await handleCopy(lines.join('\n'))
 }
 
 // 获取应用列表
@@ -472,6 +615,35 @@ const handleResetSecret = async (row) => {
   }
 }
 
+const handleShowIntegrationConfig = async (row) => {
+  integrationDialogVisible.value = true
+  integrationLoading.value = true
+
+  try {
+    const response = await configApi.getOauth2Endpoints()
+    const data = response.data || {}
+
+    integrationInfo.app_name = row.name || ''
+    integrationInfo.issuer = data.issuer || ''
+    integrationInfo.discovery_url = data.discovery_url || ''
+    integrationInfo.authorization_endpoint = data.authorization_endpoint || ''
+    integrationInfo.token_endpoint = data.token_endpoint || ''
+    integrationInfo.userinfo_endpoint = data.userinfo_endpoint || ''
+    integrationInfo.jwks_uri = data.jwks_uri || ''
+    integrationInfo.client_id = row.client_id || ''
+    integrationInfo.client_secret = ''
+    integrationInfo.grant_types_supported = data.grant_types_supported || []
+    integrationInfo.scopes_supported = data.scopes_supported || []
+    integrationInfo.pkce_supported = Boolean(data.pkce_supported)
+    integrationInfo.token_signing_algorithm = data.token_signing_algorithm || ''
+  } catch (error) {
+    integrationDialogVisible.value = false
+    handleApiError(error, '获取对接配置失败')
+  } finally {
+    integrationLoading.value = false
+  }
+}
+
 // 删除应用
 const handleDelete = async (row) => {
   try {
@@ -595,6 +767,10 @@ onMounted(() => {
 }
 
 .secret-alert {
+  margin-bottom: 1rem;
+}
+
+.integration-alert {
   margin-bottom: 1rem;
 }
 

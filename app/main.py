@@ -163,6 +163,30 @@ def health_check():
     }
 
 
+@app.get("/.well-known/openid-configuration")
+def openid_configuration():
+    """OpenID Connect Discovery 元数据"""
+    base_url = settings.base_url.rstrip("/")
+    prefix = "/api/v1/oauth2"
+    return {
+        "issuer": base_url,
+        "authorization_endpoint": f"{base_url}{prefix}/authorize",
+        "token_endpoint": f"{base_url}{prefix}/token",
+        "userinfo_endpoint": f"{base_url}{prefix}/userinfo",
+        "response_types_supported": ["code"],
+        "grant_types_supported": [
+            "authorization_code",
+            "refresh_token",
+        ],
+        "token_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_post",
+        ],
+        "scopes_supported": ["openid", "profile", "email"],
+        "subject_types_supported": ["public"],
+    }
+
+
 # ==================== 前端单页应用路由 ====================
 
 from fastapi.responses import FileResponse

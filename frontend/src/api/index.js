@@ -306,6 +306,7 @@ export const configApi = {
   getByKey: (key) => api.get(`/v1/configs/${key}`),
   update: (key, data) => api.put(`/v1/configs/${key}`, data),
   getJwt: () => api.get('/v1/configs/jwt'),
+  getOauth2Endpoints: () => api.get('/v1/settings/oauth2-endpoints'),
   updateJwt: (data) => api.put('/v1/configs/jwt', data),
   getWechat: () => api.get('/v1/configs/wechat'),
   updateWechat: (data) => api.put('/v1/configs/wechat', data)

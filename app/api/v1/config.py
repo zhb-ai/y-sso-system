@@ -80,6 +80,31 @@ def create_config_router() -> APIRouter:
             "refresh_token_sliding_days": getattr(jwt, 'refresh_token_sliding_days', 2),
         })
 
+    @router.get(
+        "/oauth2-endpoints",
+        response_model=OkResponse,
+        summary="获取 OAuth2/OIDC 对接配置",
+        description="返回第三方系统对接当前 SSO 所需的端点地址和能力声明。",
+    )
+    def get_oauth2_endpoints():
+        """获取 OAuth2/OIDC 对接配置"""
+        from app.config import settings
+
+        base_url = settings.base_url.rstrip("/")
+        return Resp.OK(data={
+            "issuer": base_url,
+            "discovery_url": f"{base_url}/.well-known/openid-configuration",
+            "authorization_endpoint": f"{base_url}/api/v1/oauth2/authorize",
+            "token_endpoint": f"{base_url}/api/v1/oauth2/token",
+            "userinfo_endpoint": f"{base_url}/api/v1/oauth2/userinfo",
+            "jwks_uri": None,
+            "discovery_supported": True,
+            "pkce_supported": False,
+            "token_signing_algorithm": settings.jwt.algorithm,
+            "grant_types_supported": ["authorization_code", "refresh_token"],
+            "scopes_supported": ["openid", "profile", "email"],
+        })
+
     # ==================== 站点基本信息 ====================
 
     @router.get(

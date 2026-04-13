@@ -27,6 +27,8 @@ from pydantic import BaseModel
 
 from yweb.log import get_logger
 
+from app.config import settings
+
 logger = get_logger()
 
 
@@ -345,7 +347,7 @@ def create_oauth2_provider_router(
         description="返回 RFC 8414 授权服务器元数据，便于客户端自动发现端点。",
     )
     def authorization_server_metadata(request: Request):
-        base_url = str(request.base_url).rstrip("/")
+        base_url = settings.base_url.rstrip("/")
         prefix = "/api/v1/oauth2"
 
         return {

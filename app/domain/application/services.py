@@ -450,7 +450,7 @@ class OAuth2ProviderService:
             roles = [r.code if hasattr(r, 'code') else str(r) for r in user.roles]
 
         payload = TokenPayload(
-            sub=user.username,
+            sub=str(user.id),
             user_id=user.id,
             username=user.username,
             email=getattr(user, 'email', None),
