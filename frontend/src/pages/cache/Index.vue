@@ -426,9 +426,16 @@
             }}</el-descriptions-item>
           </el-descriptions>
           <div class="preview-title">值预览</div>
-          <pre class="preview-json">{{
-            formatPreview(entryDetail.value_preview)
-          }}</pre>
+          <div class="preview-json-wrapper">
+            <vue-json-pretty
+              :data="entryDetail.value_preview"
+              :deep="3"
+              :show-double-quotes="true"
+              :show-line="true"
+              :show-length="true"
+              :collapsed-on-click-brackets="true"
+            />
+          </div>
         </template>
       </div>
 
@@ -443,6 +450,8 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Delete, QuestionFilled, RefreshRight, Collection, DataLine } from "@element-plus/icons-vue";
+import VueJsonPretty from "vue-json-pretty";
+import "vue-json-pretty/lib/styles.css";
 import { cacheApi } from "@/api";
 import { handleApiError, getDefaultErrorMessage } from "@/utils/errorHandler";
 import EmptyState from "@/components/EmptyState.vue";
@@ -822,19 +831,50 @@ onMounted(() => {
   margin-bottom: 6px;
 }
 
-.preview-json {
+.preview-json-wrapper {
   background: var(--light-gray);
   border: 1px solid var(--border_color);
   border-radius: var(--border-radius);
-  color: var(--font-color);
+  max-height: 320px;
+  overflow: auto;
+  padding: 10px;
+}
+
+.preview-json-wrapper :deep(.vjs-tree) {
   font-family: var(--font-family-mono);
   font-size: var(--el-font-size-xs);
   line-height: var(--c-line-height-md);
-  margin: 0;
-  max-height: 260px;
-  overflow: auto;
-  padding: 10px;
-  white-space: pre-wrap;
-  word-break: break-word;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-key) {
+  color: #881391;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-value__string) {
+  color: #1a1aa6;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-value__number) {
+  color: #1c00cf;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-value__boolean) {
+  color: #1c00cf;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-value__null) {
+  color: #808080;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-brackets) {
+  color: #1a1aa6;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-tree__brackets) {
+  cursor: pointer;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-tree__content) {
+  padding-left: 1em;
 }
 </style>
