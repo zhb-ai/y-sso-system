@@ -390,6 +390,11 @@ onMounted(async () => {
 
   // 初始化企业微信登录
   await initWechatWorkLogin()
+
+  // 已登录 + OAuth2 模式 → 自动授权，跳过确认页面
+  if (isOAuth2Mode.value && isLoggedIn.value) {
+    await doAuthorize()
+  }
 })
 
 // ==================== OAuth2 模式操作 ====================
