@@ -133,6 +133,11 @@ register_all_routes(app)
 # 静态文件目录路径
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "web")
 
+# Windows 注册表可能把 .js 映射为 text/plain，导致浏览器拒绝加载 ES module
+import mimetypes
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("text/css", ".css")
+
 
 
 

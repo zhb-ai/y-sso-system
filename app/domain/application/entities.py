@@ -28,6 +28,10 @@ class Application(BaseModel):
 
     富领域模型：包含数据字段和业务验证方法。
     使用 Active Record 模式，继承 BaseModel 获得数据访问能力。
+
+    client_type 取值:
+        - "confidential": 机密客户端（服务端应用，可安全保管 client_secret）
+        - "public": 公开客户端（SPA/移动端，不使用 client_secret，必须启用 PKCE）
     """
     __tablename__ = "application"
 
@@ -46,6 +50,11 @@ class Application(BaseModel):
     client_secret: Mapped[str] = mapped_column(
         String(255), nullable=False, comment="客户端密钥"
     )
+    client_type: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="confidential",
+        server_default="confidential",
+        comment="客户端类型: confidential（机密）或 public（公开/SPA）"
+    )
     redirect_uris: Mapped[Optional[str]] = mapped_column(
         Text, nullable=True, comment="重定向URI列表（JSON格式存储）"
     )
@@ -55,6 +64,10 @@ class Application(BaseModel):
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, comment="是否激活"
     )
+
+    @property
+    def is_public(self) -> bool:
+        return self.client_type == "public"
 
     # ==================== 业务验证方法 ====================
 
@@ -188,7 +201,9 @@ class AuthorizationCode(BaseModel):
     """OAuth2 授权码实体
 
     授权码流程中的临时凭证，用于换取 access_token。
-    授权码具有短时效性（默认1分钟），使用一次后即失效。
+    授权码具有短时效性（默认5分钟），使用一次后即失效。
+    支持 PKCE（RFC 7636）：公开客户端在授权时提交 code_challenge，
+    换码时提交 code_verifier 进行校验。
     """
     __tablename__ = "authorization_code"
 
@@ -215,6 +230,15 @@ class AuthorizationCode(BaseModel):
     state: Mapped[Optional[str]] = mapped_column(
         String(255), nullable=True, comment="CSRF state 参数"
     )
+
+    # PKCE (RFC 7636)
+    code_challenge: Mapped[Optional[str]] = mapped_column(
+        String(128), nullable=True, comment="PKCE code_challenge（BASE64URL-encoded）"
+    )
+    code_challenge_method: Mapped[Optional[str]] = mapped_column(
+        String(10), nullable=True, comment="PKCE 方法: S256 或 plain"
+    )
+
     expires_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, comment="过期时间"
     )
@@ -232,9 +256,16 @@ class AuthorizationCode(BaseModel):
         redirect_uri: str,
         scope: str = None,
         state: str = None,
+        code_challenge: str = None,
+        code_challenge_method: str = None,
         expires_minutes: int = 5,
     ) -> "AuthorizationCode":
-        """创建授权码"""
+        """创建授权码
+
+        Args:
+            code_challenge: PKCE code_challenge (BASE64URL(SHA256(code_verifier)))
+            code_challenge_method: "S256" 或 "plain"
+        """
         code_value = secrets.token_urlsafe(32)
         auth_code = cls()
         auth_code.code = code_value
@@ -243,6 +274,8 @@ class AuthorizationCode(BaseModel):
         auth_code.redirect_uri = redirect_uri
         auth_code.scope = scope
         auth_code.state = state
+        auth_code.code_challenge = code_challenge
+        auth_code.code_challenge_method = code_challenge_method
         auth_code.expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
         auth_code.is_used = False
         auth_code.save(commit=True)

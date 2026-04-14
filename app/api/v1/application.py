@@ -44,6 +44,7 @@ class ApplicationResponse(DTO):
     code: str = ""
     description: Optional[str] = None
     client_id: str = ""
+    client_type: str = "confidential"
     redirect_uris: list = []
     logo_url: Optional[str] = None
     is_active: bool = True
@@ -75,6 +76,10 @@ class CreateApplicationRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="应用名称")
     code: str = Field(..., min_length=1, max_length=255, description="应用编码")
     description: Optional[str] = Field(None, description="应用描述")
+    client_type: str = Field(
+        default="confidential",
+        description="客户端类型: confidential（机密/服务端应用）或 public（公开/SPA/移动端）",
+    )
     redirect_uris: List[str] = Field(default=[], description="重定向URI列表")
     logo_url: Optional[str] = Field(None, max_length=500, description="Logo URL")
 
@@ -83,6 +88,10 @@ class UpdateApplicationRequest(BaseModel):
     """更新应用请求"""
     name: Optional[str] = Field(None, min_length=1, max_length=255, description="应用名称")
     description: Optional[str] = Field(None, description="应用描述")
+    client_type: Optional[str] = Field(
+        None,
+        description="客户端类型: confidential（机密/服务端应用）或 public（公开/SPA/移动端）",
+    )
     redirect_uris: Optional[List[str]] = Field(None, description="重定向URI列表")
     logo_url: Optional[str] = Field(None, max_length=500, description="Logo URL")
 
@@ -154,6 +163,7 @@ def create_application_router() -> APIRouter:
                 name=data.name,
                 code=data.code,
                 description=data.description,
+                client_type=data.client_type,
                 redirect_uris=data.redirect_uris,
                 logo_url=data.logo_url,
             )

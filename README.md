@@ -93,37 +93,43 @@
    python init_db.py
    ```
 
-6. **启动后端服务**
+6. **构建前端**
 
-   **开发模式（推荐）**
-   ```bash
-   python dev_server.py
-   ```
-
-   **或使用 uvicorn 直接启动**
-   ```bash
-   python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-   ```
-
-7. **启动前端服务**
-
-   **安装前端依赖（首次启动）**
    ```bash
    cd frontend
-   npm install
+   npm install        # 首次或依赖变更时
+   npm run build      # 构建到 ../web/ 目录
+   cd ..
    ```
 
-   **启动开发服务器**
+7. **启动服务（单端口）**
+
    ```bash
-   npm run dev
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
+
+   > FastAPI 同时提供 API 和前端静态文件，只需一个端口。
+   > 前端代码修改后需重新执行 `cd frontend && npm run build`。
 
 8. **访问应用**
-   - 管理后台: http://localhost:5200
-   - 统一登录: http://localhost:5200/login
-   - SSO门户: http://localhost:5200/sso/login
+   - 管理后台: http://localhost:8000
+   - 统一登录: http://localhost:8000/login
+   - SSO门户: http://localhost:8000/sso/login
    - API文档: http://localhost:8000/docs
    - 健康检查: http://localhost:8000/health
+
+   **前端开发模式（可选，需要 HMR 热更新时使用）**
+
+   如果正在开发 SSO 前端页面，需要热更新：
+   ```bash
+   # 终端 1：启动后端
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+   # 终端 2：启动前端开发服务器
+   cd frontend
+   npm run dev        # Vite 在 5200 端口，自动代理 /api 到 8000
+   ```
+   此模式下通过 http://localhost:5200 访问，前端修改实时生效。
 
 ## 配置说明
 
@@ -287,16 +293,18 @@ pip freeze > requirements.txt
 ## 部署说明
 
 ### 开发环境
-使用 `dev_server.py` 启动：
 ```bash
-python dev_server.py
+cd frontend && npm run build && cd ..
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 生产环境
-建议使用 `gunicorn` + `uvicorn` 部署：
 ```bash
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
+cd frontend && npm run build && cd ..
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
 ```
+
+> 生产环境务必修改 `config/settings.yaml` 中的 `base_url` 为实际域名。
 
 ## 安全建议
 

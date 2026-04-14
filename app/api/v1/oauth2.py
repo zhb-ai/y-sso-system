@@ -1,19 +1,22 @@
-"""OAuth2 授权服务器 API
+"""OAuth2 / OIDC 授权服务器 API
 
 本模块实现 SSO 作为 OAuth2 Provider 的核心端点，使用动词风格路由。
 所有端点统一前缀 /api/v1/oauth2/，按认证要求分为公开端点和受保护端点。
 
 端点清单：
+    GET  /api/v1/oauth2/.well-known/openid-configuration → OIDC Discovery (RFC 8414 + OpenID)
+    GET  /api/v1/oauth2/.well-known/oauth-authorization-server → 同上（兼容旧路径）
     GET  /api/v1/oauth2/authorize   → 授权入口（公开，校验参数后引导登录/授权）
     POST /api/v1/oauth2/authorize   → 用户授权确认（需 JWT，生成授权码并重定向）
-    POST /api/v1/oauth2/token       → 令牌端点（公开，客户端凭证认证）
+    POST /api/v1/oauth2/token       → 令牌端点（支持 Confidential + Public Client / PKCE）
     GET  /api/v1/oauth2/userinfo    → 用户信息端点（Bearer Token 认证）
 
-OAuth2 Authorization Code 流程：
+OAuth2 Authorization Code + PKCE 流程：
     1. 外部应用 → GET /authorize?client_id=&redirect_uri=&response_type=code&state=
+                                  &code_challenge=xxx&code_challenge_method=S256
     2. SSO 校验参数 → 未登录则重定向到前端登录页，已登录则自动授权
     3. 登录/授权后 → POST /authorize 生成授权码，重定向回 redirect_uri?code=&state=
-    4. 外部应用 → POST /token (grant_type=authorization_code) 换取 access_token
+    4. 外部应用 → POST /token (grant_type=authorization_code, code_verifier=xxx) 换取 access_token
     5. 外部应用 → GET /userinfo 获取用户信息
 """
 
@@ -39,6 +42,8 @@ class AuthorizeConfirmRequest(BaseModel):
     redirect_uri: str
     scope: Optional[str] = None
     state: Optional[str] = None
+    code_challenge: Optional[str] = None
+    code_challenge_method: Optional[str] = None
 
 
 # ==================== 路由工厂 ====================
@@ -64,6 +69,52 @@ def create_oauth2_provider_router(
     router = APIRouter(prefix="/oauth2", tags=["OAuth2 授权服务器"])
     basic_auth = HTTPBasic(auto_error=False)
 
+    # ==================================================================
+    # Discovery 元数据（OIDC + OAuth2 双路径）
+    # ==================================================================
+
+    def _build_metadata(request: Request) -> dict:
+        """构造 OIDC / OAuth2 Discovery 元数据"""
+        base_url = str(request.base_url).rstrip("/")
+        prefix = "/api/v1/oauth2"
+        issuer = f"{base_url}{prefix}"
+
+        return {
+            "issuer": issuer,
+            "authorization_endpoint": f"{issuer}/authorize",
+            "token_endpoint": f"{issuer}/token",
+            "userinfo_endpoint": f"{issuer}/userinfo",
+            "response_types_supported": ["code"],
+            "grant_types_supported": [
+                "authorization_code",
+                "refresh_token",
+            ],
+            "token_endpoint_auth_methods_supported": [
+                "client_secret_basic",
+                "client_secret_post",
+                "none",
+            ],
+            "scopes_supported": ["openid", "profile", "email", "offline_access"],
+            "subject_types_supported": ["public"],
+            "code_challenge_methods_supported": ["S256"],
+        }
+
+    @router.get(
+        "/.well-known/openid-configuration",
+        summary="OIDC Discovery 元数据",
+        description="返回符合 OpenID Connect Discovery 1.0 标准的元数据 JSON。",
+    )
+    def openid_configuration(request: Request):
+        return _build_metadata(request)
+
+    @router.get(
+        "/.well-known/oauth-authorization-server",
+        summary="OAuth2 授权服务器元数据",
+        description="返回 RFC 8414 授权服务器元数据（与 openid-configuration 内容一致）。",
+    )
+    def authorization_server_metadata(request: Request):
+        return _build_metadata(request)
+
     # ------------------------------------------------------------------
     # GET /authorize — 授权入口（公开）
     # ------------------------------------------------------------------
@@ -74,6 +125,7 @@ def create_oauth2_provider_router(
             "外部应用将用户重定向到此端点。"
             "如果用户已登录（携带有效 JWT Cookie），自动生成授权码并重定向回客户端；"
             "否则重定向到前端 SSO 登录页。"
+            "公开客户端（SPA）必须携带 code_challenge 和 code_challenge_method 参数。"
         ),
     )
     def authorize(
@@ -83,6 +135,8 @@ def create_oauth2_provider_router(
         redirect_uri: str = Query(..., description="回调地址"),
         scope: str = Query(None, description="授权范围"),
         state: str = Query(None, description="CSRF state 参数"),
+        code_challenge: str = Query(None, description="PKCE code_challenge"),
+        code_challenge_method: str = Query(None, description="PKCE 方法，推荐 S256"),
         current_user=Depends(get_current_user_optional),
     ):
         # 1. 验证客户端和参数
@@ -101,7 +155,30 @@ def create_oauth2_provider_router(
                 },
             )
 
-        # 2. 用户已登录 → 自动授权，生成授权码并重定向
+        # 2. Public Client 必须使用 PKCE
+        if app.is_public and not code_challenge:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": "invalid_request",
+                    "error_description": "公开客户端必须提供 code_challenge（PKCE）",
+                },
+            )
+
+        if code_challenge and code_challenge_method not in ("S256", "plain", None):
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": "invalid_request",
+                    "error_description": "code_challenge_method 仅支持 S256 或 plain",
+                },
+            )
+
+        # 默认使用 S256
+        if code_challenge and not code_challenge_method:
+            code_challenge_method = "S256"
+
+        # 3. 用户已登录 → 自动授权，生成授权码并重定向
         if current_user:
             try:
                 auth_code = oauth2_provider_service.create_authorization_code(
@@ -110,6 +187,8 @@ def create_oauth2_provider_router(
                     redirect_uri=redirect_uri,
                     scope=scope,
                     state=state,
+                    code_challenge=code_challenge,
+                    code_challenge_method=code_challenge_method,
                 )
                 params = {"code": auth_code.code}
                 if state:
@@ -129,7 +208,7 @@ def create_oauth2_provider_router(
                     status_code=302,
                 )
 
-        # 3. 用户未登录 → 重定向到前端 SSO 登录页
+        # 4. 用户未登录 → 重定向到前端 SSO 登录页
         login_params = {
             "client_id": client_id,
             "redirect_uri": redirect_uri,
@@ -139,6 +218,9 @@ def create_oauth2_provider_router(
             login_params["scope"] = scope
         if state:
             login_params["state"] = state
+        if code_challenge:
+            login_params["code_challenge"] = code_challenge
+            login_params["code_challenge_method"] = code_challenge_method
 
         frontend_url = f"{frontend_login_url}?{urlencode(login_params)}"
         return RedirectResponse(frontend_url, status_code=302)
@@ -173,6 +255,18 @@ def create_oauth2_provider_router(
                 },
             )
 
+        # Public Client 必须使用 PKCE
+        if app.is_public and not data.code_challenge:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": "invalid_request",
+                    "error_description": "公开客户端必须提供 code_challenge（PKCE）",
+                },
+            )
+
+        challenge_method = data.code_challenge_method or ("S256" if data.code_challenge else None)
+
         # 2. 生成授权码
         try:
             auth_code = oauth2_provider_service.create_authorization_code(
@@ -181,6 +275,8 @@ def create_oauth2_provider_router(
                 redirect_uri=data.redirect_uri,
                 scope=data.scope,
                 state=data.state,
+                code_challenge=data.code_challenge,
+                code_challenge_method=challenge_method,
             )
         except ValueError as e:
             return JSONResponse(
@@ -204,16 +300,18 @@ def create_oauth2_provider_router(
         }
 
     # ------------------------------------------------------------------
-    # POST /token — 令牌端点（公开，客户端凭证认证）
+    # POST /token — 令牌端点
+    # 支持: Confidential Client (client_secret) + Public Client (PKCE)
     # ------------------------------------------------------------------
     @router.post(
         "/token",
         summary="OAuth2 令牌端点",
         description=(
             "支持两种 grant_type：\n"
-            "- authorization_code: 用授权码换取 access_token\n"
+            "- authorization_code: 用授权码换取 access_token（支持 PKCE）\n"
             "- refresh_token: 刷新 access_token\n\n"
-            "客户端认证支持 HTTP Basic Auth 和表单参数两种方式。"
+            "机密客户端：HTTP Basic Auth 或表单 client_secret。\n"
+            "公开客户端：仅需 client_id + code_verifier（PKCE）。"
         ),
     )
     def token(
@@ -221,7 +319,8 @@ def create_oauth2_provider_router(
         code: str = Form(None, description="授权码（authorization_code 时必填）"),
         redirect_uri: str = Form(None, description="重定向URI（authorization_code 时必填）"),
         client_id: str = Form(None, description="客户端ID"),
-        client_secret: str = Form(None, description="客户端密钥"),
+        client_secret: str = Form(None, description="客户端密钥（机密客户端必填）"),
+        code_verifier: str = Form(None, description="PKCE code_verifier（公开客户端必填）"),
         refresh_token: str = Form(None, description="刷新令牌（refresh_token 时必填）"),
         credentials: HTTPBasicCredentials = Depends(basic_auth),
     ):
@@ -230,12 +329,12 @@ def create_oauth2_provider_router(
             client_id = credentials.username
             client_secret = credentials.password
 
-        if not client_id or not client_secret:
+        if not client_id:
             return JSONResponse(
                 status_code=401,
                 content={
                     "error": "invalid_client",
-                    "error_description": "缺少客户端凭证",
+                    "error_description": "缺少 client_id",
                 },
             )
 
@@ -254,6 +353,7 @@ def create_oauth2_provider_router(
                     client_id=client_id,
                     client_secret=client_secret,
                     redirect_uri=redirect_uri,
+                    code_verifier=code_verifier,
                 )
                 return result
 
@@ -284,11 +384,15 @@ def create_oauth2_provider_router(
 
         except ValueError as e:
             error_msg = str(e)
-            # 区分错误类型
-            if "客户端" in error_msg or "密钥" in error_msg:
+            if "客户端" in error_msg or "密钥" in error_msg or "client" in error_msg.lower():
                 return JSONResponse(
                     status_code=401,
                     content={"error": "invalid_client", "error_description": error_msg},
+                )
+            elif "PKCE" in error_msg or "code_verifier" in error_msg:
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": "invalid_grant", "error_description": error_msg},
                 )
             else:
                 return JSONResponse(
@@ -309,7 +413,6 @@ def create_oauth2_provider_router(
         ),
     )
     def userinfo(request: Request):
-        # 从 Authorization 头提取 Bearer Token
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             return JSONResponse(
@@ -321,7 +424,7 @@ def create_oauth2_provider_router(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        access_token = auth_header[7:]  # 去掉 "Bearer " 前缀
+        access_token = auth_header[7:]
 
         try:
             user_info = oauth2_provider_service.get_userinfo(access_token)
@@ -335,35 +438,5 @@ def create_oauth2_provider_router(
                 },
                 headers={"WWW-Authenticate": "Bearer"},
             )
-
-    # ------------------------------------------------------------------
-    # GET /.well-known/oauth-authorization-server — 元数据（可选）
-    # ------------------------------------------------------------------
-    @router.get(
-        "/.well-known/oauth-authorization-server",
-        summary="OAuth2 授权服务器元数据",
-        description="返回 RFC 8414 授权服务器元数据，便于客户端自动发现端点。",
-    )
-    def authorization_server_metadata(request: Request):
-        base_url = str(request.base_url).rstrip("/")
-        prefix = "/api/v1/oauth2"
-
-        return {
-            "issuer": base_url,
-            "authorization_endpoint": f"{base_url}{prefix}/authorize",
-            "token_endpoint": f"{base_url}{prefix}/token",
-            "userinfo_endpoint": f"{base_url}{prefix}/userinfo",
-            "response_types_supported": ["code"],
-            "grant_types_supported": [
-                "authorization_code",
-                "refresh_token",
-            ],
-            "token_endpoint_auth_methods_supported": [
-                "client_secret_basic",
-                "client_secret_post",
-            ],
-            "scopes_supported": ["openid", "profile", "email"],
-            "subject_types_supported": ["public"],
-        }
 
     return router

@@ -3,9 +3,12 @@
 具体服务类，使用 Active Record 模式直接操作领域模型。
 - ApplicationService: 应用管理（注册、配置、凭证管理）
 - OAuth2TokenService: OAuth2 令牌管理（创建、验证、刷新、撤销）
+- OAuth2ProviderService: OAuth2 授权服务器核心逻辑（授权码、PKCE、令牌签发）
 """
 
 import json
+import hashlib
+import base64
 import secrets
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
@@ -32,6 +35,7 @@ class ApplicationService:
         name: str,
         code: str,
         description: str = None,
+        client_type: str = "confidential",
         redirect_uris: List[str] = None,
         logo_url: str = None,
     ) -> Application:
@@ -41,6 +45,7 @@ class ApplicationService:
             name: 应用名称
             code: 应用编码（唯一）
             description: 应用描述
+            client_type: 客户端类型 - "confidential" 或 "public"
             redirect_uris: 重定向URI列表
             logo_url: Logo URL
 
@@ -48,28 +53,31 @@ class ApplicationService:
             创建的应用实体
 
         Raises:
-            ValueError: 编码已存在
+            ValueError: 编码已存在 / client_type 无效
         """
-        # 验证编码唯一性
+        if client_type not in ("confidential", "public"):
+            raise ValueError(f"client_type 必须为 confidential 或 public，收到: {client_type}")
+
         Application.validate_code_unique(code)
 
-        # 生成客户端凭证
         client_id, client_secret = Application.generate_client_credentials()
 
-        # 创建应用
         app = Application(
             name=name,
             code=code,
             description=description,
             client_id=client_id,
             client_secret=client_secret,
+            client_type=client_type,
             redirect_uris=json.dumps(redirect_uris or []),
             logo_url=logo_url,
             is_active=True,
         )
         app.save()
 
-        logger.info(f"创建应用: {name} (code={code}, client_id={client_id})")
+        logger.info(
+            f"创建应用: {name} (code={code}, client_id={client_id}, type={client_type})"
+        )
         return app
 
     def get_application(self, app_id: int) -> Application:
@@ -196,19 +204,25 @@ class ApplicationService:
         return app
 
     def validate_client_credentials(
-        self, client_id: str, client_secret: str
+        self, client_id: str, client_secret: str = None
     ) -> Application:
         """验证客户端凭证
+
+        对于公开客户端 (client_type="public")，不要求 client_secret。
+        对于机密客户端 (client_type="confidential")，必须验证 client_secret。
 
         Raises:
             ValueError: 凭证无效 / 应用未激活
         """
         app = self.get_application_by_client_id(client_id)
-
-        if app.client_secret != client_secret:
-            raise ValueError("客户端密钥错误")
-
         app.validate_is_active()
+
+        if not app.is_public:
+            if not client_secret:
+                raise ValueError("机密客户端必须提供 client_secret")
+            if app.client_secret != client_secret:
+                raise ValueError("客户端密钥错误")
+
         return app
 
 
@@ -372,8 +386,14 @@ class OAuth2ProviderService:
         redirect_uri: str,
         scope: str = None,
         state: str = None,
+        code_challenge: str = None,
+        code_challenge_method: str = None,
     ) -> AuthorizationCode:
         """生成授权码
+
+        Args:
+            code_challenge: PKCE code_challenge（公开客户端必填）
+            code_challenge_method: "S256" 或 "plain"
 
         Returns:
             AuthorizationCode 实体
@@ -384,38 +404,68 @@ class OAuth2ProviderService:
             redirect_uri=redirect_uri,
             scope=scope,
             state=state,
+            code_challenge=code_challenge,
+            code_challenge_method=code_challenge_method,
         )
         logger.info(
             f"生成授权码: app_id={application_id}, user_id={user_id}, "
-            f"code={auth_code.code[:8]}..."
+            f"code={auth_code.code[:8]}..., pkce={'yes' if code_challenge else 'no'}"
         )
         return auth_code
+
+    @staticmethod
+    def _verify_pkce(code_verifier: str, code_challenge: str, method: str) -> bool:
+        """验证 PKCE code_verifier 是否匹配 code_challenge (RFC 7636)"""
+        if method == "S256":
+            digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
+            computed = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+            return computed == code_challenge
+        elif method == "plain":
+            return code_verifier == code_challenge
+        return False
 
     @tm.transactional()
     def exchange_code_for_token(
         self,
         code: str,
         client_id: str,
-        client_secret: str,
-        redirect_uri: str,
+        client_secret: str = None,
+        redirect_uri: str = None,
+        code_verifier: str = None,
     ) -> dict:
         """用授权码换取令牌
+
+        认证策略按客户端类型自动切换:
+        - confidential: 验证 client_secret
+        - public: 验证 PKCE code_verifier（不需要 client_secret）
 
         Args:
             code: 授权码
             client_id: 客户端 ID
-            client_secret: 客户端密钥
+            client_secret: 客户端密钥（机密客户端必填）
             redirect_uri: 重定向URI（必须与授权时一致）
+            code_verifier: PKCE code_verifier（公开客户端必填）
 
         Returns:
             {"access_token": ..., "token_type": "bearer", "expires_in": ...,
              "refresh_token": ..., "scope": ...}
 
         Raises:
-            ValueError: 凭证无效 / 授权码无效
+            ValueError: 凭证无效 / 授权码无效 / PKCE 校验失败
         """
-        # 1. 验证客户端凭证
-        app = self.app_service.validate_client_credentials(client_id, client_secret)
+        # 1. 获取客户端并验证身份
+        app = self.app_service.get_application_by_client_id(client_id)
+        app.validate_is_active()
+
+        if app.is_public:
+            # 公开客户端：不要求 client_secret，靠 PKCE 保护
+            pass
+        else:
+            # 机密客户端：必须验证 client_secret
+            if not client_secret:
+                raise ValueError("机密客户端必须提供 client_secret")
+            if app.client_secret != client_secret:
+                raise ValueError("客户端密钥错误")
 
         # 2. 查找授权码
         auth_code = AuthorizationCode.query.filter_by(code=code).first()
@@ -433,12 +483,23 @@ class OAuth2ProviderService:
         if auth_code.redirect_uri != redirect_uri:
             raise ValueError("redirect_uri 不匹配")
 
-        # 6. 标记授权码为已使用
+        # 6. PKCE 校验
+        if auth_code.code_challenge:
+            if not code_verifier:
+                raise ValueError("PKCE 校验失败：缺少 code_verifier")
+            if not self._verify_pkce(
+                code_verifier,
+                auth_code.code_challenge,
+                auth_code.code_challenge_method or "S256",
+            ):
+                raise ValueError("PKCE 校验失败：code_verifier 不匹配")
+        elif app.is_public:
+            raise ValueError("公开客户端必须使用 PKCE，但授权时未提供 code_challenge")
+
+        # 7. 标记授权码为已使用
         auth_code.mark_used()
 
-        # 7. 获取用户信息并创建 JWT
-        #    直接在当前事务 Session 内查询，避免 user_getter 返回 detached 实例
-        #    导致 lazy load roles 失败
+        # 8. 获取用户信息并创建 JWT
         from app.domain.auth.model.user import User
         user = User.query.filter_by(id=auth_code.user_id, is_active=True).first()
         if not user:
@@ -463,7 +524,8 @@ class OAuth2ProviderService:
         expires_in = self.jwt_manager.access_token_expire_minutes * 60
 
         logger.info(
-            f"授权码换取令牌: app={app.name}, user={user.username}"
+            f"授权码换取令牌: app={app.name}, user={user.username}, "
+            f"type={app.client_type}, pkce={'yes' if auth_code.code_challenge else 'no'}"
         )
 
         return {
@@ -479,17 +541,26 @@ class OAuth2ProviderService:
         self,
         refresh_token: str,
         client_id: str,
-        client_secret: str,
+        client_secret: str = None,
     ) -> dict:
         """用 refresh_token 换取新的 access_token
+
+        认证策略按客户端类型自动切换:
+        - confidential: 验证 client_secret
+        - public: 仅需 client_id（refresh_token 本身已绑定用户）
 
         Raises:
             ValueError: 凭证无效 / refresh_token 无效
         """
-        # 验证客户端凭证
-        self.app_service.validate_client_credentials(client_id, client_secret)
+        app = self.app_service.get_application_by_client_id(client_id)
+        app.validate_is_active()
 
-        # 使用 JWTManager 刷新
+        if not app.is_public:
+            if not client_secret:
+                raise ValueError("机密客户端必须提供 client_secret")
+            if app.client_secret != client_secret:
+                raise ValueError("客户端密钥错误")
+
         result = self.jwt_manager.refresh_tokens(
             refresh_token, user_getter=self.user_getter
         )
@@ -502,7 +573,6 @@ class OAuth2ProviderService:
             "expires_in": self.jwt_manager.access_token_expire_minutes * 60,
         }
 
-        # 如果触发了滑动过期，返回新的 refresh_token
         if result.get("refresh_token"):
             response["refresh_token"] = result["refresh_token"]
 
