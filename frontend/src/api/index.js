@@ -196,6 +196,7 @@ export const authApi = {
 export const applicationApi = {
   list: (params) => api.get('/v1/applications/list', { params }),
   get: (appId) => api.get('/v1/applications/get', { params: { app_id: appId } }),
+  getSecret: (appId) => api.get('/v1/applications/secret', { params: { app_id: appId } }),
   create: (data) => api.post('/v1/applications/create', data),
   update: (appId, data) => api.post('/v1/applications/update', data, { params: { app_id: appId } }),
   delete: (appId) => api.post('/v1/applications/delete', null, { params: { app_id: appId } }),

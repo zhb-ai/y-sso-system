@@ -13,6 +13,7 @@ Application (SSO 客户端应用)
 
 import json
 import secrets
+from ipaddress import ip_address, ip_network
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 
@@ -46,8 +47,15 @@ class Application(BaseModel):
     client_secret: Mapped[str] = mapped_column(
         String(255), nullable=False, comment="客户端密钥"
     )
+    client_type: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="confidential", server_default="confidential",
+        comment="客户端类型：confidential / public"
+    )
     redirect_uris: Mapped[Optional[str]] = mapped_column(
         Text, nullable=True, comment="重定向URI列表（JSON格式存储）"
+    )
+    allowed_ip_cidrs: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True, comment="允许访问应用后向通道的IP白名单（JSON格式存储）"
     )
     logo_url: Mapped[Optional[str]] = mapped_column(
         String(500), nullable=True, comment="Logo图片URL"
@@ -85,10 +93,60 @@ class Application(BaseModel):
         if not self.is_active:
             raise ValueError(f"应用已禁用: {self.name}")
 
+    def is_public_client(self) -> bool:
+        """是否为公开客户端"""
+        return self.client_type == "public"
+
     def validate_redirect_uri(self, uri: str) -> None:
         """验证重定向URI是否有效"""
         if uri not in self.get_redirect_uris():
             raise ValueError(f"重定向URI无效: {uri}")
+
+    @staticmethod
+    def normalize_allowed_ip_cidrs(entries: Optional[List[str]]) -> List[str]:
+        """规范化 IP 白名单列表"""
+        normalized: List[str] = []
+        seen = set()
+
+        for raw_entry in entries or []:
+            entry = str(raw_entry or "").strip()
+            if not entry:
+                continue
+
+            try:
+                normalized_entry = (
+                    str(ip_network(entry, strict=False))
+                    if "/" in entry
+                    else str(ip_address(entry))
+                )
+            except ValueError as exc:
+                raise ValueError(f"IP 白名单格式无效: {entry}") from exc
+
+            if normalized_entry not in seen:
+                normalized.append(normalized_entry)
+                seen.add(normalized_entry)
+
+        return normalized
+
+    def validate_source_ip(self, source_ip: Optional[str]) -> None:
+        """校验来源 IP 是否命中应用白名单"""
+        allowed_ip_cidrs = self.get_allowed_ip_cidrs()
+        if not allowed_ip_cidrs:
+            return
+
+        if not source_ip:
+            raise ValueError("来源IP不在应用白名单内")
+
+        try:
+            source_addr = ip_address(source_ip)
+        except ValueError as exc:
+            raise ValueError("来源IP不在应用白名单内") from exc
+
+        for entry in allowed_ip_cidrs:
+            if source_addr in ip_network(entry, strict=False):
+                return
+
+        raise ValueError("来源IP不在应用白名单内")
 
     # ==================== 业务方法 ====================
 
@@ -117,6 +175,12 @@ class Application(BaseModel):
         """获取重定向URI列表"""
         if self.redirect_uris:
             return json.loads(self.redirect_uris)
+        return []
+
+    def get_allowed_ip_cidrs(self) -> List[str]:
+        """获取 IP 白名单列表"""
+        if self.allowed_ip_cidrs:
+            return json.loads(self.allowed_ip_cidrs)
         return []
 
 
@@ -215,6 +279,15 @@ class AuthorizationCode(BaseModel):
     state: Mapped[Optional[str]] = mapped_column(
         String(255), nullable=True, comment="CSRF state 参数"
     )
+    nonce: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, comment="OIDC nonce 参数"
+    )
+    code_challenge: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, comment="PKCE code_challenge"
+    )
+    code_challenge_method: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True, comment="PKCE code_challenge_method"
+    )
     expires_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, comment="过期时间"
     )
@@ -232,6 +305,9 @@ class AuthorizationCode(BaseModel):
         redirect_uri: str,
         scope: str = None,
         state: str = None,
+        nonce: str = None,
+        code_challenge: str = None,
+        code_challenge_method: str = None,
         expires_minutes: int = 5,
     ) -> "AuthorizationCode":
         """创建授权码"""
@@ -243,6 +319,9 @@ class AuthorizationCode(BaseModel):
         auth_code.redirect_uri = redirect_uri
         auth_code.scope = scope
         auth_code.state = state
+        auth_code.nonce = nonce
+        auth_code.code_challenge = code_challenge
+        auth_code.code_challenge_method = code_challenge_method
         auth_code.expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
         auth_code.is_used = False
         auth_code.save(commit=True)

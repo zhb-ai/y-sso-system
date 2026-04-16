@@ -16,11 +16,12 @@
     POST /v1/applications/delete        → 删除
     POST /v1/applications/enable        → 启用
     POST /v1/applications/disable       → 禁用
+    GET  /v1/applications/secret        → 获取当前密钥
     POST /v1/applications/reset-secret  → 重置密钥
 """
 
 import json
-from typing import Optional, List
+from typing import Optional, List, Literal
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field, field_validator
@@ -37,6 +38,16 @@ logger = get_logger()
 # ==================== DTO 定义 ====================
 
 
+def _parse_json_list(v):
+    """将 JSON 字符串或原始值解析为列表"""
+    if isinstance(v, str):
+        try:
+            return json.loads(v)
+        except (json.JSONDecodeError, TypeError):
+            return []
+    return v if isinstance(v, list) else []
+
+
 class ApplicationResponse(DTO):
     """应用响应 DTO（不含密钥）"""
     id: int = 0
@@ -44,7 +55,9 @@ class ApplicationResponse(DTO):
     code: str = ""
     description: Optional[str] = None
     client_id: str = ""
+    client_type: str = "confidential"
     redirect_uris: list = []
+    allowed_ip_cidrs: list = []
     logo_url: Optional[str] = None
     is_active: bool = True
     created_at: Optional[str] = None
@@ -54,16 +67,24 @@ class ApplicationResponse(DTO):
     @classmethod
     def parse_redirect_uris(cls, v):
         """将 JSON 字符串解析为列表"""
-        if isinstance(v, str):
-            try:
-                return json.loads(v)
-            except (json.JSONDecodeError, TypeError):
-                return []
-        return v if isinstance(v, list) else []
+        return _parse_json_list(v)
+
+    @field_validator('allowed_ip_cidrs', mode='before')
+    @classmethod
+    def parse_allowed_ip_cidrs(cls, v):
+        """将 JSON 字符串解析为 IP 白名单列表"""
+        return _parse_json_list(v)
 
 
 class ApplicationWithSecretResponse(ApplicationResponse):
     """包含密钥的应用响应 DTO（仅在创建/重置密钥时返回）"""
+    client_secret: str = ""
+
+
+class ApplicationSecretResponse(DTO):
+    """应用当前密钥响应 DTO"""
+    id: int = 0
+    client_id: str = ""
     client_secret: str = ""
 
 
@@ -76,7 +97,12 @@ class CreateApplicationRequest(BaseModel):
     code: str = Field(..., min_length=1, max_length=255, description="应用编码")
     description: Optional[str] = Field(None, description="应用描述")
     redirect_uris: List[str] = Field(default=[], description="重定向URI列表")
+    allowed_ip_cidrs: List[str] = Field(default=[], description="允许访问的IP白名单")
     logo_url: Optional[str] = Field(None, max_length=500, description="Logo URL")
+    client_type: Literal["confidential", "public"] = Field(
+        default="confidential",
+        description="客户端类型",
+    )
 
 
 class UpdateApplicationRequest(BaseModel):
@@ -84,7 +110,12 @@ class UpdateApplicationRequest(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255, description="应用名称")
     description: Optional[str] = Field(None, description="应用描述")
     redirect_uris: Optional[List[str]] = Field(None, description="重定向URI列表")
+    allowed_ip_cidrs: Optional[List[str]] = Field(None, description="允许访问的IP白名单")
     logo_url: Optional[str] = Field(None, max_length=500, description="Logo URL")
+    client_type: Optional[Literal["confidential", "public"]] = Field(
+        None,
+        description="客户端类型",
+    )
 
 
 # ==================== 路由工厂 ====================
@@ -139,6 +170,22 @@ def create_application_router() -> APIRouter:
         except ValueError as e:
             return Resp.NotFound(message=str(e))
 
+    @router.get(
+        "/secret",
+        response_model=ItemResponse[ApplicationSecretResponse],
+        summary="获取应用当前客户端密钥",
+        description="根据应用ID获取当前客户端密钥，用于管理端按需展示密钥",
+    )
+    def get_application_secret(
+        app_id: int = Query(..., description="应用ID"),
+    ):
+        """获取应用当前客户端密钥"""
+        try:
+            application = app_service.get_application_secret(app_id)
+            return Resp.OK(ApplicationSecretResponse.from_entity(application))
+        except ValueError as e:
+            return Resp.NotFound(message=str(e))
+
     # ==================== 写入接口 ====================
 
     @router.post(
@@ -155,7 +202,9 @@ def create_application_router() -> APIRouter:
                 code=data.code,
                 description=data.description,
                 redirect_uris=data.redirect_uris,
+                allowed_ip_cidrs=data.allowed_ip_cidrs,
                 logo_url=data.logo_url,
+                client_type=data.client_type,
             )
             return Resp.OK(
                 ApplicationWithSecretResponse.from_entity(application),

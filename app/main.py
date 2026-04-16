@@ -23,6 +23,12 @@ from app.api.middleware import (
     api_logger,
 )
 import os
+from app.services.oauth2_security import (
+    is_rs256_enabled,
+    get_runtime_jwt_public_key,
+    get_oidc_issuer,
+    build_oidc_url,
+)
 
 logger = get_logger()
 
@@ -133,6 +139,10 @@ register_all_routes(app)
 # 静态文件目录路径
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "web")
 
+import mimetypes
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("text/css", ".css")
+
 
 
 
@@ -163,16 +173,15 @@ def health_check():
     }
 
 
-@app.get("/.well-known/openid-configuration")
+@app.get("/api/v1/oauth2/.well-known/openid-configuration")
 def openid_configuration():
     """OpenID Connect Discovery 元数据"""
-    base_url = settings.base_url.rstrip("/")
-    prefix = "/api/v1/oauth2"
-    return {
-        "issuer": base_url,
-        "authorization_endpoint": f"{base_url}{prefix}/authorize",
-        "token_endpoint": f"{base_url}{prefix}/token",
-        "userinfo_endpoint": f"{base_url}{prefix}/userinfo",
+    issuer = get_oidc_issuer()
+    metadata = {
+        "issuer": issuer,
+        "authorization_endpoint": build_oidc_url("/authorize"),
+        "token_endpoint": build_oidc_url("/token"),
+        "userinfo_endpoint": build_oidc_url("/userinfo"),
         "response_types_supported": ["code"],
         "grant_types_supported": [
             "authorization_code",
@@ -184,19 +193,25 @@ def openid_configuration():
         ],
         "scopes_supported": ["openid", "profile", "email"],
         "subject_types_supported": ["public"],
+        "code_challenge_methods_supported": ["S256"],
     }
+    if is_rs256_enabled() and get_runtime_jwt_public_key():
+        metadata["jwks_uri"] = build_oidc_url("/jwks")
+        metadata["id_token_signing_alg_values_supported"] = [settings.jwt.algorithm]
+    return metadata
 
 
 # ==================== 前端单页应用路由 ====================
 
 from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 
 @app.get("/{full_path:path}")
 def serve_frontend(full_path: str):
     """处理前端单页应用路由和静态文件"""
     # API 路由不应该走到这里（因为已经注册了），但为了安全起见
-    if full_path.startswith("api/"):
-        return {"status": "error", "message": "Not Found"}
+    if full_path.startswith("api/") or full_path.startswith(".well-known/"):
+        return JSONResponse(status_code=404, content={"status": "error", "message": "Not Found"})
     
     # 构建文件路径
     file_path = os.path.join(static_dir, full_path)

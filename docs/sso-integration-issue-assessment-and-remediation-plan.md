@@ -39,8 +39,8 @@
 - [x] 修复 `sub` 一致性，统一为 `str(user.id)`
 - [x] 新增标准 OIDC Discovery 端点 `/.well-known/openid-configuration`
 - [x] 修正 OAuth2 元数据中的 `issuer` / 端点基础地址来源
-- [ ] 增加 PKCE / Public Client 支持
-- [ ] 迁移到 RS256 并提供 JWKS
+- [x] 增加 PKCE / Public Client 支持
+- [x] 迁移到 RS256 并提供 JWKS
 - [x] 增加管理后台“第三方系统对接配置”面板
 - [ ] 补齐用户 email 数据治理流程
 

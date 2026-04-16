@@ -273,17 +273,25 @@ pagination:
 
 ```yaml
 base_url: "http://localhost:8000"
+oidc_issuer: "http://localhost:8000/api/v1/oauth2"
 ```
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `base_url` | string | http://localhost:8000 | 应用基础 URL。用于生成回调地址、链接等 |
+| `base_url` | string | http://localhost:8000 | 应用基础 URL。用于生成站点链接、回调地址等 |
+| `oidc_issuer` | string\|null | null | OIDC Issuer。未配置时默认使用 `${base_url}/api/v1/oauth2` |
+
+补充说明：
+
+- `jwt_key_id` 用于生成 `JWKS` 中的 `kid`
+- 如果当前安装的 `yweb` 版本较旧，`setup_auth()` 会自动忽略不兼容的 `key_id` 注入参数，避免启动失败
 
 > 这是 SSO 项目自定义的顶层配置项（定义在 `app/config.py` 的 `Settings` 类中），不属于底层框架配置。
 
 **生产环境示例：**
 ```yaml
 base_url: "https://sso.yourcompany.com"
+oidc_issuer: "https://sso.yourcompany.com/api/v1/oauth2"
 ```
 
 ---
@@ -369,6 +377,7 @@ ip_access:
 
 # 使用 HTTPS
 base_url: "https://sso.yourcompany.com"
+oidc_issuer: "https://sso.yourcompany.com/api/v1/oauth2"
 ```
 
 ---

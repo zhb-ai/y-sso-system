@@ -19,6 +19,10 @@ class Settings(AppSettings):
     """应用全局配置，继承 yweb 基础配置，只添加业务特有项"""
     enable_console_logging: bool = Field(default=False, description="是否启用控制台日志输出")
     base_url: str = Field(default="http://localhost:8000", description="应用基础URL")
+    oidc_issuer: str | None = Field(default=None, description="OIDC Issuer URL")
+    jwt_private_key_path: str | None = Field(default=None, description="RS256 私钥文件路径")
+    jwt_public_key_path: str | None = Field(default=None, description="RS256 公钥文件路径")
+    jwt_key_id: str = Field(default="sso-rs256-key-1", description="JWKS Key ID")
 
 
 def load_settings() -> Settings:

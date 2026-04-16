@@ -89,6 +89,17 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column prop="client_type" label="客户端类型" width="120" align="center">
+          <template #default="scope">
+            <el-tag
+              size="small"
+              effect="light"
+              :type="scope.row.client_type === 'public' ? 'warning' : 'success'"
+            >
+              {{ scope.row.client_type === 'public' ? '公开' : '机密' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="is_active" label="状态" width="100" align="center">
           <template #default="scope">
             <el-switch
@@ -200,6 +211,20 @@
                   autocomplete="off"
                 />
               </el-form-item>
+              <el-form-item label="客户端类型" prop="client_type">
+                <el-radio-group v-model="applicationForm.client_type">
+                  <el-radio value="confidential">机密客户端</el-radio>
+                  <el-radio value="public">公开客户端</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-alert
+                v-if="applicationForm.client_type === 'public'"
+                title="公开客户端不使用 client_secret，授权码流程需配合 PKCE（S256）。"
+                type="warning"
+                :closable="false"
+                show-icon
+                class="integration-alert"
+              />
               <el-form-item label="重定向URI" prop="redirect_uris_str">
                 <el-input
                   v-model="applicationForm.redirect_uris_str"
@@ -209,8 +234,132 @@
                   autocomplete="off"
                 />
               </el-form-item>
+              <el-form-item label="IP 白名单" prop="allowed_ip_cidrs_str">
+                <el-input
+                  v-model="applicationForm.allowed_ip_cidrs_str"
+                  type="textarea"
+                  :rows="3"
+                  placeholder="请输入允许访问 token/userinfo 的 IP 或 CIDR，多个条目用换行分隔；留空表示不限制"
+                  autocomplete="off"
+                />
+              </el-form-item>
               <el-form-item label="Logo URL" prop="logo_url">
                 <el-input v-model="applicationForm.logo_url" placeholder="请输入应用Logo URL（可选）" autocomplete="off" />
+              </el-form-item>
+              <el-form-item label="SSO 对接信息">
+                <div v-loading="ssoConfigLoading" class="sso-config-panel">
+                  <el-alert
+                    :title="applicationForm.id ? '当前应用的主要对接信息已展示在下方，可直接复制给接入方。' : '创建成功后会自动生成客户端凭证，系统对接地址可先查看。'"
+                    type="info"
+                    :closable="false"
+                    show-icon
+                    class="integration-alert"
+                  />
+                  <div class="sso-config-toolbar">
+                    <el-button type="primary" link @click="handleCopyPrimarySsoConfig">
+                      <el-icon><CopyDocument /></el-icon> 复制主要信息
+                    </el-button>
+                    <el-button type="primary" link @click="handleCopyAllSsoConfig">
+                      <el-icon><CopyDocument /></el-icon> 复制全部配置
+                    </el-button>
+                    <el-button type="primary" link @click="ssoConfigExpanded = !ssoConfigExpanded">
+                      {{ ssoConfigExpanded ? '收起全部' : '展开全部' }}
+                    </el-button>
+                  </div>
+
+                  <el-descriptions :column="1" border size="small">
+                    <el-descriptions-item label="客户端类型">
+                      <el-tag
+                        size="small"
+                        effect="light"
+                        :type="ssoConfig.client_type === 'public' ? 'warning' : 'success'"
+                      >
+                        {{ formatClientTypeLabel(ssoConfig.client_type) }}
+                      </el-tag>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="客户端 ID">
+                      <div class="secret-field">
+                        <code class="secret-text">{{ ssoConfig.client_id || '创建成功后自动生成' }}</code>
+                        <el-button
+                          size="small"
+                          type="primary"
+                          link
+                          :disabled="!ssoConfig.client_id"
+                          @click="handleCopy(ssoConfig.client_id)"
+                        >
+                          <el-icon><CopyDocument /></el-icon> 复制
+                        </el-button>
+                      </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="Issuer URL">
+                      <div class="secret-field">
+                        <code class="secret-text">{{ ssoConfig.issuer || '-' }}</code>
+                        <el-button size="small" type="primary" link :disabled="!ssoConfig.issuer" @click="handleCopy(ssoConfig.issuer)">
+                          <el-icon><CopyDocument /></el-icon> 复制
+                        </el-button>
+                      </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="Discovery URL">
+                      <div class="secret-field">
+                        <code class="secret-text">{{ ssoConfig.discovery_url || '-' }}</code>
+                        <el-button size="small" type="primary" link :disabled="!ssoConfig.discovery_url" @click="handleCopy(ssoConfig.discovery_url)">
+                          <el-icon><CopyDocument /></el-icon> 复制
+                        </el-button>
+                      </div>
+                    </el-descriptions-item>
+                  </el-descriptions>
+
+                  <el-collapse-transition>
+                    <div v-show="ssoConfigExpanded" class="sso-config-expanded">
+                      <el-descriptions :column="1" border size="small">
+                        <el-descriptions-item label="Authorization Endpoint">
+                          <div class="secret-field">
+                            <code class="secret-text">{{ ssoConfig.authorization_endpoint || '-' }}</code>
+                            <el-button size="small" type="primary" link :disabled="!ssoConfig.authorization_endpoint" @click="handleCopy(ssoConfig.authorization_endpoint)">
+                              <el-icon><CopyDocument /></el-icon> 复制
+                            </el-button>
+                          </div>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Token Endpoint">
+                          <div class="secret-field">
+                            <code class="secret-text">{{ ssoConfig.token_endpoint || '-' }}</code>
+                            <el-button size="small" type="primary" link :disabled="!ssoConfig.token_endpoint" @click="handleCopy(ssoConfig.token_endpoint)">
+                              <el-icon><CopyDocument /></el-icon> 复制
+                            </el-button>
+                          </div>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="UserInfo Endpoint">
+                          <div class="secret-field">
+                            <code class="secret-text">{{ ssoConfig.userinfo_endpoint || '-' }}</code>
+                            <el-button size="small" type="primary" link :disabled="!ssoConfig.userinfo_endpoint" @click="handleCopy(ssoConfig.userinfo_endpoint)">
+                              <el-icon><CopyDocument /></el-icon> 复制
+                            </el-button>
+                          </div>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="JWKS URI">
+                          <div class="secret-field">
+                            <code class="secret-text">{{ ssoConfig.jwks_uri || '当前未启用' }}</code>
+                            <el-button size="small" type="primary" link :disabled="!ssoConfig.jwks_uri" @click="handleCopy(ssoConfig.jwks_uri)">
+                              <el-icon><CopyDocument /></el-icon> 复制
+                            </el-button>
+                          </div>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Grant Types">
+                          <span>{{ ssoConfig.grant_types_supported.length ? ssoConfig.grant_types_supported.join(', ') : '-' }}</span>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Scopes">
+                          <span>{{ ssoConfig.scopes_supported.length ? ssoConfig.scopes_supported.join(', ') : '-' }}</span>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="PKCE">
+                          <span>{{ ssoConfig.client_type === 'public' ? '公开客户端必须启用（当前支持 S256）' : (ssoConfig.pkce_supported ? '可选，当前已支持' : '暂未支持') }}</span>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Token 签名算法">
+                          <span>{{ ssoConfig.token_signing_algorithm || '-' }}</span>
+                        </el-descriptions-item>
+                      </el-descriptions>
+                    </div>
+                  </el-collapse-transition>
+                </div>
               </el-form-item>
             </el-form>
           </div>
@@ -219,7 +368,9 @@
       
       <template #footer>
         <el-button @click="formDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitLoading">确认</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
+          {{ applicationForm.id ? '保存' : '创建并生成配置' }}
+        </el-button>
       </template>
     </el-dialog>
     
@@ -232,14 +383,23 @@
       :close-on-press-escape="false"
     >
       <el-alert
-        title="请妥善保存以下凭证信息，客户端密钥仅显示一次！"
-        type="warning"
+        :title="secretInfo.client_type === 'public' ? '当前应用为公开客户端，无需客户端密钥。请保存客户端 ID 并按 PKCE 方式接入。' : '请妥善保存以下凭证信息，客户端密钥仅显示一次！'"
+        :type="secretInfo.client_type === 'public' ? 'info' : 'warning'"
         :closable="false"
         show-icon
         class="secret-alert"
       />
       
       <el-descriptions :column="1" border>
+        <el-descriptions-item label="客户端类型">
+          <el-tag
+            size="small"
+            effect="light"
+            :type="secretInfo.client_type === 'public' ? 'warning' : 'success'"
+          >
+            {{ formatClientTypeLabel(secretInfo.client_type) }}
+          </el-tag>
+        </el-descriptions-item>
         <el-descriptions-item label="客户端ID">
           <div class="secret-field">
             <code class="secret-text">{{ secretInfo.client_id }}</code>
@@ -250,8 +410,8 @@
         </el-descriptions-item>
         <el-descriptions-item label="客户端密钥">
           <div class="secret-field">
-            <code class="secret-text secret-text--danger">{{ secretInfo.client_secret }}</code>
-            <el-button size="small" type="primary" link @click="handleCopy(secretInfo.client_secret)">
+            <code class="secret-text secret-text--danger">{{ secretInfo.client_secret || '无需密钥（公开客户端）' }}</code>
+            <el-button size="small" type="primary" link :disabled="!secretInfo.client_secret" @click="handleCopy(secretInfo.client_secret)">
               <el-icon><CopyDocument /></el-icon> 复制
             </el-button>
           </div>
@@ -280,6 +440,15 @@
       <el-descriptions v-loading="integrationLoading" :column="1" border>
         <el-descriptions-item label="应用名称">
           <span>{{ integrationInfo.app_name }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="客户端类型">
+          <el-tag
+            size="small"
+            effect="light"
+            :type="integrationInfo.client_type === 'public' ? 'warning' : 'success'"
+          >
+            {{ formatClientTypeLabel(integrationInfo.client_type) }}
+          </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="Issuer URL">
           <div class="secret-field">
@@ -334,7 +503,7 @@
         </el-descriptions-item>
         <el-descriptions-item label="客户端密钥">
           <div class="secret-field">
-            <code class="secret-text secret-text--danger">{{ integrationInfo.client_secret || '当前列表不展示客户端密钥，如需重新获取请点击“密钥”按钮重置。' }}</code>
+            <code class="secret-text secret-text--danger">{{ integrationInfo.client_type === 'public' ? '无需密钥（公开客户端）' : (integrationInfo.client_secret || '当前列表不展示客户端密钥，如需重新获取请点击“密钥”按钮重置。') }}</code>
             <el-button
               size="small"
               type="primary"
@@ -353,7 +522,7 @@
           <span>{{ integrationInfo.scopes_supported.join(', ') }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="PKCE">
-          <span>{{ integrationInfo.pkce_supported ? '已支持' : '暂未支持' }}</span>
+          <span>{{ integrationInfo.client_type === 'public' ? '公开客户端必须启用（当前支持 S256）' : (integrationInfo.pkce_supported ? '可选，当前已支持' : '暂未支持') }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="Token 签名算法">
           <span>{{ integrationInfo.token_signing_algorithm }}</span>
@@ -369,7 +538,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid, Collection } from '@element-plus/icons-vue'
 import { applicationApi, configApi } from '@/api'
@@ -401,7 +570,9 @@ const applicationForm = reactive({
   name: '',
   code: '',
   description: '',
+  client_type: 'confidential',
   redirect_uris_str: '',
+  allowed_ip_cidrs_str: '',
   logo_url: ''
 })
 
@@ -415,6 +586,9 @@ const applicationRules = {
     { required: true, message: '请输入应用编码', trigger: 'blur' },
     { min: 2, max: 30, message: '应用编码长度在 2 到 30 个字符', trigger: 'blur' },
     { pattern: /^[a-zA-Z0-9_]+$/, message: '应用编码只能包含字母、数字和下划线', trigger: 'blur' }
+  ],
+  client_type: [
+    { required: true, message: '请选择客户端类型', trigger: 'change' }
   ]
 }
 
@@ -422,13 +596,15 @@ const applicationRules = {
 const secretDialogVisible = ref(false)
 const secretInfo = reactive({
   client_id: '',
-  client_secret: ''
+  client_secret: '',
+  client_type: 'confidential'
 })
 
 const integrationDialogVisible = ref(false)
 const integrationLoading = ref(false)
 const integrationInfo = reactive({
   app_name: '',
+  client_type: 'confidential',
   issuer: '',
   discovery_url: '',
   authorization_endpoint: '',
@@ -437,6 +613,24 @@ const integrationInfo = reactive({
   jwks_uri: '',
   client_id: '',
   client_secret: '',
+  grant_types_supported: [],
+  scopes_supported: [],
+  pkce_supported: false,
+  token_signing_algorithm: ''
+})
+
+const ssoConfigLoading = ref(false)
+const ssoConfigExpanded = ref(false)
+const ssoConfig = reactive({
+  app_name: '',
+  client_type: 'confidential',
+  issuer: '',
+  discovery_url: '',
+  authorization_endpoint: '',
+  token_endpoint: '',
+  userinfo_endpoint: '',
+  jwks_uri: '',
+  client_id: '',
   grant_types_supported: [],
   scopes_supported: [],
   pkce_supported: false,
@@ -457,19 +651,93 @@ const formatDate = (dateString) => {
   })
 }
 
+const formatClientTypeLabel = (clientType) => (
+  clientType === 'public' ? '公开客户端（public）' : '机密客户端（confidential）'
+)
+
 // 复制到剪贴板
 const handleCopy = async (text) => {
   try {
-    await navigator.clipboard.writeText(text)
+    await navigator.clipboard.writeText(text || '')
     ElMessage.success('已复制到剪贴板')
   } catch (error) {
     ElMessage.error('复制失败，请手动复制')
   }
 }
 
+const resetSsoConfig = () => {
+  ssoConfig.app_name = ''
+  ssoConfig.client_type = applicationForm.client_type || 'confidential'
+  ssoConfig.issuer = ''
+  ssoConfig.discovery_url = ''
+  ssoConfig.authorization_endpoint = ''
+  ssoConfig.token_endpoint = ''
+  ssoConfig.userinfo_endpoint = ''
+  ssoConfig.jwks_uri = ''
+  ssoConfig.client_id = ''
+  ssoConfig.grant_types_supported = []
+  ssoConfig.scopes_supported = []
+  ssoConfig.pkce_supported = false
+  ssoConfig.token_signing_algorithm = ''
+}
+
+const applyOauth2Endpoints = (data = {}) => {
+  ssoConfig.issuer = data.issuer || ''
+  ssoConfig.discovery_url = data.discovery_url || ''
+  ssoConfig.authorization_endpoint = data.authorization_endpoint || ''
+  ssoConfig.token_endpoint = data.token_endpoint || ''
+  ssoConfig.userinfo_endpoint = data.userinfo_endpoint || ''
+  ssoConfig.jwks_uri = data.jwks_uri || ''
+  ssoConfig.grant_types_supported = data.grant_types_supported || []
+  ssoConfig.scopes_supported = data.scopes_supported || []
+  ssoConfig.pkce_supported = Boolean(data.pkce_supported)
+  ssoConfig.token_signing_algorithm = data.token_signing_algorithm || ''
+}
+
+const loadBaseSsoConfig = async () => {
+  ssoConfigLoading.value = true
+  try {
+    const response = await configApi.getOauth2Endpoints()
+    applyOauth2Endpoints(response.data || {})
+  } catch (error) {
+    handleApiError(error, '获取 SSO 对接信息失败')
+  } finally {
+    ssoConfigLoading.value = false
+  }
+}
+
+const buildPrimarySsoConfigLines = () => [
+  `应用名称: ${ssoConfig.app_name || applicationForm.name || '-'}`,
+  `客户端类型: ${formatClientTypeLabel(ssoConfig.client_type)}`,
+  `客户端 ID: ${ssoConfig.client_id || '创建成功后自动生成'}`,
+  `Issuer URL: ${ssoConfig.issuer || '-'}`,
+  `Discovery URL: ${ssoConfig.discovery_url || '-'}`
+]
+
+const buildAllSsoConfigLines = () => [
+  ...buildPrimarySsoConfigLines(),
+  `Authorization Endpoint: ${ssoConfig.authorization_endpoint || '-'}`,
+  `Token Endpoint: ${ssoConfig.token_endpoint || '-'}`,
+  `UserInfo Endpoint: ${ssoConfig.userinfo_endpoint || '-'}`,
+  `JWKS URI: ${ssoConfig.jwks_uri || '当前未启用'}`,
+  `Grant Types: ${ssoConfig.grant_types_supported.length ? ssoConfig.grant_types_supported.join(', ') : '-'}`,
+  `Scopes: ${ssoConfig.scopes_supported.length ? ssoConfig.scopes_supported.join(', ') : '-'}`,
+  `PKCE: ${ssoConfig.pkce_supported ? '已支持' : '暂未支持'}`,
+  `Token 签名算法: ${ssoConfig.token_signing_algorithm || '-'}`
+]
+
+const handleCopyPrimarySsoConfig = async () => {
+  await handleCopy(buildPrimarySsoConfigLines().join('\n'))
+}
+
+const handleCopyAllSsoConfig = async () => {
+  await handleCopy(buildAllSsoConfigLines().join('\n'))
+}
+
 const handleCopyIntegrationConfig = async () => {
   const lines = [
     `应用名称: ${integrationInfo.app_name}`,
+    `客户端类型: ${formatClientTypeLabel(integrationInfo.client_type)}`,
     `Issuer URL: ${integrationInfo.issuer}`,
     `Discovery URL: ${integrationInfo.discovery_url}`,
     `Authorization Endpoint: ${integrationInfo.authorization_endpoint}`,
@@ -477,10 +745,10 @@ const handleCopyIntegrationConfig = async () => {
     `UserInfo Endpoint: ${integrationInfo.userinfo_endpoint}`,
     `JWKS URI: ${integrationInfo.jwks_uri || '当前未启用'}`,
     `客户端 ID: ${integrationInfo.client_id}`,
-    `客户端密钥: ${integrationInfo.client_secret || '当前列表不展示，需通过重置密钥重新获取'}`,
+    `客户端密钥: ${integrationInfo.client_type === 'public' ? '无需密钥（公开客户端）' : (integrationInfo.client_secret || '当前列表不展示，需通过重置密钥重新获取')}`,
     `Grant Types: ${integrationInfo.grant_types_supported.join(', ')}`,
     `Scopes: ${integrationInfo.scopes_supported.join(', ')}`,
-    `PKCE: ${integrationInfo.pkce_supported ? '已支持' : '暂未支持'}`,
+    `PKCE: ${integrationInfo.client_type === 'public' ? '公开客户端必须启用（当前支持 S256）' : (integrationInfo.pkce_supported ? '可选，当前已支持' : '暂未支持')}`,
     `Token 签名算法: ${integrationInfo.token_signing_algorithm}`
   ]
   await handleCopy(lines.join('\n'))
@@ -511,24 +779,35 @@ const getApplications = async () => {
 }
 
 // 新建应用
-const handleCreate = () => {
+const handleCreate = async () => {
   isEditing.value = false
   resetForm()
   formDialogVisible.value = true
+  ssoConfigExpanded.value = false
+  await loadBaseSsoConfig()
 }
 
 // 编辑应用
-const handleEdit = (row) => {
+const handleEdit = async (row) => {
   isEditing.value = true
   applicationForm.id = row.id
   applicationForm.name = row.name
   applicationForm.code = row.code
   applicationForm.description = row.description || ''
+  applicationForm.client_type = row.client_type || 'confidential'
   applicationForm.redirect_uris_str = Array.isArray(row.redirect_uris)
     ? row.redirect_uris.join('\n')
     : ''
+  applicationForm.allowed_ip_cidrs_str = Array.isArray(row.allowed_ip_cidrs)
+    ? row.allowed_ip_cidrs.join('\n')
+    : ''
   applicationForm.logo_url = row.logo_url || ''
   formDialogVisible.value = true
+  ssoConfigExpanded.value = false
+  resetSsoConfig()
+  ssoConfig.client_type = applicationForm.client_type
+  ssoConfig.client_id = row.client_id || ''
+  await loadBaseSsoConfig()
 }
 
 // 提交表单
@@ -544,39 +823,51 @@ const handleSubmit = async () => {
       .split('\n')
       .map(uri => uri.trim())
       .filter(uri => uri)
+    const allowedIpCidrs = applicationForm.allowed_ip_cidrs_str
+      .split('\n')
+      .map(entry => entry.trim())
+      .filter(entry => entry)
     
     if (isEditing.value) {
       // 更新应用
       const updateData = {
         name: applicationForm.name,
         description: applicationForm.description || null,
+        client_type: applicationForm.client_type,
         redirect_uris: redirectUris,
+        allowed_ip_cidrs: allowedIpCidrs,
         logo_url: applicationForm.logo_url || null
       }
       await applicationApi.update(applicationForm.id, updateData)
       ElMessage.success('更新应用成功')
+      formDialogVisible.value = false
     } else {
       // 新建应用
       const createData = {
         name: applicationForm.name,
         code: applicationForm.code,
         description: applicationForm.description || null,
+        client_type: applicationForm.client_type,
         redirect_uris: redirectUris,
+        allowed_ip_cidrs: allowedIpCidrs,
         logo_url: applicationForm.logo_url || null
       }
       const response = await applicationApi.create(createData)
-      
-      // 创建成功后展示密钥信息
+
+      // 创建成功后在当前弹窗中直接展示对接信息和密钥
       const appData = response.data || {}
-      secretInfo.client_id = appData.client_id || ''
-      secretInfo.client_secret = appData.client_secret || ''
-      secretDialogVisible.value = true
-      
-      ElMessage.success('创建应用成功')
+      applicationForm.id = appData.id || null
+      applicationForm.code = appData.code || applicationForm.code
+      applicationForm.client_type = appData.client_type || applicationForm.client_type
+      isEditing.value = true
+      ssoConfig.client_type = appData.client_type || applicationForm.client_type
+      ssoConfig.client_id = appData.client_id || ''
+      ssoConfigExpanded.value = true
+
+      ElMessage.success('创建应用成功，已生成 SSO 对接信息')
     }
-    
-    formDialogVisible.value = false
-    getApplications()
+
+    await getApplications()
   } catch (error) {
     const operation = isEditing.value ? 'update' : 'create'
     handleApiError(error, getDefaultErrorMessage(operation))
@@ -589,10 +880,12 @@ const handleSubmit = async () => {
 const handleResetSecret = async (row) => {
   try {
     await ElMessageBox.confirm(
-      `确定要重置应用「${row.name}」的客户端密钥吗？此操作将生成新的密钥，旧密钥将立即失效。`,
+      row.client_type === 'public'
+        ? `应用「${row.name}」当前为公开客户端，无需客户端密钥。确认继续查看当前客户端配置吗？`
+        : `确定要重置应用「${row.name}」的客户端密钥吗？此操作将生成新的密钥，旧密钥将立即失效。`,
       '重置密钥',
       {
-        confirmButtonText: '确定重置',
+        confirmButtonText: row.client_type === 'public' ? '继续查看' : '确定重置',
         cancelButtonText: '取消',
         type: 'warning'
       }
@@ -604,9 +897,10 @@ const handleResetSecret = async (row) => {
     const appData = response.data || {}
     secretInfo.client_id = appData.client_id || row.client_id
     secretInfo.client_secret = appData.client_secret || ''
+    secretInfo.client_type = appData.client_type || row.client_type || 'confidential'
     secretDialogVisible.value = true
     
-    ElMessage.success('密钥已重置')
+    ElMessage.success(secretInfo.client_type === 'public' ? '公开客户端无需密钥，已展示当前配置' : '密钥已重置')
     getApplications()
   } catch (error) {
     if (error !== 'cancel') {
@@ -624,6 +918,7 @@ const handleShowIntegrationConfig = async (row) => {
     const data = response.data || {}
 
     integrationInfo.app_name = row.name || ''
+    integrationInfo.client_type = row.client_type || 'confidential'
     integrationInfo.issuer = data.issuer || ''
     integrationInfo.discovery_url = data.discovery_url || ''
     integrationInfo.authorization_endpoint = data.authorization_endpoint || ''
@@ -690,8 +985,12 @@ const resetForm = () => {
   applicationForm.name = ''
   applicationForm.code = ''
   applicationForm.description = ''
+  applicationForm.client_type = 'confidential'
   applicationForm.redirect_uris_str = ''
+  applicationForm.allowed_ip_cidrs_str = ''
   applicationForm.logo_url = ''
+  resetSsoConfig()
+  ssoConfigExpanded.value = false
   if (applicationFormRef.value) {
     applicationFormRef.value.resetFields()
   }
@@ -723,6 +1022,14 @@ const handleCurrentChange = (page) => {
   pagination.currentPage = page
   getApplications()
 }
+
+watch(() => applicationForm.name, (value) => {
+  ssoConfig.app_name = value || ''
+})
+
+watch(() => applicationForm.client_type, (value) => {
+  ssoConfig.client_type = value || 'confidential'
+})
 
 // 初始化
 onMounted(() => {
@@ -794,6 +1101,21 @@ onMounted(() => {
 
 .secret-text--danger {
   color: var(--el-color-danger, #f56c6c);
+}
+
+.sso-config-panel {
+  width: 100%;
+}
+
+.sso-config-toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.sso-config-expanded {
+  margin-top: 12px;
 }
 
 /* 文本溢出处理 */
