@@ -13,29 +13,26 @@
               <el-input
                 v-model="siteSettings.system_name"
                 placeholder="请输入系统名称"
-                size="large"
                 maxlength="100"
                 show-word-limit
               />
             </el-form-item>
-            
+
             <el-form-item label="系统描述" prop="system_desc">
               <el-input
                 v-model="siteSettings.system_desc"
                 type="textarea"
                 :rows="3"
                 placeholder="请输入系统描述"
-                size="large"
                 maxlength="500"
                 show-word-limit
               />
             </el-form-item>
-            
+
             <el-form-item label="系统 Logo URL" prop="system_logo">
               <el-input
                 v-model="siteSettings.system_logo"
                 placeholder="请输入系统 Logo 图片地址"
-                size="large"
               />
               <div v-if="siteSettings.system_logo" style="margin-top: 8px">
                 <el-image :src="siteSettings.system_logo" style="height: 40px" fit="contain">
@@ -47,7 +44,7 @@
             </el-form-item>
             
             <el-form-item>
-              <el-button type="primary" @click="handleSaveSite" :loading="saveLoading" size="large">
+              <el-button type="primary" @click="handleSaveSite" :loading="saveLoading">
                 保存
               </el-button>
             </el-form-item>
@@ -64,7 +61,7 @@
             type="info"
             :closable="false"
             show-icon
-            style="margin-bottom: 20px"
+            class="jwt-alert"
           />
           <el-descriptions :column="2" border>
             <el-descriptions-item label="JWT 密钥">
@@ -169,4 +166,11 @@ onMounted(() => {
 .form-card {
   margin-bottom: 20px;
 }
+
+/* JWT 提示样式 - 更紧凑 */
+.jwt-alert {
+  margin-bottom: 20px;
+}
+
+
 </style>

@@ -56,11 +56,7 @@
         style="width: 100%"
         row-key="id"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center">
-          <template #default="scope">
-            <el-tag type="info" size="small" effect="plain">#{{ scope.row.id }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="name" label="应用名称" min-width="200">
           <template #default="scope">
             <div class="app-info">
@@ -74,16 +70,12 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="code" label="应用编码" min-width="150">
-          <template #default="scope">
-            <el-tag type="primary" size="small" effect="light">{{ scope.row.code }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="code" label="应用编码" min-width="150" />
         <el-table-column prop="client_id" label="客户端ID" min-width="220">
           <template #default="scope">
             <div class="copyable-field">
-              <el-text class="client-id-text" truncated>{{ scope.row.client_id }}</el-text>
-              <el-button size="small" type="primary" link @click="handleCopy(scope.row.client_id)">
+              <span class="client-id-text">{{ scope.row.client_id }}</span>
+              <el-button size="small" link @click="handleCopy(scope.row.client_id)">
                 <el-icon><CopyDocument /></el-icon>
               </el-button>
             </div>
@@ -104,18 +96,18 @@
         </el-table-column>
         <el-table-column prop="created_at" label="创建时间" width="180" align="center">
           <template #default="scope">
-            <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+            {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" align="center" fixed="right" class-name="table-cell-flex-center">
+        <el-table-column label="操作" width="240" align="right" fixed="right" class-name="table-cell-flex-end">
           <template #default="scope">
-            <el-button type="primary" size="small" link @click="handleEdit(scope.row)">
+            <el-button size="small" link @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon> 编辑
             </el-button>
-            <el-button type="success" size="small" link @click="handleResetSecret(scope.row)">
+            <el-button size="small" link @click="handleResetSecret(scope.row)">
               <el-icon><RefreshRight /></el-icon> 密钥
             </el-button>
-            <el-button type="danger" size="small" link @click="handleDelete(scope.row)">
+            <el-button size="small" link class="btn-delete" @click="handleDelete(scope.row)">
               <el-icon><Delete /></el-icon> 删除
             </el-button>
           </template>
@@ -559,6 +551,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+/* 删除按钮样式 - 默认无颜色，hover 显示 danger 色 */
+.btn-delete {
+  transition: color 0.2s ease;
+}
+
+.btn-delete:hover {
+  color: var(--el-color-danger) !important;
+}
 
 .app-info {
   display: flex;

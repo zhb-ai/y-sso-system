@@ -69,37 +69,28 @@
         row-key="id"
         tooltip-effect="light"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center">
-          <template #default="scope">
-            <el-tag type="info" size="small" effect="plain">#{{ scope.row.id }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="name" label="角色名称" min-width="120" />
-        <el-table-column prop="code" label="角色编码" min-width="140">
-          <template #default="scope">
-            <el-tag type="primary" size="small" effect="light">{{ scope.row.code }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="code" label="角色编码" min-width="140" />
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column prop="is_active" label="状态" width="100" align="center">
           <template #default="scope">
-            <el-tag :type="scope.row.is_active ? 'success' : 'info'" size="small">
-              {{ scope.row.is_active ? '启用' : '禁用' }}
-            </el-tag>
+            <span v-if="scope.row.is_active" class="status-enabled">启用</span>
+            <span v-else>禁用</span>
           </template>
         </el-table-column>
         <el-table-column prop="sort_order" label="排序" width="80" align="center" />
         <el-table-column prop="created_at" label="创建时间" width="180" align="center">
           <template #default="scope">
-            <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+            {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" align="center" fixed="right" class-name="table-cell-flex-center">
+        <el-table-column label="操作" width="180" align="right" fixed="right" class-name="table-cell-flex-end">
           <template #default="scope">
-            <el-button type="primary" size="small" link @click="handleEdit(scope.row)">
+            <el-button size="small" link @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon> 编辑
             </el-button>
-            <el-button type="danger" size="small" link @click="handleDelete(scope.row)">
+            <el-button size="small" link class="btn-delete" @click="handleDelete(scope.row)">
               <el-icon><Delete /></el-icon> 删除
             </el-button>
           </template>
@@ -338,4 +329,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 删除按钮样式 - 默认无颜色，hover 显示 danger 色 */
+.btn-delete {
+  transition: color 0.2s ease;
+}
+
+.btn-delete:hover {
+  color: var(--el-color-danger) !important;
+}
 </style>

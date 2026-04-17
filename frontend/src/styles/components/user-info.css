@@ -61,7 +61,7 @@
 }
 
 .user-info:hover .user-name {
-  color: rgba(var(--primary), 1);
+  color: var(--el-color-primary);
 }
 
 .user-avatar .el-icon {
@@ -84,23 +84,7 @@
   overflow: hidden;
 }
 
-.el-dropdown-menu__item {
-  padding: 0.5rem 1.25rem;
-  font-size: 14px;
-  color: var(--font-color);
-  transition: var(--app-transition);
-}
 
-.el-dropdown-menu__item:hover {
-  background-color: rgba(var(--primary), 0.1);
-  color: rgba(var(--primary), 1);
-}
-
-.el-dropdown-menu__item--divided {
-  border-top-color: var(--border_color);
-  margin: 0.25rem 0;
-  padding-top: 0.25rem;
-}
 
 /* 过渡动画 */
 .fade-enter-active,

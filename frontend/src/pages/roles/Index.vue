@@ -16,38 +16,30 @@
         row-key="id"
         tooltip-effect="light"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center">
-          <template #default="scope">
-            <el-tag type="info" size="small" effect="plain">#{{ scope.row.id }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="name" label="角色名称" min-width="120" />
-        <el-table-column prop="code" label="角色编码" min-width="120">
-          <template #default="scope">
-            <el-tag type="primary" size="small" effect="light">{{ scope.row.code }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="code" label="角色编码" min-width="120" />
         <el-table-column prop="description" label="角色描述" min-width="180" show-overflow-tooltip />
         <el-table-column prop="created_at" label="创建时间" width="180" align="center">
           <template #default="scope">
-            <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+            {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="340" align="center" fixed="right" class-name="table-cell-flex-center">
+        <el-table-column label="操作" width="340" align="right" fixed="right" class-name="table-cell-flex-end">
           <template #default="scope">
-            <el-button type="primary" size="small" link @click="handleEdit(scope.row)">
+            <el-button size="small" link @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon> 编辑
             </el-button>
-            <el-button type="success" size="small" link @click="handlePermissions(scope.row)">
+            <el-button size="small" link @click="handlePermissions(scope.row)">
               <el-icon><Key /></el-icon> 权限
             </el-button>
-            <el-button type="warning" size="small" link @click="handleViewUsers(scope.row)">
+            <el-button size="small" link @click="handleViewUsers(scope.row)">
               <el-icon><User /></el-icon> 用户
             </el-button>
             <el-button
-              type="danger"
               size="small"
               link
+              class="btn-delete"
               :disabled="isSystemRole(scope.row.code)"
               @click="handleDelete(scope.row)"
             >
@@ -135,22 +127,17 @@
               <el-table-column prop="email" label="邮箱" min-width="160" show-overflow-tooltip />
               <el-table-column label="所有角色" min-width="160">
                 <template #default="scope">
-                  <el-tag
-                    v-for="role in scope.row.roles"
-                    :key="role"
-                    size="small"
-                    :type="role === (currentRole && currentRole.code) ? 'warning' : 'primary'"
-                    effect="light"
-                    style="margin-right: 4px"
-                  >{{ role }}</el-tag>
+                  <span v-for="(role, index) in scope.row.roles" :key="role">
+                    {{ role }}{{ index < scope.row.roles.length - 1 ? '、' : '' }}
+                  </span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="100" align="center">
+              <el-table-column label="操作" width="100" align="right">
                 <template #default="scope">
                   <el-button
-                    type="danger"
                     size="small"
                     link
+                    class="btn-delete"
                     @click="handleRemoveUserRole(scope.row)"
                   >
                     <el-icon><Remove /></el-icon> 移除
@@ -506,6 +493,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+/* 删除按钮样式 - 默认无颜色，hover 显示 danger 色 */
+.btn-delete {
+  transition: color 0.2s ease;
+}
+
+.btn-delete:hover {
+  color: var(--el-color-danger) !important;
+}
 
 .perm-group {
   margin-bottom: 16px;

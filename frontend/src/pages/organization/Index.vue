@@ -3,7 +3,7 @@
     <div class="page-header">
       <h2>组织架构</h2>
       <div class="header-actions">
-        <el-button type="success" class="btn-modern" @click="handleCreateEmployee">
+        <el-button class="btn-modern" @click="handleCreateEmployee">
           <el-icon><User /></el-icon> 新建员工
         </el-button>
         <el-button type="primary" class="btn-modern" @click="handleCreateOrg">
@@ -20,17 +20,18 @@
             <el-option v-for="org in organizations" :key="org.id" :label="org.name" :value="org.id" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="currentOrg">
-          <el-tag class="org-code-tag" type="info">编码: {{ currentOrg.code }}</el-tag>
+        <el-form-item style="margin-left: -18px" v-if="currentOrg">
+          <el-tag type="info" effect="light" size="small" class="org-code-tag">
+            编码： {{ currentOrg.code }}
+          </el-tag>
         </el-form-item>
         <!-- 企业微信绑定状态 -->
         <el-form-item v-if="currentOrg">
-        <el-button type="warning" class="btn-modern" @click="handleEditOrg" v-if="currentOrg">
+          <el-button class="btn-modern" @click="handleEditOrg" v-if="currentOrg">
             <el-icon><Edit /></el-icon> 编辑组织
           </el-button>
           <el-tooltip content="同步通讯录功能，需要绑定企业微信，才能使用" :disabled="wechatBound">
             <el-button
-              type="primary"
               class="btn-modern"
               :disabled="!wechatBound"
               @click="handleWechatSync"
@@ -40,18 +41,18 @@
             </el-button>
           </el-tooltip>
           <template v-if="wechatBound">
-            <el-tag type="success" style="margin-right: 8px">已绑定企业微信</el-tag>
-            <el-button type="info" class="btn-modern" @click="showWechatConfigDialog">
+            <span class="bind-status-text" style="margin-right: 8px">已绑定企业微信</span>
+            <el-button class="btn-modern" @click="showWechatConfigDialog">
               查看配置
             </el-button>
             <el-tooltip content="解除组织与企业微信的绑定，不再接收通讯录变更通知，已同步的数据会保留">
-              <el-button type="danger" class="btn-modern" plain @click="handleWechatUnbind">
+              <el-button class="btn-modern" plain @click="handleWechatUnbind">
                 解绑
               </el-button>
             </el-tooltip>
           </template>
           <template v-else>
-            <el-button type="success" class="btn-modern" @click="showWechatBindDialog">
+            <el-button class="btn-modern" @click="showWechatBindDialog">
               绑定企业微信
             </el-button>
           </template>
@@ -62,7 +63,7 @@
     <!-- 主内容区：左右布局 -->
     <div class="main-content-row" v-if="currentOrgId">
       <!-- 左侧：部门树 -->
-      <el-card class="department-card" shadow="hover">
+      <el-card class="department-card" shadow="hover" :style="{ '--card-max-height': cardMaxHeight + 'px' }">
         <div class="dept-card-header">
           <h3>部门结构</h3>
           <el-button type="primary" size="small" @click="handleCreateDept(null)">
@@ -71,6 +72,7 @@
         </div>
         
         <el-tree
+          v-if="departmentTree.length > 0"
           ref="deptTreeRef"
           v-loading="deptLoading"
           :data="departmentTree"
@@ -84,20 +86,20 @@
             <div class="tree-node-content">
               <el-icon class="dept-icon"><Folder /></el-icon>
               <span class="dept-name">{{ node.label }}</span>
-              <el-tag size="small" type="info" class="dept-count">{{ data.employee_count || 0 }}</el-tag>
+              <span class="dept-count">{{ data.employee_count || 0 }}</span>
               <span class="dept-actions">
                 <el-tooltip content="添加子部门">
-                  <el-button type="primary" size="small" link @click.stop="handleCreateDept(data)">
+                  <el-button size="small" link @click.stop="handleCreateDept(data)">
                     <el-icon><Plus /></el-icon>
                   </el-button>
                 </el-tooltip>
                 <el-tooltip content="编辑部门">
-                  <el-button type="warning" size="small" link @click.stop="handleEditDept(data)">
+                  <el-button size="small" link @click.stop="handleEditDept(data)">
                     <el-icon><Edit /></el-icon>
                   </el-button>
                 </el-tooltip>
                 <el-tooltip content="删除部门">
-                  <el-button type="danger" size="small" link @click.stop="handleDeleteDept(data)">
+                  <el-button size="small" link class="btn-delete" @click.stop="handleDeleteDept(data)">
                     <el-icon><Delete /></el-icon>
                   </el-button>
                 </el-tooltip>
@@ -105,22 +107,19 @@
             </div>
           </template>
         </el-tree>
-        
+
         <EmptyState
-          v-if="!deptLoading && departmentTree.length === 0"
+          v-else-if="!deptLoading"
           type="data"
           :icon="Folder"
           title="暂无部门"
-          description="当前组织下还没有创建任何部门，点击下方按钮创建第一个部门"
-          action-text="添加部门"
-          :action-icon="Plus"
+          description="当前组织下还没有创建任何部门"
           compact
-          @action="handleCreateDept(null)"
         />
       </el-card>
       
       <!-- 右侧：员工列表 -->
-      <el-card class="data-card employee-list-card" shadow="hover">
+      <el-card class="data-card employee-list-card" shadow="hover" :style="{ '--card-max-height': cardMaxHeight + 'px' }">
         <div class="list-header">
           <h4>
             <template v-if="selectedDept">{{ selectedDept.name }} - 员工</template>
@@ -176,8 +175,7 @@
           </el-table-column>
           <el-table-column prop="code" label="员工编码" min-width="120">
             <template #default="{ row }">
-              <el-tag v-if="row.code" type="primary" size="small" effect="light">{{ row.code }}</el-tag>
-              <el-tag v-else type="info" size="small" effect="light">未设置</el-tag>
+              {{ row.code || '未设置' }}
             </template>
           </el-table-column>
           <el-table-column prop="emp_no" label="工号" width="100" />
@@ -186,10 +184,9 @@
           <el-table-column label="雇佣状态" width="100" align="center" class-name="table-cell-flex-center-offset">
             <template #default="{ row }">
               <el-dropdown trigger="click" @command="(cmd) => handleChangeEmpStatus(row, cmd)">
-                <span class="status-tag-wrapper">
-                  <el-tag :type="empStatusType(row.status)" size="small" style="cursor: pointer">
-                    {{ empStatusLabel(row.status) }}
-                  </el-tag>
+                <span class="status-text-wrapper" style="cursor: pointer">
+                  <span v-if="row.status === 3" class="status-enabled">{{ empStatusLabel(row.status) }}</span>
+                  <span v-else>{{ empStatusLabel(row.status) }}</span>
                   <el-icon class="status-arrow"><ArrowDown /></el-icon>
                 </span>
                 <template #dropdown>
@@ -208,10 +205,9 @@
             <template #default="{ row }">
               <template v-if="row.user_id">
                 <el-dropdown trigger="click" @command="(cmd) => handleChangeAccountStatus(row, cmd)">
-                  <span class="status-tag-wrapper">
-                    <el-tag :type="accountStatusType(row.account_status)" size="small" style="cursor: pointer">
-                      {{ accountStatusLabel(row.account_status) }}
-                    </el-tag>
+                  <span class="status-text-wrapper" style="cursor: pointer">
+                    <span v-if="row.account_status === 1" class="status-enabled">{{ accountStatusLabel(row.account_status) }}</span>
+                    <span v-else>{{ accountStatusLabel(row.account_status) }}</span>
                     <el-icon class="status-arrow"><ArrowDown /></el-icon>
                   </span>
                   <template #dropdown>
@@ -222,15 +218,15 @@
                   </template>
                 </el-dropdown>
               </template>
-              <el-tag v-else type="info" size="small">无账号</el-tag>
+              <span v-else>无账号</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="160" align="center" class-name="table-cell-flex-center">
+          <el-table-column label="操作" width="160" align="right" class-name="table-cell-flex-end">
             <template #default="{ row }">
-              <el-button type="primary" size="small" link @click="handleEditEmployee(row)">
+              <el-button size="small" link @click="handleEditEmployee(row)">
                 <el-icon><Edit /></el-icon> 编辑
               </el-button>
-              <el-button type="danger" size="small" link @click="handleRemoveFromDept(row)">
+              <el-button size="small" link class="btn-delete" @click="handleRemoveFromDept(row)">
                 <el-icon><Remove /></el-icon> 移出
               </el-button>
             </template>
@@ -672,7 +668,7 @@
                   <span>{{ row.primary_dept_name || '未分配' }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="100" align="center">
+              <el-table-column label="操作" width="100" align="right">
                 <template #default="{ row }">
                   <el-button 
                     v-if="!isAlreadyInDept(row)"
@@ -811,7 +807,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Edit, Delete, Folder, User, UserFilled, ArrowDown, Search, OfficeBuilding, Connection, Key, Link, InfoFilled, Remove, Collection } from '@element-plus/icons-vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -1508,8 +1504,22 @@ const handleCreateAccount = async (row) => {
   }
 }
 
+// 动态计算卡片高度
+const cardMaxHeight = ref(620)
+
+const updateCardHeight = () => {
+  const viewportHeight = window.innerHeight
+  cardMaxHeight.value = Math.max(500, viewportHeight - 300)
+}
+
 onMounted(() => {
   loadOrganizations()
+  updateCardHeight()
+  window.addEventListener('resize', updateCardHeight)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateCardHeight)
 })
 </script>
 
@@ -1517,152 +1527,62 @@ onMounted(() => {
 /* ===== 组织架构页面按钮颜色优化 - 增强视觉区分 ===== */
 
 /* 头部主要操作按钮 - 使用鲜明的渐变色 */
+/* 按钮样式 - 使用主题色，保持简洁 */
 .header-actions .el-button--success {
-  background: linear-gradient(135deg, rgba(var(--success), 1), rgba(var(--success), 0.85));
-  border-color: transparent;
-  box-shadow: 0 2px 6px rgba(var(--success), 0.35);
+  background: rgb(var(--success));
+  border-color: rgb(var(--success));
 }
 
 .header-actions .el-button--success:hover {
-  background: linear-gradient(135deg, rgba(var(--success), 0.95), rgba(var(--success), 0.75));
-  box-shadow: 0 4px 10px rgba(var(--success), 0.45);
-  transform: translateY(-1px);
+  background: rgba(var(--success), 0.9);
+  border-color: rgba(var(--success), 0.9);
 }
 
 .header-actions .el-button--primary {
-  background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.85));
-  border-color: transparent;
-  box-shadow: 0 2px 6px rgba(var(--primary), 0.35);
+  background: var(--el-color-primary);
+  border-color: var(--el-color-primary);
 }
 
 .header-actions .el-button--primary:hover {
-  background: linear-gradient(135deg, rgba(var(--primary), 0.95), rgba(var(--primary), 0.75));
-  box-shadow: 0 4px 10px rgba(var(--primary), 0.45);
-  transform: translateY(-1px);
+  background: var(--el-color-primary-light-3);
+  border-color: var(--el-color-primary-light-3);
 }
 
-/* 组织操作区按钮 - 不同功能用不同颜色 */
-.filter-form .el-button--warning {
-  background: linear-gradient(135deg, rgba(var(--warning), 1), rgba(var(--warning), 0.85));
-  border-color: transparent;
-  color: var(--white);
-  box-shadow: 0 2px 6px rgba(var(--warning), 0.35);
+/* 部门树操作按钮 - 简洁的链接样式 */
+.dept-actions .el-button {
+  color: rgb(var(--gray-600));
 }
 
-.filter-form .el-button--warning:hover {
-  background: linear-gradient(135deg, rgba(var(--warning), 0.95), rgba(var(--warning), 0.75));
-  box-shadow: 0 4px 10px rgba(var(--warning), 0.45);
-  color: var(--white);
-  transform: translateY(-1px);
+.dept-actions .el-button:hover {
+  color: var(--el-color-primary);
+  background-color: rgb(var(--gray-50));
 }
 
-.filter-form .el-button--info {
-  background: linear-gradient(135deg, rgba(83, 90, 231, 1));
-  border-color: transparent;
-  color: var(--white);
-  box-shadow: 0 2px 6px rgba(83, 90, 231, 0.35);
+.dept-actions .el-button .el-icon {
+  margin-right: 0;
 }
 
-.filter-form .el-button--info:hover {
-  background: linear-gradient(135deg, rgba(83, 90, 231, 0.95), rgba(83, 90, 231, 0.75));
-  box-shadow: 0 4px 10px rgba(83, 90, 231, 0.45);
-  color: var(--white);
-  transform: translateY(-1px);
-}
-
-.filter-form .el-button--danger {
-  background: linear-gradient(135deg, rgba(var(--danger), 1), rgba(var(--danger), 0.85));
-  border-color: transparent;
-  color: var(--white);
-  box-shadow: 0 2px 6px rgba(var(--danger), 0.35);
-}
-
-.filter-form .el-button--danger:hover {
-  background: linear-gradient(135deg, rgba(var(--danger), 0.95), rgba(var(--danger), 0.75));
-  box-shadow: 0 4px 10px rgba(var(--danger), 0.45);
-  color: var(--white);
-  transform: translateY(-1px);
-}
-
-/* 绑定企业微信按钮 - 绿色强调 */
-.filter-form .el-button--success {
-  background: linear-gradient(135deg, rgba(var(--success), 1), rgba(var(--success), 0.85));
-  border-color: transparent;
-  box-shadow: 0 2px 6px rgba(var(--success), 0.35);
-}
-
-.filter-form .el-button--success:hover {
-  background: linear-gradient(135deg, rgba(var(--success), 0.95), rgba(var(--success), 0.75));
-  box-shadow: 0 4px 10px rgba(var(--success), 0.45);
-  transform: translateY(-1px);
-}
-
-/* 部门树操作按钮 - 悬停时增强颜色 */
-.dept-actions .el-button--primary {
-  color: rgba(var(--primary), 1);
-}
-
-.dept-actions .el-button--primary:hover {
-  color: rgba(var(--primary), 0.8);
-  background-color: rgba(var(--primary), 0.1);
-}
-
-.dept-actions .el-button--warning {
-  color: rgba(var(--warning), 1);
-}
-
-.dept-actions .el-button--warning:hover {
-  color: rgba(var(--warning), 0.8);
-  background-color: rgba(var(--warning), 0.1);
-}
-
-.dept-actions .el-button--danger {
-  color: rgba(var(--danger), 1);
-}
-.dept-actions .el-button .el-icon{
-  margin-right: 0px;
-}
-
-.dept-actions .el-button--danger:hover {
-  color: rgba(var(--danger), 0.8);
-  background-color: rgba(var(--danger), 0.1);
-}
-
-
-
-/* 添加部门按钮 - 更鲜明的蓝色 */
+/* 添加部门按钮 */
 .dept-card-header .el-button--primary {
-  background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.8));
-  border-color: transparent;
-  box-shadow: 0 2px 6px rgba(var(--primary), 0.3);
+  background: var(--el-color-primary);
+  border-color: var(--el-color-primary);
 }
 
 .dept-card-header .el-button--primary:hover {
-  background: linear-gradient(135deg, rgba(var(--primary), 0.95), rgba(var(--primary), 0.7));
-  box-shadow: 0 4px 10px rgba(var(--primary), 0.4);
-  transform: translateY(-1px);
+  background: var(--el-color-primary-light-3);
+  border-color: var(--el-color-primary-light-3);
 }
 
-/* 员工列表头部按钮 */
-.list-header .el-button--primary {
-  background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.8));
-  border-color: transparent;
-  box-shadow: 0 2px 6px rgba(var(--primary), 0.3);
+
+
+.org-code-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
 }
 
-.list-header .el-button--primary:hover {
-  background: linear-gradient(135deg, rgba(var(--primary), 0.95), rgba(var(--primary), 0.7));
-  box-shadow: 0 4px 10px rgba(var(--primary), 0.4);
-  transform: translateY(-1px);
-}
-
-.org-code-tag{
-  margin-left: -22px;
-  height: 32px;
-}
-.avatar {
-  background: linear-gradient(135deg, rgba(var(--primary), 1), rgba(var(--primary), 0.7));
-}
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -1680,7 +1600,7 @@ onMounted(() => {
 .department-card {
   flex: 0 0 360px;
   min-height: 500px;
-  max-height: 620px;
+  max-height: var(--card-max-height, 620px);
   display: flex;
   flex-direction: column;
 }
@@ -1695,17 +1615,41 @@ onMounted(() => {
 .department-card :deep(.el-tree) {
   flex: 1;
   overflow-y: auto;
-  max-height: calc(620px - 60px);
+  max-height: calc(var(--card-max-height, 620px) - 60px);
 }
 .data-card {
   flex: 1;
   min-height: 500px;
+  max-height: var(--card-max-height, 620px);
+  display: flex;
+  flex-direction: column;
 }
 
 /* 员工列表卡片内部样式 */
 .employee-list-card :deep(.el-card__body) {
   padding: 16px;
-  background-color: var(--bodybg-color);
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-list-card .list-header {
+  flex-shrink: 0;
+}
+
+.employee-list-card .list-filter {
+  flex-shrink: 0;
+}
+
+.employee-list-card .el-table {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.employee-list-card .pagination-container {
+  flex-shrink: 0;
+  margin-top: 12px;
 }
 
 .list-header {
@@ -1731,18 +1675,6 @@ onMounted(() => {
   border: 1px solid var(--border_color);
 }
 
-.list-filter .filter-form {
-  margin-bottom: 0;
-}
-
-.list-filter .filter-form :deep(.el-form-item) {
-  margin-bottom: 0;
-  margin-right: 16px;
-}
-
-.list-filter .filter-form :deep(.el-form-item__label) {
-  font-size: var(--el-font-size-xs);
-}
 
 /* 部门卡片头部样式 */
 .dept-card-header {
@@ -1795,6 +1727,8 @@ onMounted(() => {
 .status-arrow {
   font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
+   top:1px;
+  margin-left:2px;
 }
 .inline-summary {
   display: flex;
@@ -1806,6 +1740,15 @@ onMounted(() => {
   align-items: flex-start;
   flex-direction: column;
   gap: 10px;
+}
+
+/* 删除按钮样式 - 默认无颜色，hover 显示 danger 色 */
+.btn-delete {
+  transition: color 0.2s ease;
+}
+
+.btn-delete:hover {
+  color: var(--el-color-danger) !important;
 }
 .edit-manage-tabs {
   padding-top: 4px;

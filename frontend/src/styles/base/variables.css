@@ -1,8 +1,8 @@
 :root {
   /* ============================================
-     Ra-admin 基础颜色变量
-     注意：以下变量在 themes.css 中定义，这里保留注释作为参考：
-     --primary, --secondary, --success, --danger, --warning, --info,
+     Ra-admin 基础变量
+     注意：颜色变量在 themes.css 中定义，这里保留注释作为参考：
+     --primary, --success, --danger, --warning, --info,
      --light, --dark, --black, --light-gray, --white,
      --font-color, --font-title-color, --font-secondary-color,
      --font-medium-color, --font-light-color,

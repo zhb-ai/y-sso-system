@@ -76,44 +76,23 @@
         row-key="id"
         tooltip-effect="light"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center">
-          <template #default="scope">
-            <el-tag type="info" size="small" effect="plain"
-              >#{{ scope.row.id }}</el-tag
-            >
-          </template>
-        </el-table-column>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="username" label="用户名" min-width="120" />
         <el-table-column prop="name" label="姓名" min-width="100" />
         <el-table-column prop="email" label="邮箱" min-width="180" show-overflow-tooltip />
         <el-table-column prop="phone" label="手机号" min-width="120" />
         <el-table-column label="角色" min-width="150">
           <template #default="scope">
-            <el-tag
-              v-for="role in scope.row.roles || []"
-              :key="role.code"
-              size="small"
-              :type="getRoleTagType(role.code)"
-              effect="light"
-              style="margin-right: 4px"
-              >{{ role.name }}</el-tag
-            >
-            <el-text
-              v-if="!(scope.row.roles || []).length"
-              type="info"
-              size="small"
-              >无角色</el-text
-            >
+            <span v-for="(role, index) in scope.row.roles || []" :key="role.code">
+              {{ role.name }}{{ index < (scope.row.roles || []).length - 1 ? '、' : '' }}
+            </span>
+            <span v-if="!(scope.row.roles || []).length" class="text-muted">无角色</span>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100" align="center">
+        <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="scope">
-            <el-tag
-              :type="scope.row.status === 'active' ? 'success' : 'danger'"
-              size="small"
-            >
-              {{ scope.row.status === "active" ? "启用" : "禁用" }}
-            </el-tag>
+            <span v-if="scope.row.status === 'active'" class="status-enabled">启用</span>
+            <span v-else>禁用</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -123,21 +102,18 @@
           align="center"
         >
           <template #default="scope">
-            <el-text class="time-text" size="small">{{
-              formatDate(scope.row.created_at)
-            }}</el-text>
+            {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
         <el-table-column
           label="操作"
           width="380"
-          align="center"
+          align="right"
           fixed="right"
-          class-name="table-cell-flex-center"
+          class-name="table-cell-flex-end"
         >
           <template #default="scope">
             <el-button
-              type="primary"
               size="small"
               link
               @click="handleEdit(scope.row)"
@@ -145,7 +121,6 @@
               <el-icon><Edit /></el-icon> 编辑
             </el-button>
             <el-button
-              type="success"
               size="small"
               link
               @click="handleAssignRole(scope.row)"
@@ -153,7 +128,6 @@
               <el-icon><Medal /></el-icon> 角色
             </el-button>
             <el-button
-              type="warning"
               size="small"
               link
               @click="handleAssignSSORole(scope.row)"
@@ -161,18 +135,17 @@
               <el-icon><Connection /></el-icon> SSO
             </el-button>
             <el-button
-              :type="scope.row.status === 'active' ? 'danger' : 'success'"
               size="small"
               link
               @click="handleToggleStatus(scope.row)"
             >
-              <el-icon
+              <el-icon :class="{ 'status-enabled': scope.row.status !== 'active' }"
                 ><component :is="scope.row.status === 'active' ? Lock : Unlock"
               /></el-icon>
-              {{ scope.row.status === "active" ? "禁用" : "启用" }}
+              <span v-if="scope.row.status !== 'active'" class="status-enabled">启用</span>
+              <span v-else>禁用</span>
             </el-button>
             <el-button
-              type="primary"
               size="small"
               link
               @click="handleResetPassword(scope.row)"

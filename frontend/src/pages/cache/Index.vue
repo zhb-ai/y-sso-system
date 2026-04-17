@@ -142,18 +142,7 @@
           label="后端"
           width="120"
           align="center"
-        >
-          <template #default="scope">
-            <el-tag
-              :type="
-                getBackendTagType(scope.row[CACHE_FUNCTION_COLUMNS.BACKEND])
-              "
-              effect="light"
-            >
-              {{ scope.row[CACHE_FUNCTION_COLUMNS.BACKEND] }}
-            </el-tag>
-          </template>
-        </el-table-column>
+        />
         <el-table-column
           :prop="CACHE_FUNCTION_COLUMNS.TTL"
           label="TTL(秒)"
@@ -191,12 +180,11 @@
         <el-table-column
           label="操作"
           width="180"
-          align="center"
-          class-name="table-cell-flex-center"
+          align="right"
+          class-name="table-cell-flex-end"
         >
           <template #default="scope">
             <el-button
-              type="info"
               link
               size="small"
               @click="handleViewEntries(scope.row.name)"
@@ -204,7 +192,6 @@
               条目
             </el-button>
             <el-button
-              type="primary"
               link
               size="small"
               @click="handleViewSingleStats(scope.row.name)"
@@ -212,7 +199,6 @@
               统计
             </el-button>
             <el-button
-              type="danger"
               link
               size="small"
               @click="handleClearOne(scope.row.name)"
@@ -373,8 +359,8 @@
           <el-table-column
             label="操作"
             width="100"
-            align="center"
-            class-name="table-cell-flex-center"
+            align="right"
+            class-name="table-cell-flex-end"
           >
             <template #default="scope">
               <el-button
@@ -684,7 +670,7 @@ onMounted(() => {
 }
 
 .hint-icon:hover {
-  color: rgba(var(--primary), 1);
+  color: var(--el-color-primary);
 }
 
 .page-header-actions {

@@ -82,17 +82,32 @@
 
         <!-- 已登录：显示应用列表 -->
         <div v-if="isLoggedIn" class="sso-portal-section">
-          <div class="sso-user-info">
-            <el-icon :size="48" class="sso-user-avatar"><UserFilled /></el-icon>
-            <div class="sso-user-detail">
-              <span class="sso-username">{{ authStore.userInfo?.username }}</span>
-              <span class="sso-email">{{ authStore.userInfo?.email || '' }}</span>
+          <div class="sso-portal-header">
+            <div class="sso-user-info">
+              <div class="sso-user-avatar">
+                <el-avatar :size="40" :icon="UserFilled" />
+              </div>
+              <div class="sso-user-detail">
+                <span class="sso-username">{{ authStore.userInfo?.username }}</span>
+                <span class="sso-email">{{ authStore.userInfo?.email || '未设置邮箱' }}</span>
+              </div>
+            </div>
+            <div class="sso-header-actions">
+              <el-link v-if="authStore.isAdmin" type="primary" :underline="false" @click="$router.push('/dashboard')">
+                <el-icon><Setting /></el-icon> 管理后台
+              </el-link>
+              <el-link type="info" :underline="false" @click="handleLogout">
+                <el-icon><SwitchButton /></el-icon> 退出
+              </el-link>
             </div>
           </div>
 
           <el-divider />
 
-          <p class="sso-portal-title">选择要登录的应用：</p>
+          <div class="sso-portal-title">
+            <el-icon><Grid /></el-icon>
+            <span>选择要登录的应用</span>
+          </div>
 
           <!-- 加载中 -->
           <div v-if="loadingApps" class="sso-portal-loading">
@@ -126,15 +141,6 @@
             </div>
           </div>
 
-          <el-divider />
-          <div class="sso-footer-links">
-            <el-link v-if="authStore.isAdmin" type="primary" :underline="'never'" @click="$router.push('/dashboard')">
-              进入管理后台
-            </el-link>
-            <el-link type="info" :underline="'never'" @click="handleLogout">
-              退出登录
-            </el-link>
-          </div>
         </div>
 
         <!-- 未登录：显示登录表单 -->
@@ -211,7 +217,7 @@
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { UserFilled, Lock, Monitor, ArrowRight, Loading } from '@element-plus/icons-vue'
+import { UserFilled, Lock, Monitor, ArrowRight, Loading, Grid, Setting, SwitchButton } from '@element-plus/icons-vue'
 import { api, oauth2Api } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { useSiteStore } from '@/stores/site'
@@ -533,18 +539,19 @@ async function handlePortalLogin() {
   padding: 20px;
 }
 
-/* ==================== 用户信息 ==================== */
+/* ==================== 门户头部 ==================== */
 
-.sso-authorize-section,
-.sso-portal-section {
-  padding: 10px 0;
+.sso-portal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
 }
 
 .sso-user-info {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 0;
+  gap: 12px;
 }
 
 .sso-user-avatar {
@@ -554,21 +561,42 @@ async function handlePortalLogin() {
 .sso-user-detail {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .sso-username {
-  font-size: var(--el-font-size-lg);
-  font-weight: var(--el-font-weight-extra-bold);
+  font-size: var(--el-font-size-base);
+  font-weight: 600;
   color: var(--el-text-color-primary);
 }
 
 .sso-email {
   font-size: var(--el-font-size-sm);
   color: var(--el-text-color-secondary);
-  margin-top: 2px;
+}
+
+.sso-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sso-header-actions .el-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--el-font-size-sm);
 }
 
 /* ==================== OAuth2 授权确认 ==================== */
+
+.sso-authorize-section {
+  padding: 10px 0;
+}
+
+.sso-authorize-section .sso-user-info {
+  padding: 12px 0;
+}
 
 .sso-scope-info {
   margin: 8px 0 20px;
@@ -610,9 +638,19 @@ async function handlePortalLogin() {
 /* ==================== 门户模式：应用列表 ==================== */
 
 .sso-portal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: var(--el-font-size-base);
-  color: var(--el-text-color-regular);
-  margin-bottom: 12px;
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+  margin-bottom: 16px;
+  padding: 8px 0;
+}
+
+.sso-portal-title .el-icon {
+  color: var(--el-color-primary);
+  font-size: 18px;
 }
 
 .sso-portal-loading {
@@ -775,15 +813,15 @@ async function handlePortalLogin() {
 
 .btn-secondary {
   color: var(--white);
-  background-color: rgba(var(--secondary), 1);
-  border-color: rgba(var(--secondary), 1);
+  background-color: rgb(var(--success));
+  border-color: rgb(var(--success));
   margin-top: 10px;
   margin-left: 0;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(var(--secondary), 0.9);
-  border-color: rgba(var(--secondary), 0.9);
+  background-color: rgba(var(--success), 0.9);
+  border-color: rgba(var(--success), 0.9);
 }
 
 .wechat-icon {
@@ -793,15 +831,6 @@ async function handlePortalLogin() {
 
 .mb-4 {
   margin-bottom: 20px;
-}
-
-/* ==================== 底部链接区域 ==================== */
-
-.sso-footer-links {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 24px;
 }
 
 /* ==================== 企业微信登录 ==================== */

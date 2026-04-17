@@ -160,14 +160,13 @@
         <el-table-column prop="user_agent" label="浏览器信息" min-width="200" show-overflow-tooltip />
         <el-table-column prop="created_at" label="登录时间" width="160">
           <template #default="scope">
-            <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+            {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="70" align="center">
           <template #default="scope">
-            <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'" size="small">
-              {{ scope.row.status === 'success' ? '成功' : '失败' }}
-            </el-tag>
+            <span v-if="scope.row.status === 'success'" class="status-success">成功</span>
+            <span v-else>失败</span>
           </template>
         </el-table-column>
         <el-table-column prop="failure_reason" label="失败原因" width="120" show-overflow-tooltip>
