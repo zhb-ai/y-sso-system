@@ -10,9 +10,18 @@ import secrets
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 
+from jose import JWTError, jwt
 from yweb.log import get_logger
+from yweb.auth.schemas import TokenData, TokenPayload
 from yweb.orm import transaction_manager as tm
 from .entities import Application, ApplicationPermission, OAuth2Token, AuthorizationCode
+from app.config import settings
+from app.services.oauth2_security import (
+    build_pkce_s256_challenge,
+    get_jwt_key_id,
+    get_runtime_jwt_public_key,
+    get_oidc_issuer,
+)
 
 logger = get_logger()
 
@@ -33,7 +42,9 @@ class ApplicationService:
         code: str,
         description: str = None,
         redirect_uris: List[str] = None,
+        allowed_ip_cidrs: List[str] = None,
         logo_url: str = None,
+        client_type: str = "confidential",
     ) -> Application:
         """创建应用
 
@@ -52,9 +63,12 @@ class ApplicationService:
         """
         # 验证编码唯一性
         Application.validate_code_unique(code)
+        normalized_ip_cidrs = Application.normalize_allowed_ip_cidrs(allowed_ip_cidrs)
 
         # 生成客户端凭证
         client_id, client_secret = Application.generate_client_credentials()
+        if client_type == "public":
+            client_secret = ""
 
         # 创建应用
         app = Application(
@@ -63,7 +77,9 @@ class ApplicationService:
             description=description,
             client_id=client_id,
             client_secret=client_secret,
+            client_type=client_type,
             redirect_uris=json.dumps(redirect_uris or []),
+            allowed_ip_cidrs=json.dumps(normalized_ip_cidrs),
             logo_url=logo_url,
             is_active=True,
         )
@@ -82,6 +98,14 @@ class ApplicationService:
         if not app:
             raise ValueError(f"应用不存在: {app_id}")
         return app
+
+    def get_application_secret(self, app_id: int) -> Application:
+        """获取应用当前客户端密钥
+
+        Raises:
+            ValueError: 应用不存在
+        """
+        return self.get_application(app_id)
 
     def get_application_by_client_id(self, client_id: str) -> Application:
         """通过客户端ID获取应用
@@ -110,6 +134,22 @@ class ApplicationService:
         # 处理 redirect_uris：List -> JSON string
         if 'redirect_uris' in kwargs and isinstance(kwargs['redirect_uris'], list):
             kwargs['redirect_uris'] = json.dumps(kwargs['redirect_uris'])
+
+        # 处理 allowed_ip_cidrs：List -> JSON string
+        if 'allowed_ip_cidrs' in kwargs and isinstance(kwargs['allowed_ip_cidrs'], list):
+            kwargs['allowed_ip_cidrs'] = json.dumps(
+                Application.normalize_allowed_ip_cidrs(kwargs['allowed_ip_cidrs'])
+            )
+
+        # 切换客户端类型时，同步维护客户端密钥状态
+        new_client_type = kwargs.get('client_type')
+        if new_client_type and new_client_type != app.client_type:
+            if new_client_type == "public":
+                kwargs['client_secret'] = ""
+            elif new_client_type == "confidential":
+                current_secret = kwargs.get('client_secret', app.client_secret)
+                if not current_secret:
+                    _, kwargs['client_secret'] = Application.generate_client_credentials()
 
         app.update(**kwargs)
         app.save()
@@ -164,6 +204,12 @@ class ApplicationService:
             ValueError: 应用不存在
         """
         app = self.get_application(app_id)
+        if app.is_public_client():
+            app.client_secret = ""
+            app.save(commit=True)
+            logger.info(f"公开客户端无需密钥: {app.name} (id={app_id})")
+            return app, ""
+
         new_secret = secrets.token_urlsafe(48)
         app.client_secret = new_secret
         app.save(commit=True)
@@ -196,7 +242,10 @@ class ApplicationService:
         return app
 
     def validate_client_credentials(
-        self, client_id: str, client_secret: str
+        self,
+        client_id: str,
+        client_secret: Optional[str],
+        source_ip: Optional[str] = None,
     ) -> Application:
         """验证客户端凭证
 
@@ -204,11 +253,18 @@ class ApplicationService:
             ValueError: 凭证无效 / 应用未激活
         """
         app = self.get_application_by_client_id(client_id)
+        app.validate_is_active()
+        app.validate_source_ip(source_ip)
+
+        if app.is_public_client():
+            return app
+
+        if not client_secret:
+            raise ValueError("缺少客户端凭证")
 
         if app.client_secret != client_secret:
             raise ValueError("客户端密钥错误")
 
-        app.validate_is_active()
         return app
 
 
@@ -342,11 +398,124 @@ class OAuth2ProviderService:
         self.user_getter = user_getter
         self.app_service = ApplicationService()
 
+    @staticmethod
+    def _extract_roles(user) -> List[str]:
+        """提取用户角色编码列表"""
+        if not hasattr(user, "roles"):
+            return []
+        return [r.code if hasattr(r, "code") else str(r) for r in user.roles]
+
+    def _build_token_payload(self, user, client_id: str) -> TokenPayload:
+        """构造 access/refresh token 共用载荷"""
+        return TokenPayload(
+            sub=str(user.id),
+            user_id=user.id,
+            username=user.username,
+            email=getattr(user, "email", None),
+            roles=self._extract_roles(user),
+            extra={
+                "iss": get_oidc_issuer(),
+                "aud": client_id,
+            },
+        )
+
+    def _create_id_token(self, user, client_id: str, nonce: Optional[str] = None) -> str:
+        """创建 OIDC id_token"""
+        now = datetime.now(timezone.utc)
+        claims = {
+            "sub": str(user.id),
+            "iss": get_oidc_issuer(),
+            "aud": client_id,
+            "iat": now,
+            "exp": now + timedelta(minutes=self.jwt_manager.access_token_expire_minutes),
+            "name": getattr(user, "name", None) or user.username,
+            "email": getattr(user, "email", None),
+            "preferred_username": user.username,
+        }
+        if nonce:
+            claims["nonce"] = nonce
+        return jwt.encode(
+            claims,
+            self.jwt_manager.secret_key,
+            algorithm=self.jwt_manager.algorithm,
+            headers={"kid": get_jwt_key_id()},
+        )
+
+    @staticmethod
+    def _scope_contains_openid(scope: Optional[str]) -> bool:
+        """判断 scope 是否包含 openid"""
+        return "openid" in (scope or "").split()
+
+    def _load_active_user(self, user_id: int):
+        """优先用当前会话查询用户，必要时回退到注入的 user_getter"""
+        from app.domain.auth.model.user import User
+
+        try:
+            user = User.query.filter_by(id=user_id, is_active=True).first()
+            if user:
+                return user
+        except Exception:
+            user = None
+
+        if self.user_getter:
+            user = self.user_getter(user_id)
+            if user and (not hasattr(user, "is_active") or user.is_active):
+                return user
+        return None
+
+    def _decode_resource_access_token_payload(self, access_token: str) -> Optional[dict]:
+        """解码资源端点使用的 access token payload。"""
+        verification_key = get_runtime_jwt_public_key() or self.jwt_manager.secret_key
+        try:
+            return jwt.decode(
+                access_token,
+                verification_key,
+                algorithms=[self.jwt_manager.algorithm],
+                issuer=get_oidc_issuer(),
+                options={"verify_aud": False},
+            )
+        except JWTError:
+            return None
+        except Exception:
+            return None
+
+    @staticmethod
+    def _extract_client_id_from_payload(payload: Optional[dict]) -> Optional[str]:
+        """从 token payload 中提取客户端 ID。"""
+        if not payload:
+            return None
+
+        audience = payload.get("aud")
+        if isinstance(audience, str):
+            return audience
+        if isinstance(audience, list) and audience:
+            return str(audience[0])
+        return None
+
+    def _verify_resource_access_token(self, access_token: str) -> Optional[TokenData]:
+        """校验提供给 userinfo 这类资源端点的 access token。"""
+        payload = self._decode_resource_access_token_payload(access_token)
+        if not payload:
+            return None
+
+        return TokenData(
+            sub=payload.get("sub"),
+            user_id=payload.get("user_id"),
+            username=payload.get("username"),
+            email=payload.get("email"),
+            roles=payload.get("roles", []),
+            token_type=payload.get("token_type", "access"),
+            exp=payload.get("exp"),
+            iat=payload.get("iat"),
+        )
+
     def validate_authorize_request(
         self,
         client_id: str,
         redirect_uri: str,
         response_type: str = "code",
+        code_challenge: str = None,
+        code_challenge_method: str = None,
     ) -> Application:
         """验证授权请求参数
 
@@ -362,6 +531,16 @@ class OAuth2ProviderService:
         app = self.app_service.get_application_by_client_id(client_id)
         app.validate_is_active()
         app.validate_redirect_uri(redirect_uri)
+
+        if app.is_public_client():
+            if not code_challenge:
+                raise ValueError("公开客户端必须提供 code_challenge")
+            if code_challenge_method != "S256":
+                raise ValueError("公开客户端仅支持 code_challenge_method=S256")
+
+        if code_challenge and code_challenge_method != "S256":
+            raise ValueError("当前仅支持 code_challenge_method=S256")
+
         return app
 
     @tm.transactional()
@@ -372,6 +551,9 @@ class OAuth2ProviderService:
         redirect_uri: str,
         scope: str = None,
         state: str = None,
+        nonce: str = None,
+        code_challenge: str = None,
+        code_challenge_method: str = None,
     ) -> AuthorizationCode:
         """生成授权码
 
@@ -384,6 +566,9 @@ class OAuth2ProviderService:
             redirect_uri=redirect_uri,
             scope=scope,
             state=state,
+            nonce=nonce,
+            code_challenge=code_challenge,
+            code_challenge_method=code_challenge_method,
         )
         logger.info(
             f"生成授权码: app_id={application_id}, user_id={user_id}, "
@@ -396,8 +581,10 @@ class OAuth2ProviderService:
         self,
         code: str,
         client_id: str,
-        client_secret: str,
+        client_secret: Optional[str],
         redirect_uri: str,
+        code_verifier: str = None,
+        source_ip: Optional[str] = None,
     ) -> dict:
         """用授权码换取令牌
 
@@ -414,8 +601,12 @@ class OAuth2ProviderService:
         Raises:
             ValueError: 凭证无效 / 授权码无效
         """
-        # 1. 验证客户端凭证
-        app = self.app_service.validate_client_credentials(client_id, client_secret)
+        # 1. 验证客户端凭证与来源 IP
+        app = self.app_service.validate_client_credentials(
+            client_id,
+            client_secret,
+            source_ip=source_ip,
+        )
 
         # 2. 查找授权码
         auth_code = AuthorizationCode.query.filter_by(code=code).first()
@@ -433,29 +624,24 @@ class OAuth2ProviderService:
         if auth_code.redirect_uri != redirect_uri:
             raise ValueError("redirect_uri 不匹配")
 
-        # 6. 标记授权码为已使用
+        # 6. 验证客户端认证 / PKCE
+        if app.is_public_client():
+            self._validate_pkce(auth_code, code_verifier)
+        else:
+            if getattr(auth_code, "code_challenge", None):
+                self._validate_pkce(auth_code, code_verifier)
+
+        # 7. 标记授权码为已使用
         auth_code.mark_used()
 
-        # 7. 获取用户信息并创建 JWT
+        # 8. 获取用户信息并创建 JWT
         #    直接在当前事务 Session 内查询，避免 user_getter 返回 detached 实例
         #    导致 lazy load roles 失败
-        from app.domain.auth.model.user import User
-        user = User.query.filter_by(id=auth_code.user_id, is_active=True).first()
+        user = self._load_active_user(auth_code.user_id)
         if not user:
             raise ValueError("用户不存在或已禁用")
 
-        from yweb.auth.schemas import TokenPayload
-        roles = []
-        if hasattr(user, 'roles'):
-            roles = [r.code if hasattr(r, 'code') else str(r) for r in user.roles]
-
-        payload = TokenPayload(
-            sub=user.username,
-            user_id=user.id,
-            username=user.username,
-            email=getattr(user, 'email', None),
-            roles=roles,
-        )
+        payload = self._build_token_payload(user, client_id)
 
         access_token = self.jwt_manager.create_access_token(payload)
         refresh_token = self.jwt_manager.create_refresh_token(payload)
@@ -466,20 +652,31 @@ class OAuth2ProviderService:
             f"授权码换取令牌: app={app.name}, user={user.username}"
         )
 
-        return {
+        response = {
             "access_token": access_token,
             "token_type": "bearer",
             "expires_in": expires_in,
             "refresh_token": refresh_token,
             "scope": auth_code.scope or "",
         }
+        if self._scope_contains_openid(auth_code.scope):
+            nonce = getattr(auth_code, "nonce", None)
+            if not isinstance(nonce, str) or not nonce:
+                nonce = None
+            response["id_token"] = self._create_id_token(
+                user,
+                client_id,
+                nonce=nonce,
+            )
+        return response
 
     @tm.transactional()
     def refresh_access_token(
         self,
         refresh_token: str,
         client_id: str,
-        client_secret: str,
+        client_secret: Optional[str],
+        source_ip: Optional[str] = None,
     ) -> dict:
         """用 refresh_token 换取新的 access_token
 
@@ -487,28 +684,52 @@ class OAuth2ProviderService:
             ValueError: 凭证无效 / refresh_token 无效
         """
         # 验证客户端凭证
-        self.app_service.validate_client_credentials(client_id, client_secret)
-
-        # 使用 JWTManager 刷新
-        result = self.jwt_manager.refresh_tokens(
-            refresh_token, user_getter=self.user_getter
+        self.app_service.validate_client_credentials(
+            client_id,
+            client_secret,
+            source_ip=source_ip,
         )
-        if not result:
+
+        token_data = self.jwt_manager.verify_token(refresh_token)
+        if not token_data or not token_data.user_id or token_data.token_type != "refresh":
             raise ValueError("refresh_token 无效或已过期")
 
+        user = self._load_active_user(token_data.user_id)
+        if not user:
+            raise ValueError("用户不存在或已禁用")
+
+        payload = self._build_token_payload(user, client_id)
         response = {
-            "access_token": result["access_token"],
+            "access_token": self.jwt_manager.create_access_token(payload),
             "token_type": "bearer",
             "expires_in": self.jwt_manager.access_token_expire_minutes * 60,
         }
 
         # 如果触发了滑动过期，返回新的 refresh_token
-        if result.get("refresh_token"):
-            response["refresh_token"] = result["refresh_token"]
+        if self.jwt_manager.should_renew_refresh_token(refresh_token):
+            response["refresh_token"] = self.jwt_manager.create_refresh_token(payload)
 
+        response["id_token"] = self._create_id_token(user, client_id)
         return response
 
-    def get_userinfo(self, access_token: str) -> dict:
+    @staticmethod
+    def _validate_pkce(auth_code: AuthorizationCode, code_verifier: Optional[str]) -> None:
+        """验证 PKCE"""
+        if not getattr(auth_code, "code_challenge", None):
+            raise ValueError("公开客户端授权码缺少 PKCE challenge")
+
+        if not code_verifier:
+            raise ValueError("缺少 code_verifier")
+
+        method = getattr(auth_code, "code_challenge_method", None) or "plain"
+        if method != "S256":
+            raise ValueError(f"不支持的 code_challenge_method: {method}")
+
+        expected = build_pkce_s256_challenge(code_verifier)
+        if expected != auth_code.code_challenge:
+            raise ValueError("code_verifier 验证失败")
+
+    def get_userinfo(self, access_token: str, source_ip: Optional[str] = None) -> dict:
         """通过 access_token 获取用户信息
 
         Args:
@@ -520,12 +741,28 @@ class OAuth2ProviderService:
         Raises:
             ValueError: token 无效或已过期
         """
-        token_data = self.jwt_manager.verify_token(access_token)
-        if not token_data:
+        payload = self._decode_resource_access_token_payload(access_token)
+        if not payload:
             raise ValueError("access_token 无效或已过期")
 
+        token_data = TokenData(
+            sub=payload.get("sub"),
+            user_id=payload.get("user_id"),
+            username=payload.get("username"),
+            email=payload.get("email"),
+            roles=payload.get("roles", []),
+            token_type=payload.get("token_type", "access"),
+            exp=payload.get("exp"),
+            iat=payload.get("iat"),
+        )
         if token_data.token_type != "access":
             raise ValueError("无效的令牌类型")
+
+        client_id = self._extract_client_id_from_payload(payload)
+        if client_id:
+            app = self.app_service.get_application_by_client_id(client_id)
+            app.validate_is_active()
+            app.validate_source_ip(source_ip)
 
         from app.domain.auth.model.user import User
         user = User.query.filter_by(id=token_data.user_id, is_active=True).first()

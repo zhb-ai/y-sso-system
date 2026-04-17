@@ -1,359 +1,442 @@
-# 单点登录系统 (SSO System)
+# 单点登录系统
 
-一个基于FastAPI和Vue.js的企业级单点登录系统，支持JWT认证、企业微信扫码登录、多应用管理、组织架构同步等功能。
+基于 `FastAPI + Vue 3` 的企业级单点登录平台，提供统一认证、应用接入管理、基础 OAuth2/OIDC Provider 能力、企业微信登录与组织同步能力。
+
+当前仓库更适合作为：
+
+- 企业内网 SSO 基座
+- 私有部署身份认证中心
+- 二次开发的 OAuth2/OIDC 起点
+
+如果你的目标是“开箱即用的完整生产级 IdP”，请先阅读本文的“已知限制”和“安全建议”。
+
+## 功能概览
+
+- 统一认证
+  - 用户名/密码登录
+  - Access Token / Refresh Token
+  - 首次登录强制改密
+  - 登录记录与踢人下线
+- OAuth2 / OIDC
+  - Authorization Code Flow
+  - `public` / `confidential` 客户端
+  - `public` 客户端强制 `PKCE(S256)`
+  - `openid` 场景返回 `id_token`
+  - `nonce`
+  - Discovery
+  - JWKS
+  - UserInfo
+- 应用接入管理
+  - 应用注册、启停、软删除
+  - `client_secret` 查看与重置
+  - `redirect_uri` 管理
+  - 应用级 IP 白名单
+  - 管理台对接信息面板
+- 组织与权限
+  - RBAC
+  - SSO 角色
+  - 组织架构与员工账号
+- 企业微信集成
+  - 企微扫码登录
+  - 企微内部静默授权 URL
+  - 通讯录同步与 webhook
+
+## 当前实现定位
+
+当前实现已经具备一条完整的基础 OIDC 主链路，但仍属于“基础可用版”而非“完整生产级标准 IdP”。
+
+已实现的关键能力：
+
+- `/api/v1/oauth2/authorize`
+- `/api/v1/oauth2/token`
+- `/api/v1/oauth2/userinfo`
+- `/api/v1/oauth2/.well-known/openid-configuration`
+- `/api/v1/oauth2/jwks`
+- `/api/v1/settings/oauth2-endpoints`
+
+仍建议在正式对外发布前重点补齐：
+
+- 标准 `LICENSE` 文件
+- 依赖来源说明，尤其是 `yweb`
+- Docker / CI
+- 更完整的 OIDC 外围能力，例如标准 revocation / introspection / logout
 
 ## 技术栈
 
 ### 后端
-- **框架**: FastAPI
-- **数据库**: SQLite (默认，轻量级部署)
-- **ORM**: SQLAlchemy
-- **认证**: JWT (JSON Web Token)
-- **缓存**: Redis
-- **第三方登录**: 企业微信
-- **迁移工具**: Alembic
+
+- `FastAPI`
+- `SQLAlchemy`
+- `Alembic`
+- `python-jose`
+- `cryptography`
+- `Redis`（可选）
+- `yweb`
 
 ### 前端
-- **框架**: Vue.js 3
-- **构建工具**: Vite
-- **状态管理**: Pinia
-- **HTTP客户端**: Axios
-- **UI组件库**: Element Plus
 
-## 核心功能
+- `Vue 3`
+- `Vite`
+- `Pinia`
+- `Axios`
+- `Element Plus`
 
-1. **用户认证**
-   - 用户名/密码登录
-   - JWT令牌管理
-   - 刷新令牌机制
-   - 令牌过期自动处理
+## 架构概览
 
-2. **第三方登录**
-   - 企业微信扫码登录
-   - 支持扩展其他第三方登录源
+项目采用 `API -> Service -> Domain` 的分层结构：
 
-3. **多应用授权**
-   - OAuth2.0授权码模式
-   - 客户端凭证管理
-   - 应用权限控制
-   - 令牌颁发与撤销
+- `app/api`
+  - 提供 REST API、OAuth2/OIDC 端点、中间件、路由注册
+- `app/domain`
+  - 承载应用管理、认证、权限、组织架构、企业微信等领域逻辑
+- `app/services`
+  - 提供协议安全辅助与跨模块应用服务
+- `frontend`
+  - 管理后台、登录页、SSO 授权页、应用接入配置页
 
-4. **组织架构管理**
-   - 企业微信组织架构同步
-   - 部门管理（树形结构）
-   - 员工管理
-   - 同步记录追踪
-
-5. **角色权限**
-   - 基于角色的访问控制 (RBAC)
-   - 动态权限分配
-   - SSO角色管理
+默认后端通过 `FastAPI` 提供 API 与静态资源，前端开发态通过 `Vite` 单独启动。
 
 ## 快速开始
 
 ### 环境要求
-- Python 3.11+
-- Node.js 16+
-- Redis 6.0+ (可选，用于缓存)
 
-### 安装步骤
+- Python `3.11+`
+- Node.js `16+`
+- Redis `6+`（可选）
+- OpenSSL（推荐，用于生成 RSA 密钥）
 
-1. **克隆项目**
-   ```bash
-   git clone https://github.com/your-repo/y-sso-system.git
-   cd y-sso-system/y-sso-system
-   ```
+### 1. 获取代码
 
-2. **创建虚拟环境**
-   ```bash
-   python -m venv venv
-   # Windows
-   venv\Scripts\activate
-   # Linux/Mac
-   source venv/bin/activate
-   ```
-
-3. **安装后端依赖**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **配置文件**
-   配置文件位于 `config/settings.yaml`，根据需要进行修改：
-   ```bash
-   # 主要配置项：
-   # - database.url: 数据库连接地址
-   # - jwt.secret_key: JWT密钥（生产环境必须修改）
-   # - redis.url: Redis连接地址
-   # - wechat.*: 企业微信配置
-   ```
-
-5. **初始化数据库**
-   ```bash
-   python init_db.py
-   ```
-
-6. **启动后端服务**
-
-   **开发模式（推荐）**
-   ```bash
-   python dev_server.py
-   ```
-
-   **或使用 uvicorn 直接启动**
-   ```bash
-   python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-   ```
-
-7. **启动前端服务**
-
-   **安装前端依赖（首次启动）**
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-   **启动开发服务器**
-   ```bash
-   npm run dev
-   ```
-
-8. **访问应用**
-   - 管理后台: http://localhost:5200
-   - 统一登录: http://localhost:5200/login
-   - SSO门户: http://localhost:5200/sso/login
-   - API文档: http://localhost:8000/docs
-   - 健康检查: http://localhost:8000/health
-
-## 配置说明
-
-### 数据库配置
-```yaml
-database:
-  url: sqlite:///./app/db/y_sso.db  # SQLite数据库文件路径
-  echo: false  # 是否打印SQL语句
-  pool_size: 5  # 连接池大小
-  max_overflow: 10  # 连接池最大溢出数量
+```bash
+git clone https://github.com/zhb-ai/y-sso-system.git
+cd y-sso-system
 ```
 
-### Redis配置
-```yaml
-redis:
-  url: redis://localhost:6379/0  # Redis连接地址
+### 2. 创建虚拟环境并安装依赖
+
+```bash
+python -m venv venv
 ```
 
-### JWT配置
+Windows:
+
+```bash
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Linux / macOS:
+
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+注意：
+
+- 本项目通过 `requirements.txt` 直接从公开仓库安装并固定 `yweb 0.1.3`
+- 对应仓库为 `https://github.com/yafo-ai/yweb-core`
+- 如需单独安装，也可以执行 `pip install "yweb @ git+https://github.com/yafo-ai/yweb-core.git@0.1.3"`
+
+### 3. 复制配置文件
+
+仓库默认只有示例配置，请先复制：
+
+```bash
+copy config\settings.yaml_demo config\settings.yaml
+```
+
+Linux / macOS:
+
+```bash
+cp config/settings.yaml_demo config/settings.yaml
+```
+
+至少需要检查这些配置项：
+
 ```yaml
+base_url: "http://localhost:8000"
+oidc_issuer: "http://localhost:8000/api/v1/oauth2"
+
 jwt:
-  secret_key: "your-secret-key-change-this-in-production"  # JWT密钥
-  algorithm: HS256  # JWT算法
-  access_token_expire_minutes: 30  # 访问令牌过期时间（分钟）
-  refresh_token_expire_days: 7  # 刷新令牌过期时间（天）
-  refresh_token_sliding_days: 2  # 刷新令牌滑动过期阈值（天）
+  algorithm: RS256
+
+jwt_private_key_path: "config/dev-keys/jwt_private.pem"
+jwt_public_key_path: "config/dev-keys/jwt_public.pem"
+jwt_key_id: "sso-dev-rs256-key-1"
+
+database:
+  url: sqlite:///./app/db/y_sso.db
 ```
 
-### 企业微信配置
-```yaml
-wechat:
-  corp_id: "your-wechat-corp-id"  # 企业微信 Corp ID
-  agent_id: "your-wechat-agent-id"  # 企业微信应用 ID
-  secret: "your-wechat-secret"  # 企业微信应用 Secret
-  redirect_uri: "http://localhost:8000/api/v1/wechat/callback"  # 回调地址
+### 4. 准备 RSA 密钥
+
+仓库当前不包含默认开发密钥文件，需要自行生成。
+
+Windows / Linux / macOS 均可使用：
+
+```bash
+mkdir config/dev-keys
+openssl genrsa -out config/dev-keys/jwt_private.pem 2048
+openssl rsa -in config/dev-keys/jwt_private.pem -pubout -out config/dev-keys/jwt_public.pem
 ```
 
-### 日志配置
-```yaml
-logging:
-  level: DEBUG  # 日志级别
-  file_path: logs/app_{date}.log  # 日志文件路径
-  file_max_bytes: 10MB  # 单个日志文件最大大小
-  file_backup_count: 30  # 日志文件备份数量
+如果你修改了路径，请同步更新 `config/settings.yaml` 中的：
+
+- `jwt_private_key_path`
+- `jwt_public_key_path`
+- `jwt_key_id`
+
+说明：
+
+- `jwt_key_id` 主要用于 `JWKS` / `id_token` 头部中的 `kid`
+- 如果运行环境中的 `yweb` 版本较旧、不支持在 `JWTManager` 中注入 `key_id`，系统会自动忽略该参数，不影响启动
+
+### 5. 初始化数据库
+
+首次安装建议先执行迁移，再初始化基础数据：
+
+```bash
+alembic upgrade head
+python init_db.py
 ```
 
-## API文档
+### 6. 启动后端
 
-### 认证相关
-- `POST /api/v1/auth/login` - 用户登录
-- `POST /api/v1/auth/token` - 获取访问令牌
-- `POST /api/v1/auth/refresh` - 刷新访问令牌
-- `POST /api/v1/auth/logout` - 用户登出
-- `POST /api/v1/auth/third-party/{source_type}` - 第三方登录
+推荐使用开发启动脚本：
+
+```bash
+python dev_server.py --port 8000
+```
+
+或直接使用 `uvicorn`：
+
+```bash
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 7. 启动前端
+
+首次运行：
+
+```bash
+cd frontend
+npm install
+```
+
+启动开发服务器：
+
+```bash
+npm run dev
+```
+
+### 8. 前后端开发端口
+
+当前默认开发口径统一为：
+
+- 后端：`8000`
+- 前端：`5200`
+- `frontend/vite.config.js` 的 `/api` 代理默认指向 `http://localhost:8000`
+
+如果你自行修改后端端口，请同步更新：
+
+- `config/settings.yaml`
+- `frontend/vite.config.js`
+- 所有需要手工配置 issuer 的下游系统
+
+### 9. 访问入口
+
+- 管理后台：`http://localhost:5200`
+- 登录页：`http://localhost:5200/login`
+- SSO 门户：`http://localhost:5200/sso/login`
+- Swagger：`http://localhost:8000/docs`
+- 健康检查：`http://localhost:8000/health`
+
+## OAuth2 / OIDC 对接
+
+### 已支持能力
+
+- Authorization Code Flow
+- `public` / `confidential` 客户端
+- `public + PKCE(S256)`
+- `openid` + `id_token`
+- `nonce`
+- Discovery
+- JWKS
+- UserInfo
+
+### 推荐接入方式
+
+优先使用 Discovery：
+
+- `/api/v1/oauth2/.well-known/openid-configuration`
+
+也可以通过管理端接口获取对接信息：
+
+- `GET /api/v1/settings/oauth2-endpoints`
+
+### 关键端点
+
+- `GET /api/v1/oauth2/authorize`
+- `POST /api/v1/oauth2/authorize`
+- `POST /api/v1/oauth2/token`
+- `GET /api/v1/oauth2/userinfo`
+- `GET /api/v1/oauth2/.well-known/oauth-authorization-server`
+- `GET /api/v1/oauth2/jwks`
+
+### 客户端类型说明
+
+- `confidential`
+  - 适合服务端 Web 应用
+  - 通过 `client_secret` 参与 token 交换
+- `public`
+  - 适合浏览器 SPA、移动端、桌面端
+  - 不使用 `client_secret`
+  - 必须使用 `PKCE(S256)`
+
+### OIDC 行为说明
+
+- `issuer` 默认是 `oidc_issuer`
+- 如果未单独配置 `oidc_issuer`，系统会默认使用 `${base_url}/api/v1/oauth2`
+
+当授权请求中的 `scope` 包含 `openid` 时：
+
+- `token` 响应会返回 `id_token`
+- `id_token` 包含 `iss`、`aud`、`sub`、`preferred_username`、`email`
+- 如果授权请求携带了 `nonce`，会回传到 `id_token`
+
+更详细的升级与接入说明请见：
+
+- [`docs/version-upgrade-and-integration-guide.md`](docs/version-upgrade-and-integration-guide.md)
+
+## 主要 API
+
+完整接口请以 Swagger `/docs` 为准。下面只列出最常用的真实路径。
+
+### 认证
+
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `POST /api/v1/auth/change-password`
+- `GET /api/v1/auth/wechat-work/login-config`
+- `POST /api/v1/auth/wechat-work/login`
+- `GET /api/v1/auth/wechat-work/oauth-url`
 
 ### 应用管理
-- `GET /api/v1/applications` - 列出应用
-- `POST /api/v1/applications` - 创建应用
-- `GET /api/v1/applications/{app_id}` - 获取应用详情
-- `PUT /api/v1/applications/{app_id}` - 更新应用
-- `DELETE /api/v1/applications/{app_id}` - 删除应用
 
-### 用户管理
-- `GET /api/v1/users` - 列出用户
-- `POST /api/v1/users` - 创建用户
-- `GET /api/v1/users/{user_id}` - 获取用户详情
-- `PUT /api/v1/users/{user_id}` - 更新用户
-- `DELETE /api/v1/users/{user_id}` - 删除用户
+- `GET /api/v1/applications/list`
+- `GET /api/v1/applications/get`
+- `GET /api/v1/applications/secret`
+- `POST /api/v1/applications/create`
+- `POST /api/v1/applications/update`
+- `POST /api/v1/applications/delete`
+- `POST /api/v1/applications/enable`
+- `POST /api/v1/applications/disable`
+- `POST /api/v1/applications/reset-secret`
 
-### 角色管理
-- `GET /api/v1/roles` - 列出角色
-- `POST /api/v1/roles` - 创建角色
-- `PUT /api/v1/roles/{role_id}` - 更新角色
-- `DELETE /api/v1/roles/{role_id}` - 删除角色
+### 企业微信同步
 
-### 组织架构
-- `GET /api/v1/departments` - 列出部门
-- `POST /api/v1/departments` - 创建部门
-- `GET /api/v1/employees` - 列出员工
-- `POST /api/v1/employees` - 创建员工
-
-### 企业微信
-- `GET /api/v1/wechat/login` - 企业微信登录
-- `GET /api/v1/wechat/callback` - 企业微信登录回调
-- `POST /api/v1/wechat/sync` - 同步企业微信组织架构
+- `POST /api/v1/wechat-work/config/bind`
+- `POST /api/v1/wechat-work/config/unbind`
+- `GET /api/v1/wechat-work/config/get`
+- `POST /api/v1/wechat-work/sync/init`
+- `POST /api/v1/wechat-work/sync/manual`
+- `GET /api/v1/wechat-work/sync/status`
+- `GET /api/v1/wechat-work/webhook/{org_id}`
+- `POST /api/v1/wechat-work/webhook/{org_id}`
 
 ## 项目结构
 
-```
+```text
 y-sso-system/
-├── app/                    # 后端应用代码
-│   ├── api/               # API路由
-│   │   ├── v1/           # API v1版本
-│   │   ├── cors.py       # CORS配置
-│   │   ├── dependencies.py # 依赖注入
-│   │   ├── middleware.py  # 中间件
-│   │   └── routes.py     # 路由注册
-│   ├── domain/           # 领域层
-│   │   ├── application/  # 应用领域
-│   │   ├── auth/         # 认证领域
-│   │   ├── config/       # 配置领域
-│   │   ├── permission/   # 权限领域
-│   │   ├── sso_role/     # SSO角色领域
-│   │   └── wechat_work/  # 企业微信领域
-│   ├── services/         # 应用服务层
-│   ├── utils/            # 工具函数
-│   ├── config.py         # 配置管理
-│   ├── database.py       # 数据库连接
-│   ├── main.py           # 应用入口
-│   ├── models_registry.py # 模型注册
-│   └── startup.py        # 启动脚本
-├── config/               # 配置文件
-│   └── settings.yaml     # 主配置文件
-├── frontend/             # 前端代码
-│   ├── src/             # 源代码
-│   │   ├── api/        # API接口
-│   │   ├── components/ # 组件
-│   │   ├── layout/     # 布局
-│   │   ├── pages/      # 页面
-│   │   ├── router/     # 路由
-│   │   ├── stores/     # 状态管理
-│   │   └── styles/     # 样式
-│   ├── package.json    # 依赖配置
-│   └── vite.config.js  # Vite配置
-├── tests/                # 测试代码
-├── init_db.py           # 数据库初始化脚本
-├── dev_server.py        # 开发服务器启动脚本
-├── alembic.ini          # Alembic配置
-└── requirements.txt      # 依赖列表
+├── app/
+│   ├── api/
+│   ├── domain/
+│   ├── services/
+│   ├── config.py
+│   └── main.py
+├── config/
+│   └── settings.yaml_demo
+├── frontend/
+├── alembic/
+├── tests/
+├── docs/
+├── init_db.py
+├── dev_server.py
+└── requirements.txt
 ```
 
-## 开发指南
+## 测试
 
-### 运行测试
+运行全部测试：
+
 ```bash
 pytest
 ```
 
-### 数据库迁移
+运行 OAuth2 / OIDC 相关测试：
+
 ```bash
-# 创建迁移脚本
-alembic revision --autogenerate -m "描述"
+pytest tests/test_api/test_oidc_discovery.py tests/test_api/test_oauth2_provider_api.py tests/test_api/test_settings_oauth2_endpoints.py tests/test_services/test_oauth2_provider_service.py -q
+```
 
-# 执行迁移
+数据库迁移：
+
+```bash
 alembic upgrade head
-
-# 回滚迁移
 alembic downgrade -1
 ```
 
-### 代码风格检查
+代码检查：
+
 ```bash
 ruff check .
 ```
 
-### 生成依赖列表
-```bash
-pip freeze > requirements.txt
-```
+## 相关文档
 
-## 部署说明
-
-### 开发环境
-使用 `dev_server.py` 启动：
-```bash
-python dev_server.py
-```
-
-### 生产环境
-建议使用 `gunicorn` + `uvicorn` 部署：
-```bash
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
-```
+- [`README_ADMIN.md`](README_ADMIN.md)
+- [`README_DEV.md`](README_DEV.md)
+- [`CONFIG_GUIDE.md`](CONFIG_GUIDE.md)
+- [`docs/version-upgrade-and-integration-guide.md`](docs/version-upgrade-and-integration-guide.md)
+- `docs/df-superset-developer-integration-guide.md`
 
 ## 安全建议
 
-1. **生产环境配置**
-   - 修改 JWT secret_key
-   - 使用 HTTPS
-   - 限制 CORS 来源
-   - 定期轮换密钥
+- 生产环境必须使用 HTTPS
+- `base_url` 必须配置为对外真实访问地址
+- `oidc_issuer` 必须与下游实际使用的 issuer 保持一致
+- 不要继续使用开发环境 RSA 密钥
+- 严格限制 `ip_access.trusted_proxies`
+- 根据实际域名限制 CORS
+- 生产环境建议使用 PostgreSQL 或 MySQL，而不是默认 SQLite
+- 对接方验签 `id_token` / `access_token` 时应校验 `iss`、`aud`、算法与过期时间
 
-2. **数据库安全**
-   - 生产环境建议使用 PostgreSQL 或 MySQL
-   - 配置强密码
-   - 限制数据库访问 IP
+## 已知限制
 
-3. **日志安全**
-   - 避免记录敏感信息
-   - 配置适当的日志级别
-   - 定期清理日志文件
+- 当前更接近“基础可用版 OIDC Provider”，不是完整生产级 IdP
+- 尚未提供完整的标准对外 revocation / introspection / logout 端点
+- `userinfo` 中包含系统自定义字段，如 `roles`、`sso_roles`、`user_code`
+- 开发环境首次运行需要手动准备 `settings.yaml` 与 RSA 密钥
+- 当前仓库未提供 Dockerfile 与 GitHub Actions 工作流
 
-4. **IP访问控制**
-   - 可在 `config/settings.yaml` 中启用 IP 访问控制
-   - 配置允许访问的 IP 地址段
+## 贡献
 
-## 扩展开发
+欢迎提交 Issue 和 Pull Request。
 
-### 添加新的认证源
-1. 继承 `AuthenticationSource` 抽象类
-2. 实现必要的方法
-3. 在 `AuthApplicationService` 中注册
+建议流程：
 
-### 添加新的组织同步源
-1. 继承 `OrganizationSyncSource` 抽象类
-2. 实现必要的方法
-3. 在 `OrganizationSyncServiceImpl` 中注册
-
-## 相关文档
-
-- [管理员使用指南](README_ADMIN.md) - 系统安装、启动、功能模块说明
-- [开发服务器启动说明](README_DEV.md) - 开发环境启动和调试说明
-- [配置指南](CONFIG_GUIDE.md) - 配置文件详细说明
+1. Fork 仓库
+2. 创建分支：`git checkout -b feature/your-feature`
+3. 提交修改
+4. 补充或更新测试
+5. 发起 Pull Request
 
 ## 许可证
 
-MIT License
+当前仓库尚未附带正式的 `LICENSE` 文件。
 
-## 贡献指南
+这表示当前仓库默认不向第三方授予复制、分发、修改或商用授权。
 
-欢迎提交 Issue 和 Pull Request！
-
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
-## 联系方式
-
-如有问题或建议，欢迎联系：
-- 邮件: your-email@example.com
-- GitHub: [your-github-username](https://github.com/your-github-username)
+如果你计划将本项目以开源方式公开发布到 GitHub，请先补充实际采用的许可证文本，再在 README 中声明许可证类型。

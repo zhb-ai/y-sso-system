@@ -17,6 +17,7 @@ OAuth2 Authorization Code 流程：
     5. 外部应用 → GET /userinfo 获取用户信息
 """
 
+from ipaddress import ip_address, ip_network
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -26,6 +27,15 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 
 from yweb.log import get_logger
+
+from app.config import settings
+from app.services.oauth2_security import (
+    build_jwks,
+    is_rs256_enabled,
+    get_runtime_jwt_public_key,
+    get_oidc_issuer,
+    build_oidc_url,
+)
 
 logger = get_logger()
 
@@ -39,6 +49,68 @@ class AuthorizeConfirmRequest(BaseModel):
     redirect_uri: str
     scope: Optional[str] = None
     state: Optional[str] = None
+    nonce: Optional[str] = None
+    code_challenge: Optional[str] = None
+    code_challenge_method: Optional[str] = None
+
+
+def _get_settings_value(config, key: str, default=None):
+    """兼容 dict / 对象两种配置读取方式"""
+    if config is None:
+        return default
+    if isinstance(config, dict):
+        return config.get(key, default)
+    return getattr(config, key, default)
+
+
+def _is_trusted_proxy(remote_ip: Optional[str], trusted_proxies) -> bool:
+    """判断当前连接来源是否为受信任代理"""
+    if not remote_ip:
+        return False
+
+    try:
+        remote_addr = ip_address(remote_ip)
+    except ValueError:
+        return False
+
+    for item in trusted_proxies or []:
+        candidate = str(item or "").strip()
+        if not candidate:
+            continue
+        try:
+            if "/" in candidate:
+                if remote_addr in ip_network(candidate, strict=False):
+                    return True
+            elif remote_addr == ip_address(candidate):
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def _get_request_client_ip(request: Request) -> Optional[str]:
+    """提取请求真实来源 IP"""
+    remote_ip = request.client.host if request.client else None
+    ip_access_config = getattr(settings, "ip_access", None)
+    trusted_proxies = _get_settings_value(ip_access_config, "trusted_proxies", []) or []
+
+    if _is_trusted_proxy(remote_ip, trusted_proxies):
+        forwarded_for = request.headers.get("X-Forwarded-For", "")
+        if forwarded_for:
+            real_ip = forwarded_for.split(",")[0].strip()
+            if real_ip:
+                return real_ip
+
+        real_ip = request.headers.get("X-Real-IP", "").strip()
+        if real_ip:
+            return real_ip
+
+    return remote_ip
+
+
+def _is_ip_whitelist_error(error_msg: str) -> bool:
+    """判断是否为 IP 白名单拒绝"""
+    return "白名单" in error_msg or "来源IP" in error_msg
 
 
 # ==================== 路由工厂 ====================
@@ -83,6 +155,9 @@ def create_oauth2_provider_router(
         redirect_uri: str = Query(..., description="回调地址"),
         scope: str = Query(None, description="授权范围"),
         state: str = Query(None, description="CSRF state 参数"),
+        nonce: str = Query(None, description="OIDC nonce 参数"),
+        code_challenge: str = Query(None, description="PKCE code_challenge"),
+        code_challenge_method: str = Query(None, description="PKCE code_challenge_method"),
         current_user=Depends(get_current_user_optional),
     ):
         # 1. 验证客户端和参数
@@ -91,6 +166,8 @@ def create_oauth2_provider_router(
                 client_id=client_id,
                 redirect_uri=redirect_uri,
                 response_type=response_type,
+                code_challenge=code_challenge,
+                code_challenge_method=code_challenge_method,
             )
         except ValueError as e:
             return JSONResponse(
@@ -110,6 +187,9 @@ def create_oauth2_provider_router(
                     redirect_uri=redirect_uri,
                     scope=scope,
                     state=state,
+                    nonce=nonce,
+                    code_challenge=code_challenge,
+                    code_challenge_method=code_challenge_method,
                 )
                 params = {"code": auth_code.code}
                 if state:
@@ -139,6 +219,12 @@ def create_oauth2_provider_router(
             login_params["scope"] = scope
         if state:
             login_params["state"] = state
+        if nonce:
+            login_params["nonce"] = nonce
+        if code_challenge:
+            login_params["code_challenge"] = code_challenge
+        if code_challenge_method:
+            login_params["code_challenge_method"] = code_challenge_method
 
         frontend_url = f"{frontend_login_url}?{urlencode(login_params)}"
         return RedirectResponse(frontend_url, status_code=302)
@@ -163,6 +249,8 @@ def create_oauth2_provider_router(
             app = oauth2_provider_service.validate_authorize_request(
                 client_id=data.client_id,
                 redirect_uri=data.redirect_uri,
+                code_challenge=data.code_challenge,
+                code_challenge_method=data.code_challenge_method,
             )
         except ValueError as e:
             return JSONResponse(
@@ -181,6 +269,9 @@ def create_oauth2_provider_router(
                 redirect_uri=data.redirect_uri,
                 scope=data.scope,
                 state=data.state,
+                nonce=data.nonce,
+                code_challenge=data.code_challenge,
+                code_challenge_method=data.code_challenge_method,
             )
         except ValueError as e:
             return JSONResponse(
@@ -217,25 +308,29 @@ def create_oauth2_provider_router(
         ),
     )
     def token(
+        request: Request,
         grant_type: str = Form(..., description="授权类型"),
         code: str = Form(None, description="授权码（authorization_code 时必填）"),
         redirect_uri: str = Form(None, description="重定向URI（authorization_code 时必填）"),
         client_id: str = Form(None, description="客户端ID"),
         client_secret: str = Form(None, description="客户端密钥"),
+        code_verifier: str = Form(None, description="PKCE code_verifier"),
         refresh_token: str = Form(None, description="刷新令牌（refresh_token 时必填）"),
         credentials: HTTPBasicCredentials = Depends(basic_auth),
     ):
+        source_ip = _get_request_client_ip(request)
+
         # 优先使用 HTTP Basic Auth
         if credentials and credentials.username:
             client_id = credentials.username
             client_secret = credentials.password
 
-        if not client_id or not client_secret:
+        if not client_id:
             return JSONResponse(
                 status_code=401,
                 content={
                     "error": "invalid_client",
-                    "error_description": "缺少客户端凭证",
+                    "error_description": "缺少客户端ID",
                 },
             )
 
@@ -254,6 +349,8 @@ def create_oauth2_provider_router(
                     client_id=client_id,
                     client_secret=client_secret,
                     redirect_uri=redirect_uri,
+                    code_verifier=code_verifier,
+                    source_ip=source_ip,
                 )
                 return result
 
@@ -270,6 +367,7 @@ def create_oauth2_provider_router(
                     refresh_token=refresh_token,
                     client_id=client_id,
                     client_secret=client_secret,
+                    source_ip=source_ip,
                 )
                 return result
 
@@ -285,7 +383,7 @@ def create_oauth2_provider_router(
         except ValueError as e:
             error_msg = str(e)
             # 区分错误类型
-            if "客户端" in error_msg or "密钥" in error_msg:
+            if "客户端" in error_msg or "密钥" in error_msg or _is_ip_whitelist_error(error_msg):
                 return JSONResponse(
                     status_code=401,
                     content={"error": "invalid_client", "error_description": error_msg},
@@ -309,6 +407,8 @@ def create_oauth2_provider_router(
         ),
     )
     def userinfo(request: Request):
+        source_ip = _get_request_client_ip(request)
+
         # 从 Authorization 头提取 Bearer Token
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
@@ -324,14 +424,26 @@ def create_oauth2_provider_router(
         access_token = auth_header[7:]  # 去掉 "Bearer " 前缀
 
         try:
-            user_info = oauth2_provider_service.get_userinfo(access_token)
+            user_info = oauth2_provider_service.get_userinfo(
+                access_token,
+                source_ip=source_ip,
+            )
             return user_info
         except ValueError as e:
+            error_msg = str(e)
+            if _is_ip_whitelist_error(error_msg):
+                return JSONResponse(
+                    status_code=403,
+                    content={
+                        "error": "access_denied",
+                        "error_description": error_msg,
+                    },
+                )
             return JSONResponse(
                 status_code=401,
                 content={
                     "error": "invalid_token",
-                    "error_description": str(e),
+                    "error_description": error_msg,
                 },
                 headers={"WWW-Authenticate": "Bearer"},
             )
@@ -345,14 +457,12 @@ def create_oauth2_provider_router(
         description="返回 RFC 8414 授权服务器元数据，便于客户端自动发现端点。",
     )
     def authorization_server_metadata(request: Request):
-        base_url = str(request.base_url).rstrip("/")
-        prefix = "/api/v1/oauth2"
-
-        return {
-            "issuer": base_url,
-            "authorization_endpoint": f"{base_url}{prefix}/authorize",
-            "token_endpoint": f"{base_url}{prefix}/token",
-            "userinfo_endpoint": f"{base_url}{prefix}/userinfo",
+        issuer = get_oidc_issuer()
+        metadata = {
+            "issuer": issuer,
+            "authorization_endpoint": build_oidc_url("/authorize"),
+            "token_endpoint": build_oidc_url("/token"),
+            "userinfo_endpoint": build_oidc_url("/userinfo"),
             "response_types_supported": ["code"],
             "grant_types_supported": [
                 "authorization_code",
@@ -365,5 +475,18 @@ def create_oauth2_provider_router(
             "scopes_supported": ["openid", "profile", "email"],
             "subject_types_supported": ["public"],
         }
+        if is_rs256_enabled() and get_runtime_jwt_public_key():
+            metadata["jwks_uri"] = build_oidc_url("/jwks")
+            metadata["id_token_signing_alg_values_supported"] = [settings.jwt.algorithm]
+        metadata["code_challenge_methods_supported"] = ["S256"]
+        return metadata
+
+    @router.get(
+        "/jwks",
+        summary="JWKS 公钥端点",
+        description="返回 RS256 公钥，供下游系统本地验签。",
+    )
+    def jwks():
+        return build_jwks()
 
     return router

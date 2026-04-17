@@ -16,11 +16,15 @@ redis:
 
 # JWT配置
 jwt:
-  secret_key: "your-secret-key-change-this-in-production"
-  algorithm: HS256
+  secret_key: "dev-rs256-key-placeholder"
+  algorithm: RS256
   access_token_expire_minutes: 1        # Access Token 有效期（分钟）- 测试用，正式环境改回 30
   refresh_token_expire_days: 7          # Refresh Token 基础有效期（天）
   refresh_token_sliding_days: 2         # Refresh Token 滑动过期阈值（天），剩余时间少于此值时自动续期
+
+jwt_private_key_path: "config/dev-keys/jwt_private.pem"
+jwt_public_key_path: "config/dev-keys/jwt_public.pem"
+jwt_key_id: "sso-dev-rs256-key-1"
 
 # 日志配置
 logging:
@@ -72,3 +76,6 @@ pagination:
 
 # 基础URL
 base_url: "http://localhost:8000"
+
+# OIDC Issuer
+oidc_issuer: "http://localhost:8000/api/v1/oauth2"
