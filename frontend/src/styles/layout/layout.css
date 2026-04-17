@@ -9,7 +9,7 @@
 /*  02 侧边栏样式 */
 .sidebar {
   width: 260px;
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   color: var(--font-color);
   height: 100vh;
   position: fixed;
@@ -178,7 +178,7 @@
 
 .login-box {
   width: 420px;
-  background: var(--white);
+  background: rgb(var(--white));
   border-radius: var(--app-border-radius);
   box-shadow: var(--box-shadow);
   padding: var(--spacing-large);

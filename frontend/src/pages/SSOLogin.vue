@@ -823,7 +823,7 @@ async function handlePortalLogin() {
 
 
 .btn-secondary {
-  color: var(--white);
+  color: rgb(var(--white));
   background-color: rgb(var(--success));
   border-color: rgb(var(--success));
   margin-top: 10px;

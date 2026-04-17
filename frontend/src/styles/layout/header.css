@@ -1,7 +1,7 @@
 /* 头部布局样式 */
 
 .header {
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   box-shadow: var(--box-shadow);
   position: sticky;
   top: 0;

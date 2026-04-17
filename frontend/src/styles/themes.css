@@ -366,6 +366,10 @@ input:-internal-autofill-selected {
   min-width: 120px;
   transition: var(--app-transition);
 }
+.el-form--inline .el-select,
+.el-form--inline .el-input{
+  min-width: 180px;
+}
 
 /* 按钮样式优化 - 专业简洁 */
 .el-button {
@@ -420,8 +424,14 @@ input:-internal-autofill-selected {
 
 .el-card:hover {
   box-shadow: var(--hover-shadow);
+  transform: translateY(-2px);
 }
-
+.el-button .el-icon{
+  margin-right: 3px;
+}
+.el-button.is-circle .el-icon{
+  margin-right: 0;
+}
 .el-card__header {
   border-bottom: 1px solid rgb(var(--gray-100));
   padding: 1rem 1.25rem;
@@ -454,34 +464,36 @@ input:-internal-autofill-selected {
   font-weight: var(--el-font-weight-medium);
 }
 
-.el-table th.el-table__cell {
-  background-color: rgb(var(--gray-50));
-  color: rgb(var(--gray-700));
-  font-weight: 600;
-  font-size: var(--text-xs);
-  text-transform: none;
-  letter-spacing: 0;
-  padding: 0.75rem 0.5rem;
+.status-danger {
+  color: var(--el-color-danger);
+  font-weight: var(--el-font-weight-medium);
 }
 
-.el-table .el-table__cell {
-  padding: 0.875rem 0.5rem;
+.el-table .cell {
+  padding: 5px 12px;
 }
-
-.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
-  background: rgb(var(--gray-50));
-}
-
-/* 表格单元格对齐样式 */
-.table-cell-flex-end .cell {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.25rem;
-}
-
 .el-alert {
   --el-alert-title-font-size: var(--el-font-size-base);
+}
+
+.el-button--primary.is-link, .el-button--primary.is-plain, .el-button--primary.is-text {
+    --el-button-text-color: var(--el-color-white);
+    --el-button-bg-color: var(--el-color-primary-light-9);
+    --el-button-border-color: var(--el-color-primary-light-5);
+    --el-button-hover-text-color: var(--el-color-white);
+    --el-button-hover-bg-color: var(--el-color-primary);
+    --el-button-hover-border-color: var(--el-color-primary);
+    --el-button-active-text-color: var(--el-color-white);
+}
+
+.el-drawer__header{
+  margin-bottom: 10px;
+}
+
+.el-checkbox {
+  --el-checkbox-font-size: var(--el-font-size-base);
+  --el-checkbox-input-height: var(--el-font-size-base);
+  --el-checkbox-input-width: var(--el-font-size-base);
 }
 
 /* 输入框样式优化 - 专业简洁 */
@@ -537,8 +549,7 @@ input:-internal-autofill-selected {
 /* 分页样式优化 */
 .el-pagination {
   --el-pagination-hover-color: var(--el-color-primary);
-    --el-pagination-font-size: 12px;
-
+  --el-pagination-font-size: 12px;
 }
 
 .el-pagination .el-pagination__total {
@@ -705,7 +716,6 @@ input:-internal-autofill-selected {
   max-width: 100%;
 }
 
-
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -736,7 +746,7 @@ input:-internal-autofill-selected {
   --el-collapse-header-text-color: var(--font-color);
 }
 
-.el-form-item--label-right .el-form-item__label{
+.el-form-item--label-right .el-form-item__label {
   align-items: center;
 }
 

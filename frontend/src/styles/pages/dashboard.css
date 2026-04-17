@@ -10,17 +10,7 @@
   margin-bottom: 1.5rem;
 }
 
-.stats-cards .stat-card {
-  border-radius: var(--app-border-radius);
-  border: 1px solid var(--border_color);
-  transition: var(--app-transition);
-  background: var(--white);
-  box-shadow: none;
-}
 
-.stats-cards .stat-card:hover {
-  border-color: var(--el-color-primary-light-5);
-}
 
 .stat-content {
   display: flex;

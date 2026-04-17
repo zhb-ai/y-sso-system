@@ -30,7 +30,7 @@ const goHome = () => {
 
 .error-content {
   text-align: center;
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   padding: 3rem 2rem;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--hover-shadow);

@@ -10,6 +10,7 @@
     <!-- 数据表格 -->
     <el-card class="data-card" shadow="hover">
       <el-table
+        v-if="roles.length > 0"
         v-loading="loading"
         :data="roles"
         style="width: 100%"
@@ -51,7 +52,7 @@
 
       <!-- 空状态 -->
       <EmptyState
-        v-if="!loading && roles.length === 0"
+        v-else-if="!loading"
         type="data"
         :icon="Collection"
         title="暂无角色"
@@ -103,12 +104,11 @@
       </template>
     </el-dialog>
 
-    <!-- 角色用户列表对话框 -->
-    <el-dialog
+    <!-- 角色用户列表抽屉 -->
+    <el-drawer
       v-model="usersDialogVisible"
       :title="`${currentRole && currentRole.name}（${currentRole && currentRole.code}）- 关联用户`"
-      width="800px"
-      align-center
+      size="800px"
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -151,7 +151,7 @@
       <template #footer>
         <el-button @click="usersDialogVisible = false">关闭</el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
 
     <!-- 权限分配抽屉 -->
     <el-drawer

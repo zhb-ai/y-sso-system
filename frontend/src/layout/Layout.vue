@@ -360,7 +360,7 @@ onUnmounted(() => {
   padding: var(--spacing-large);
   height: 64px;
   border-bottom: 1px solid var(--border_color);
-  background-color: var(--white);
+  background-color: rgb(var(--white));
 }
 .sidebar-collapse .sidebar-header {
   justify-content: center;
@@ -549,7 +549,7 @@ onUnmounted(() => {
 /* 侧边栏折叠样式 */
 .sidebar {
   transition: width 0.3s ease;
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   border-right: 1px solid var(--border_color);
   height: 100vh;
   position: fixed;

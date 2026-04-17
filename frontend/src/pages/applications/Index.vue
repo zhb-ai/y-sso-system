@@ -51,6 +51,7 @@
     <!-- 数据表格 -->
     <el-card class="data-card" shadow="hover">
       <el-table
+        v-if="applications.length > 0"
         v-loading="loading"
         :data="applications"
         style="width: 100%"
@@ -110,7 +111,7 @@
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="320" align="center" fixed="right" class-name="table-cell-flex-center">
+        <el-table-column label="操作" width="320" align="right" fixed="right" >
           <template #default="scope">
             <el-button type="info" size="small" link @click="handleShowIntegrationConfig(scope.row)">
               <el-icon><Document /></el-icon> 对接配置
@@ -130,7 +131,7 @@
 
       <!-- 空状态 -->
       <EmptyState
-        v-if="!loading && applications.length === 0"
+        v-else-if="!loading"
         type="data"
         :icon="Collection"
         title="暂无应用"
@@ -154,12 +155,11 @@
       </div>
     </el-card>
     
-    <!-- 新建/编辑对话框 -->
-    <el-dialog
+    <!-- 新建/编辑抽屉 -->
+    <el-drawer
       v-model="formDialogVisible"
       :title="isEditing ? '编辑应用' : '新建应用'"
-      width="600px"
-      align-center
+      size="600px"
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -364,15 +364,14 @@
           {{ applicationForm.id ? '保存' : '创建并生成配置' }}
         </el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
     
-    <!-- 密钥展示对话框 -->
-    <el-dialog
+    <!-- 密钥展示抽屉 -->
+    <el-drawer
       v-model="secretDialogVisible"
       title="客户端凭证"
-      width="700px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
+      size="700px"
+      destroy-on-close
     >
       <el-alert
         :title="secretInfo.client_type === 'public' ? '当前应用为公开客户端，无需客户端密钥。请保存客户端 ID 并按 PKCE 方式接入。' : '请妥善保存以下凭证信息，客户端密钥仅显示一次！'"
@@ -413,12 +412,13 @@
       <template #footer>
         <el-button type="primary" @click="secretDialogVisible = false">我已保存，关闭</el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
 
-    <el-dialog
+    <!-- 第三方系统对接配置抽屉 -->
+    <el-drawer
       v-model="integrationDialogVisible"
       title="第三方系统对接配置"
-      width="820px"
+      size="820px"
       destroy-on-close
     >
       <el-alert
@@ -525,7 +525,7 @@
         <el-button @click="handleCopyIntegrationConfig">复制全部</el-button>
         <el-button type="primary" @click="integrationDialogVisible = false">关闭</el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
   </div>
 </template>
 
@@ -1071,7 +1071,7 @@ onMounted(() => {
 
 .client-id-text {
   font-family: 'Courier New', Courier, monospace;
-  font-size: var(--font-size-sm, 12px);
+  word-break: break-all;
 }
 
 .secret-alert {

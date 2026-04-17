@@ -70,6 +70,7 @@
 
     <el-card class="data-card" shadow="hover">
       <el-table
+        v-if="userList.length > 0"
         v-loading="loading"
         :data="userList"
         style="width: 100%"
@@ -158,7 +159,7 @@
 
       <!-- 空状态 -->
       <EmptyState
-        v-if="!loading && userList.length === 0"
+        v-else-if="!loading"
         type="data"
         :icon="Collection"
         title="暂无用户"
@@ -242,30 +243,19 @@
                 :key="role.code"
                 :label="role.code"
                 :value="role.code"
-                style="display: block; margin-bottom: 12px"
+                style="display: flex; align-items: flex-start; margin-bottom: 12px"
               >
-                <span style="font-weight: var(--el-font-weight-bold)">{{
-                  role.name
-                }}</span>
-                <span
-                  style="
-                    color: var(--el-text-color-secondary);
-                    margin-left: 8px;
-                    font-size: var(--el-font-size-xs);
-                  "
+                <el-tooltip
+                  :content="role.description || role.name"
+                  placement="top"
+                  :disabled="!role.description || role.description.length < 30"
                 >
-                  {{ role.code }}
-                </span>
-                <span
-                  v-if="role.description"
-                  style="
-                    color: var(--el-text-color-placeholder);
-                    margin-left: 8px;
-                    font-size: var(--el-font-size-xs);
-                  "
-                >
-                  - {{ role.description }}
-                </span>
+                  <div class="role-checkbox-content">
+                    <span class="role-name">{{ role.name }}</span>
+                    <span class="role-code">{{ role.code }}</span>
+                    <span v-if="role.description" class="role-desc">- {{ role.description }}</span>
+                  </div>
+                </el-tooltip>
               </el-checkbox>
             </el-checkbox-group>
           </div>
@@ -862,4 +852,35 @@ onMounted(() => {
   getUsersList();
 });
 </script>
-<style scoped></style>
+<style scoped>
+/* 角色复选框内容样式 */
+.role-checkbox-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.role-name {
+  font-weight: var(--el-font-weight-bold);
+  flex-shrink: 0;
+}
+
+.role-code {
+  color: var(--el-text-color-secondary);
+  font-size: var(--el-font-size-xs);
+  flex-shrink: 0;
+}
+
+.role-desc {
+  color: var(--el-text-color-placeholder);
+  font-size: var(--el-font-size-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+</style>

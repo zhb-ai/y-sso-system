@@ -49,7 +49,7 @@
     
     <!-- 员工列表 -->
     <el-card class="data-card" shadow="hover">
-      <el-table v-loading="loading" :data="employees" style="width: 100%" tooltip-effect="light">
+      <el-table v-if="employees.length > 0" v-loading="loading" :data="employees" style="width: 100%" tooltip-effect="light">
         <el-table-column prop="name" label="姓名" min-width="100">
           <template #default="{ row }">
             <div class="employee-info">
@@ -80,11 +80,11 @@
             {{ row.primary_dept_name || '未分配' }}
           </template>
         </el-table-column>
-        <el-table-column label="雇佣状态" width="110" align="center" class-name="table-cell-flex-center-offset">
+        <el-table-column label="雇佣状态" width="160" align="center" class-name="table-cell-flex-center-offset">
           <template #default="{ row }">
             <template v-if="row.emp_status !== undefined && row.emp_status !== null">
               <el-dropdown trigger="click" @command="(cmd) => handleChangeEmpStatus(row, cmd)">
-                <span class="status-text-wrapper" style="cursor: pointer">
+                <span class="status-text-wrapper" style="cursor: pointer" :class="{ 'status-danger': row.emp_status === 0 }">
                   {{ empStatusLabel(row.emp_status) }}
                   <el-icon class="status-arrow"><ArrowDown /></el-icon>
                 </span>
@@ -102,7 +102,7 @@
             <span v-else>未分配</span>
           </template>
         </el-table-column>
-        <el-table-column label="账号" width="100" align="center" class-name="table-cell-flex-center-offset">
+        <el-table-column label="账号" width="120" align="center" class-name="table-cell-flex-center-offset">
           <template #default="{ row }">
             <template v-if="row.user_id">
               <el-dropdown trigger="click" @command="(cmd) => handleChangeAccountStatus(row, cmd)">
@@ -141,8 +141,20 @@
           </template>
         </el-table-column>
       </el-table>
-      
-      <div class="pagination-container">
+
+      <div v-else-if="!loading" class="empty-state-wrapper">
+        <EmptyState
+          type="data"
+          :icon="Collection"
+          title="暂无员工"
+          :description="filter.keyword || filter.org_id || filter.emp_status || filter.account_status ? '没有找到符合条件的员工，请调整搜索条件' : '还没有创建任何员工，点击下方按钮创建第一个员工'"
+          :action-text="filter.keyword || filter.org_id || filter.emp_status || filter.account_status ? '重置筛选' : '新建员工'"
+          :action-icon="filter.keyword || filter.org_id || filter.emp_status || filter.account_status ? RefreshRight : Plus"
+          @action="filter.keyword || filter.org_id || filter.emp_status || filter.account_status ? handleReset() : handleCreate()"
+        />
+      </div>
+
+      <div class="pagination-container" v-if="employees.length > 0">
         <el-pagination
           v-model:current-page="pagination.page"
           v-model:page-size="pagination.pageSize"
@@ -155,8 +167,8 @@
       </div>
     </el-card>
     
-    <!-- 员工编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" width="820px" align-center destroy-on-close>
+    <!-- 员工编辑抽屉 -->
+    <el-drawer v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" size="820px" destroy-on-close>
       <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0;">
         <!-- 基本信息 -->
         <div class="section-block" style="margin-bottom: 16px;">
@@ -425,24 +437,23 @@
                       <el-table-column prop="org_name" label="组织" min-width="140" />
                       <el-table-column prop="emp_no" label="工号" width="120" />
                       <el-table-column prop="position" label="职位" width="120" />
-                      <el-table-column label="主组织" width="90" align="center">
+                      <el-table-column label="主组织" width="120" align="center">
                         <template #default="{ row }">
                           <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
                           <span v-else class="text-gray">—</span>
                         </template>
                       </el-table-column>
-                      <el-table-column label="操作" width="170" align="right">
+                      <el-table-column label="操作" width="200" align="right">
                         <template #default="{ row }">
                           <el-button
                             v-if="!row.is_primary"
-                            type="primary"
                             size="small"
                             link
                             @click="setPrimaryOrg(row)"
                           >
                             设为主组织
                           </el-button>
-                          <el-button type="danger" size="small" link @click="removeFromOrg(row)">移除</el-button>
+                          <el-button type="danger" size="small" link class="btn-delete" @click="removeFromOrg(row)">移除</el-button>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -530,24 +541,23 @@
                   <div class="section-block__table">
                     <el-table :data="currentEmployee?.departments || []" size="small" max-height="260">
                       <el-table-column prop="dept_name" label="部门" min-width="180" />
-                      <el-table-column label="主部门" width="90" align="center">
+                      <el-table-column label="主部门" width="120" align="center">
                         <template #default="{ row }">
                           <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
                           <span v-else class="text-gray">—</span>
                         </template>
                       </el-table-column>
-                      <el-table-column label="操作" width="170" align="right">
+                      <el-table-column label="操作" width="200" align="right">
                         <template #default="{ row }">
                           <el-button
                             v-if="!row.is_primary"
-                            type="primary"
                             size="small"
                             link
                             @click="setPrimaryDept(row)"
                           >
                             设为主部门
                           </el-button>
-                          <el-button type="danger" size="small" link @click="removeFromDept(row)">移除</el-button>
+                          <el-button type="danger" size="small" link class="btn-delete" @click="removeFromDept(row)">移除</el-button>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -565,10 +575,10 @@
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="submitForm" :loading="submitLoading">确定</el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
     
-    <!-- 管理组织对话框 -->
-    <el-dialog v-model="orgDialogVisible" title="管理员工组织" width="700px" align-center>
+    <!-- 管理组织抽屉 -->
+    <el-drawer v-model="orgDialogVisible" title="管理员工组织" size="820px">
       <div v-if="currentEmployee" class="section-blocks">
         <!-- 员工信息 -->
         <div class="section-block__info">
@@ -593,22 +603,22 @@
           <div class="section-block__table">
             <el-table :data="currentEmployee.organizations || []" size="small" max-height="200">
               <el-table-column prop="org_name" label="组织" min-width="120" />
-              <el-table-column prop="emp_no" label="工号" width="100" />
-              <el-table-column prop="position" label="职位" width="100" />
-              <el-table-column label="主组织" width="90" align="center">
+              <el-table-column prop="emp_no" label="工号" width="120" />
+              <el-table-column prop="position" label="职位" width="120" />
+              <el-table-column label="主组织" width="120" align="center">
                 <template #default="{ row }">
                   <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
                   <span v-else class="text-gray">—</span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="150" align="right">
+              <el-table-column label="操作" width="200" align="right">
                 <template #default="{ row }">
                   <el-button
                     v-if="!row.is_primary"
                     size="small" link
                     @click="setPrimaryOrg(row)"
                   >设为主组织</el-button>
-                  <el-button type="danger" size="small" link @click="removeFromOrg(row)">移除</el-button>
+                  <el-button type="danger" size="small" link class="btn-delete" @click="removeFromOrg(row)">移除</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -649,10 +659,10 @@
           </div>
         </div>
       </div>
-    </el-dialog>
+    </el-drawer>
     
-    <!-- 管理部门对话框 -->
-    <el-dialog v-model="deptDialogVisible" title="管理员工部门" width="650px" align-center>
+    <!-- 管理部门抽屉 -->
+    <el-drawer v-model="deptDialogVisible" title="管理员工部门" size="820px">
       <div v-if="currentEmployee" class="section-blocks">
         <!-- 员工信息 -->
         <div class="section-block__info">
@@ -726,20 +736,20 @@
           <div class="section-block__table">
             <el-table :data="currentEmployee.departments || []" size="small" max-height="200">
               <el-table-column prop="dept_name" label="部门" min-width="150" />
-              <el-table-column label="主部门" width="90" align="center">
+              <el-table-column label="主部门" width="120" align="center">
                 <template #default="{ row }">
                   <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
                   <span v-else class="text-gray">—</span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="150" align="right">
+              <el-table-column label="操作" width="200" align="right">
                 <template #default="{ row }">
                   <el-button
                     v-if="!row.is_primary"
                     size="small" link
                     @click="setPrimaryDept(row)"
                   >设为主部门</el-button>
-                  <el-button type="danger" size="small" link @click="removeFromDept(row)">移除</el-button>
+                  <el-button type="danger" size="small" link class="btn-delete" @click="removeFromDept(row)">移除</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -749,7 +759,7 @@
           </div>
         </div>
       </div>
-    </el-dialog>
+    </el-drawer>
 
     <!-- 账号创建结果对话框 -->
     <el-dialog
@@ -786,8 +796,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, RefreshRight, ArrowDown, OfficeBuilding, Folder, User, Key, Edit, Delete } from '@element-plus/icons-vue'
+import { Plus, Search, RefreshRight, ArrowDown, OfficeBuilding, Folder, User, Key, Edit, Delete, Collection } from '@element-plus/icons-vue'
 import { employeeApi, organizationApi, departmentApi } from '@/api'
+import EmptyState from '@/components/EmptyState.vue'
 
 // 数据
 const employees = ref([])
@@ -1333,7 +1344,7 @@ const empStatusLabel = (status) => {
 }
 
 const empStatusType = (status) => {
-  const map = { '-1': 'info', 0: 'warning', 1: '', 2: '', 3: 'success' }
+  const map = { '-1': 'info', 0: 'danger', 1: '', 2: '', 3: '' }
   return map[status] ?? 'info'
 }
 

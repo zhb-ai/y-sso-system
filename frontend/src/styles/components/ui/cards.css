@@ -5,7 +5,7 @@
 
 /* ===== 基础卡片样式 ===== */
 .card {
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   border-radius: var(--app-border-radius);
   box-shadow: var(--box-shadow);
   transition: var(--app-transition);

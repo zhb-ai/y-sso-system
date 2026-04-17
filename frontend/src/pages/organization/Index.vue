@@ -181,12 +181,11 @@
           <el-table-column prop="emp_no" label="工号" width="100" />
           <el-table-column prop="position" label="职位" min-width="100" />
           <el-table-column prop="mobile" label="手机" min-width="120" />
-          <el-table-column label="雇佣状态" width="100" align="center" class-name="table-cell-flex-center-offset">
+          <el-table-column label="雇佣状态" width="160" align="center" class-name="table-cell-flex-center-offset">
             <template #default="{ row }">
               <el-dropdown trigger="click" @command="(cmd) => handleChangeEmpStatus(row, cmd)">
-                <span class="status-text-wrapper" style="cursor: pointer">
-                  <span v-if="row.status === 3" class="status-enabled">{{ empStatusLabel(row.status) }}</span>
-                  <span v-else>{{ empStatusLabel(row.status) }}</span>
+                <span class="status-text-wrapper" style="cursor: pointer" :class="{ 'status-danger': row.status === 0 }">
+                  {{ empStatusLabel(row.status) }}
                   <el-icon class="status-arrow"><ArrowDown /></el-icon>
                 </span>
                 <template #dropdown>
@@ -201,7 +200,7 @@
               </el-dropdown>
             </template>
           </el-table-column>
-          <el-table-column label="账号" width="90" align="center" class-name="table-cell-flex-center-offset">
+          <el-table-column label="账号" width="120" align="center" class-name="table-cell-flex-center-offset">
             <template #default="{ row }">
               <template v-if="row.user_id">
                 <el-dropdown trigger="click" @command="(cmd) => handleChangeAccountStatus(row, cmd)">
@@ -326,12 +325,11 @@
       </template>
     </el-dialog>
     
-    <!-- 员工编辑对话框 -->
-    <el-dialog 
+    <!-- 员工编辑抽屉 -->
+    <el-drawer 
       v-model="employeeDialogVisible" 
       :title="employeeForm.id ? '编辑员工' : '新建员工'" 
-      width="820px"
-      align-center
+      size="820px"
       destroy-on-close
     >
       <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0;">
@@ -514,7 +512,7 @@
                       <el-table-column prop="org_name" label="组织" min-width="140" />
                       <el-table-column prop="emp_no" label="工号" width="120" />
                       <el-table-column prop="position" label="职位" width="120" />
-                      <el-table-column label="主组织" width="90" align="center">
+                      <el-table-column label="主组织" width="120" align="center">
                         <template #default="{ row }">
                           <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
                           <span v-else class="text-gray">—</span>
@@ -537,7 +535,7 @@
                   <div class="section-block__table">
                     <el-table :data="currentEmployee?.departments || []" size="small" max-height="260">
                       <el-table-column prop="dept_name" label="部门" min-width="180" />
-                      <el-table-column label="主部门" width="90" align="center">
+                      <el-table-column label="主部门" width="120" align="center">
                         <template #default="{ row }">
                           <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
                           <span v-else class="text-gray">—</span>
@@ -558,7 +556,7 @@
         <el-button @click="employeeDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="submitEmployeeForm" :loading="submitLoading">确定</el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
 
     <el-dialog
       v-model="accountResultVisible"
@@ -589,12 +587,11 @@
       </template>
     </el-dialog>
     
-    <!-- 添加员工到部门对话框 -->
-    <el-dialog 
+    <!-- 添加员工到部门抽屉 -->
+    <el-drawer 
       v-model="addToDeptDialogVisible" 
       title="添加员工到部门" 
-      width="700px"
-      align-center
+      size="800px"
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -661,7 +658,7 @@
               max-height="300"
             >
               <el-table-column prop="name" label="姓名" width="90" />
-              <el-table-column prop="mobile" label="手机" width="120" />
+              <el-table-column prop="mobile" label="手机" width="130" />
               <el-table-column prop="email" label="邮箱" min-width="140" show-overflow-tooltip />
               <el-table-column label="当前部门" min-width="100" show-overflow-tooltip>
                 <template #default="{ row }">
@@ -691,7 +688,7 @@
       <template #footer>
         <el-button @click="addToDeptDialogVisible = false">关闭</el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
     
     <!-- 企业微信绑定对话框 -->
     <el-dialog 
@@ -1668,7 +1665,7 @@ onUnmounted(() => {
 }
 
 .list-filter {
-  background: var(--white);
+  background: rgb(var(--white));
   border-radius: var(--app-border-radius);
   padding: 12px 16px;
   margin-bottom: 12px;

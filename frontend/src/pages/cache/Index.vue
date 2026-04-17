@@ -28,44 +28,56 @@
       </div>
     </div>
 
-    <el-row :gutter="16" class="summary-row">
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="summary-card" shadow="hover">
-          <div class="summary-title">缓存函数数</div>
-          <div class="summary-value">
-            {{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_FUNCTIONS] }}
+    <!-- 统计卡片 -->
+    <div class="stats-cards">
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_FUNCTIONS] }}</h3>
+            <p>缓存函数数</p>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="summary-card" shadow="hover">
-          <div class="summary-title">总命中次数</div>
-          <div class="summary-value">
-            {{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HITS] }}
+          <div class="stat-icon function">
+            <el-icon><Collection /></el-icon>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="summary-card" shadow="hover">
-          <div class="summary-title">总未命中次数</div>
-          <div class="summary-value">
-            {{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_MISSES] }}
+        </div>
+      </el-card>
+
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HITS] }}</h3>
+            <p>总命中次数</p>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="summary-card" shadow="hover">
-          <div class="summary-title">总命中率</div>
-          <div class="summary-value">
-            {{
-              formatSummaryHitRate(
-                summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE],
-              )
-            }}
+          <div class="stat-icon hit">
+            <el-icon><CircleCheck /></el-icon>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </div>
+      </el-card>
+
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_MISSES] }}</h3>
+            <p>总未命中次数</p>
+          </div>
+          <div class="stat-icon miss">
+            <el-icon><CircleClose /></el-icon>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3>{{ formatSummaryHitRate(summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE]) }}</h3>
+            <p>总命中率</p>
+          </div>
+          <div class="stat-icon rate">
+            <el-icon><TrendCharts /></el-icon>
+          </div>
+        </div>
+      </el-card>
+    </div>
 
     <el-alert
       class="page-hint-alert compact-hint-alert"
@@ -435,7 +447,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, QuestionFilled, RefreshRight, Collection, DataLine } from "@element-plus/icons-vue";
+import { Delete, QuestionFilled, RefreshRight, Collection, DataLine, CircleCheck, CircleClose, TrendCharts } from "@element-plus/icons-vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import { cacheApi } from "@/api";
@@ -720,6 +732,102 @@ onMounted(() => {
   font-size: var(--el-font-size-xxl);
   font-weight: var(--el-font-weight-extra-bold);
   line-height: var(--c-line-height-xs);
+}
+
+/* 统计卡片样式 - 参考仪表盘 */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-cards .stat-card {
+  border-radius: var(--app-border-radius);
+  border: 1px solid var(--border_color);
+  transition: var(--app-transition);
+  background: rgb(var(--white));
+  box-shadow: none;
+}
+
+.stats-cards .stat-card:hover {
+  border-color: var(--el-color-primary-light-5);
+}
+
+.stat-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+}
+
+.stat-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--font-title-color);
+  line-height: 1.2;
+}
+
+.stat-info p {
+  margin: 0;
+  color: var(--font-light-color);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  transition: var(--app-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-icon.function {
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+.stat-icon.hit {
+  background: var(--el-color-success-light-9);
+  color: var(--el-color-success);
+}
+
+.stat-icon.miss {
+  background: var(--el-color-warning-light-9);
+  color: var(--el-color-warning);
+}
+
+.stat-icon.rate {
+  background: var(--el-color-info-light-9);
+  color: var(--el-color-info);
+}
+
+.stat-icon:hover {
+  transform: translateY(-2px);
+}
+
+.stat-icon.function:hover {
+  background: var(--el-color-primary-light-8);
+}
+
+.stat-icon.hit:hover {
+  background: var(--el-color-success-light-8);
+}
+
+.stat-icon.miss:hover {
+  background: var(--el-color-warning-light-8);
+}
+
+.stat-icon.rate:hover {
+  background: var(--el-color-info-light-8);
 }
 
 .registrations-card {
