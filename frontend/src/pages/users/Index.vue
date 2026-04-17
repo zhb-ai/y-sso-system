@@ -247,7 +247,8 @@
               >
                 <el-tooltip
                   :content="role.description || role.name"
-                  placement="top"
+                  placement="right"
+                  show-after="1000"
                   :disabled="!role.description || role.description.length < 30"
                 >
                   <div class="role-checkbox-content">
@@ -305,37 +306,27 @@
                 :label="role.code"
                 :value="role.code"
                 :disabled="!role.is_active"
-                style="display: block; margin-bottom: 12px"
+                style="display: flex; align-items: flex-start; margin-bottom: 12px"
               >
-                <span style="font-weight: var(--el-font-weight-bold)">{{
-                  role.name
-                }}</span>
-                <span
-                  style="
-                    color: var(--el-text-color-secondary);
-                    margin-left: 8px;
-                    font-size: var(--el-font-size-xs);
-                  "
+                <el-tooltip
+                  :content="role.description || role.name"
+                  placement="right"
+                  show-after="1000"
+                  :disabled="!role.description || role.description.length < 30"
                 >
-                  {{ role.code }}
-                </span>
-                <el-tag
-                  v-if="!role.is_active"
-                  type="info"
-                  size="small"
-                  style="margin-left: 8px"
-                  >已禁用</el-tag
-                >
-                <span
-                  v-if="role.description"
-                  style="
-                    color: var(--el-text-color-placeholder);
-                    margin-left: 8px;
-                    font-size: var(--el-font-size-xs);
-                  "
-                >
-                  - {{ role.description }}
-                </span>
+                  <div class="sso-role-checkbox-content">
+                    <span class="sso-role-name">{{ role.name }}</span>
+                    <span class="sso-role-code">{{ role.code }}</span>
+                    <el-tag
+                      v-if="!role.is_active"
+                      type="info"
+                      size="small"
+                      class="sso-role-status"
+                      >已禁用</el-tag
+                    >
+                    <span v-if="role.description" class="sso-role-desc">- {{ role.description }}</span>
+                  </div>
+                </el-tooltip>
               </el-checkbox>
             </el-checkbox-group>
             <div v-if="allSSORoles.length === 0" class="section-block__empty">
@@ -860,21 +851,74 @@ onMounted(() => {
   gap: 8px;
   flex-wrap: nowrap;
   overflow: hidden;
-  max-width: 100%;
+  max-width: 360px;
+  width: 360px;
 }
 
 .role-name {
   font-weight: var(--el-font-weight-bold);
   flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .role-code {
   color: var(--el-text-color-secondary);
   font-size: var(--el-font-size-xs);
   flex-shrink: 0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .role-desc {
+  color: var(--el-text-color-placeholder);
+  font-size: var(--el-font-size-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+/* SSO 角色复选框内容样式 */
+.sso-role-checkbox-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  max-width: 360px;
+  width: 360px;
+}
+
+.sso-role-name {
+  font-weight: var(--el-font-weight-bold);
+  flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sso-role-code {
+  color: var(--el-text-color-secondary);
+  font-size: var(--el-font-size-xs);
+  flex-shrink: 0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sso-role-status {
+  flex-shrink: 0;
+}
+
+.sso-role-desc {
   color: var(--el-text-color-placeholder);
   font-size: var(--el-font-size-xs);
   white-space: nowrap;

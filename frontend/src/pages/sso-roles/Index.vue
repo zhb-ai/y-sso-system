@@ -63,6 +63,7 @@
     <!-- 数据表格 -->
     <el-card class="data-card" shadow="hover">
       <el-table
+        v-if="filteredRoles.length > 0"
         v-loading="loading"
         :data="filteredRoles"
         style="width: 100%"
@@ -96,6 +97,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-else-if="!loading"
+        type="data"
+        :icon="Collection"
+        title="暂无 SSO 角色"
+        :description="searchKeyword || filterStatus ? '没有找到符合条件的角色，请调整搜索条件' : '还没有创建任何 SSO 角色，点击下方按钮创建第一个角色'"
+        :action-text="searchKeyword || filterStatus ? '重置筛选' : '新建角色'"
+        :action-icon="searchKeyword || filterStatus ? RefreshRight : Plus"
+        @action="searchKeyword || filterStatus ? handleReset() : handleCreate()"
+      />
     </el-card>
 
     <!-- 创建/编辑 SSO 角色对话框 -->
@@ -159,7 +172,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ssoRoleApi } from '@/api'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
-import { Plus, Edit, Delete, Search, RefreshRight, Check, Close, Connection } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Search, RefreshRight, Check, Close, Connection, Collection } from '@element-plus/icons-vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 // ==================== 筛选条件 ====================
 

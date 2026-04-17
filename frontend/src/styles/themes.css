@@ -371,6 +371,8 @@ input:-internal-autofill-selected {
   min-width: 180px;
 }
 
+
+
 /* 按钮样式优化 - 专业简洁 */
 .el-button {
   font-weight: 500;
@@ -468,7 +470,9 @@ input:-internal-autofill-selected {
   color: var(--el-color-danger);
   font-weight: var(--el-font-weight-medium);
 }
-
+.el-alert .el-alert__description{
+  max-width: 1600px;
+}
 .el-table .cell {
   padding: 5px 12px;
 }
@@ -490,11 +494,7 @@ input:-internal-autofill-selected {
   margin-bottom: 10px;
 }
 
-.el-checkbox {
-  --el-checkbox-font-size: var(--el-font-size-base);
-  --el-checkbox-input-height: var(--el-font-size-base);
-  --el-checkbox-input-width: var(--el-font-size-base);
-}
+
 
 /* 输入框样式优化 - 专业简洁 */
 .el-input__wrapper {
@@ -600,6 +600,7 @@ input:-internal-autofill-selected {
 /* 下拉菜单样式优化 */
 .el-dropdown {
   line-height: inherit;
+  color: var(--font-color);
 }
 .el-dropdown-menu {
   border: 1px solid rgb(var(--gray-200));
@@ -704,10 +705,15 @@ input:-internal-autofill-selected {
 
 /* 复选框样式优化 */
 .el-checkbox {
+   --el-checkbox-font-size: var(--el-font-size-base);
+  --el-checkbox-input-height: var(--el-font-size-base);
+  --el-checkbox-input-width: var(--el-font-size-base);
   --el-checkbox-input-border-color: rgb(var(--gray-300));
   --el-checkbox-input-bg-color: var(--color-white);
   --el-checkbox-checked-input-border-color: var(--el-color-primary);
   --el-checkbox-checked-input-bg-color: var(--el-color-primary);
+  --el-checkbox-height: 'auto';
+  min-height: 22px;
 }
 
 /* 页面容器通用样式 */

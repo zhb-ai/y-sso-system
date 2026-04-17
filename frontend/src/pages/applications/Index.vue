@@ -111,7 +111,7 @@
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="320" align="right" fixed="right" >
+        <el-table-column label="操作" width="280" align="right" fixed="right" >
           <template #default="scope">
             <el-button type="info" size="small" link @click="handleShowIntegrationConfig(scope.row)">
               <el-icon><Document /></el-icon> 对接配置
@@ -159,7 +159,7 @@
     <el-drawer
       v-model="formDialogVisible"
       :title="isEditing ? '编辑应用' : '新建应用'"
-      size="600px"
+      size="820px"
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -370,7 +370,7 @@
     <el-drawer
       v-model="secretDialogVisible"
       title="客户端凭证"
-      size="700px"
+      size="820px"
       destroy-on-close
     >
       <el-alert
@@ -1137,5 +1137,21 @@ onMounted(() => {
 .app-details {
   min-width: 0;
   flex: 1;
+}
+
+/* 表格容器横向滚动 */
+.data-card :deep(.el-card__body) {
+  overflow-x: auto;
+}
+
+/* 浮动操作列阴影效果 */
+:deep(.el-table-fixed-column--right),
+:deep(.el-table__cell.el-table-fixed-column--right) {
+  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+:deep(.el-table-fixed-column--right.is-first-column),
+:deep(.el-table__cell.el-table-fixed-column--right.is-first-column) {
+  box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1) !important;
 }
 </style>

@@ -50,7 +50,7 @@
               <el-input
                 v-model="siteSettings.system_desc"
                 type="textarea"
-                :rows="2"
+                :rows="4"
                 placeholder="请输入系统描述"
                 maxlength="500"
                 show-word-limit
@@ -75,23 +75,14 @@
             </div>
             <div class="section-info">
               <h3 class="section-title">JWT 认证配置</h3>
-              <p class="section-desc">查看 JWT 认证相关配置，如需修改请编辑配置文件</p>
+              <p class="section-desc">JWT 配置为只读,JWT 配置来自 config/settings.yaml，如需修改请直接编辑配置文件并重启服务。</p>
             </div>
           </div>
-          
-          <el-alert
-            title="JWT 配置为只读"
-            description="JWT 配置来自 config/settings.yaml，如需修改请直接编辑配置文件并重启服务。"
-            type="info"
-            :closable="false"
-            show-icon
-            class="jwt-alert"
-          />
           
           <div class="jwt-config-grid">
             <div class="jwt-config-item">
               <span class="config-label">JWT 密钥</span>
-              <el-tag type="info" class="config-value">{{ jwtSettings.secret_key || '未配置' }}</el-tag>
+              <span class="config-value">{{ jwtSettings.secret_key || '未配置' }}</span>
             </div>
             <div class="jwt-config-item">
               <span class="config-label">签名算法</span>
@@ -241,6 +232,7 @@ onMounted(() => {
   margin: 0;
   font-size: var(--el-font-size-small);
   color: var(--el-text-color-secondary);
+  max-width: 1600px;
 }
 
 /* 紧凑表单样式 */
@@ -328,6 +320,7 @@ onMounted(() => {
   font-size: var(--el-font-size-base);
   font-weight: var(--el-font-weight-medium);
   color: var(--el-text-color-primary);
+  justify-content: flex-start;
 }
 
 /* 响应式 */

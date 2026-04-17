@@ -193,6 +193,7 @@
           label="操作"
           width="180"
           align="right"
+          fixed="right"
           class-name="table-cell-flex-end"
         >
           <template #default="scope">
