@@ -237,28 +237,30 @@
             >
               勾选要分配给该用户的角色：
             </p>
-            <el-checkbox-group v-model="selectedRoleCodes">
-              <el-checkbox
-                v-for="role in allRoles"
-                :key="role.code"
-                :label="role.code"
-                :value="role.code"
-                style="display: flex; align-items: flex-start; margin-bottom: 12px"
-              >
-                <el-tooltip
-                  :content="role.description || role.name"
-                  placement="right"
-                  show-after="1000"
-                  :disabled="!role.description || role.description.length < 30"
+            <div class="role-list-container">
+              <el-checkbox-group v-model="selectedRoleCodes">
+                <el-checkbox
+                  v-for="role in allRoles"
+                  :key="role.code"
+                  :label="role.code"
+                  :value="role.code"
+                  style="display: flex; align-items: flex-start; margin-bottom: 12px"
                 >
-                  <div class="role-checkbox-content">
-                    <span class="role-name">{{ role.name }}</span>
-                    <span class="role-code">{{ role.code }}</span>
-                    <span v-if="role.description" class="role-desc">- {{ role.description }}</span>
-                  </div>
-                </el-tooltip>
-              </el-checkbox>
-            </el-checkbox-group>
+                  <el-tooltip
+                    :content="role.description || role.name"
+                    placement="right"
+                    show-after="1000"
+                    :disabled="!role.description || role.description.length < 30"
+                  >
+                    <div class="role-checkbox-content">
+                      <span class="role-name">{{ role.name }}</span>
+                      <span class="role-code">{{ role.code }}</span>
+                      <span v-if="role.description" class="role-desc">- {{ role.description }}</span>
+                    </div>
+                  </el-tooltip>
+                </el-checkbox>
+              </el-checkbox-group>
+            </div>
           </div>
         </div>
       </div>
@@ -299,54 +301,56 @@
             >
               勾选要分配给该用户的 SSO 角色（用于同步给外部系统）：
             </p>
-            <el-checkbox-group v-model="selectedSSORoleCodes">
-              <el-checkbox
-                v-for="role in allSSORoles"
-                :key="role.code"
-                :label="role.code"
-                :value="role.code"
-                :disabled="!role.is_active"
-                style="display: flex; align-items: flex-start; margin-bottom: 12px"
-              >
-                <el-tooltip
-                  :content="role.description || role.name"
-                  placement="right"
-                  show-after="1000"
-                  :disabled="!role.description || role.description.length < 30"
+            <div class="role-list-container">
+              <el-checkbox-group v-model="selectedSSORoleCodes">
+                <el-checkbox
+                  v-for="role in allSSORoles"
+                  :key="role.code"
+                  :label="role.code"
+                  :value="role.code"
+                  :disabled="!role.is_active"
+                  style="display: flex; align-items: flex-start; margin-bottom: 12px"
                 >
-                  <div class="sso-role-checkbox-content">
-                    <span class="sso-role-name">{{ role.name }}</span>
-                    <span class="sso-role-code">{{ role.code }}</span>
-                    <el-tag
-                      v-if="!role.is_active"
-                      type="info"
-                      size="small"
-                      class="sso-role-status"
-                      >已禁用</el-tag
-                    >
-                    <span v-if="role.description" class="sso-role-desc">- {{ role.description }}</span>
-                  </div>
-                </el-tooltip>
-              </el-checkbox>
-            </el-checkbox-group>
-            <div v-if="allSSORoles.length === 0" class="section-block__empty">
-              <el-empty :image-size="60">
-                <template #description>
-                  <div
-                    style="
-                      text-align: center;
-                      align-items: center;
-                      display: flex;
-                    "
+                  <el-tooltip
+                    :content="role.description || role.name"
+                    placement="right"
+                    show-after="1000"
+                    :disabled="!role.description || role.description.length < 30"
                   >
-                    暂无 SSO 角色 请先在
-                    <el-link type="primary" @click="goToSSORoles"
-                      >SSO 角色管理</el-link
+                    <div class="sso-role-checkbox-content">
+                      <span class="sso-role-name">{{ role.name }}</span>
+                      <span class="sso-role-code">{{ role.code }}</span>
+                      <el-tag
+                        v-if="!role.is_active"
+                        type="info"
+                        size="small"
+                        class="sso-role-status"
+                        >已禁用</el-tag
+                      >
+                      <span v-if="role.description" class="sso-role-desc">- {{ role.description }}</span>
+                    </div>
+                  </el-tooltip>
+                </el-checkbox>
+              </el-checkbox-group>
+              <div v-if="allSSORoles.length === 0" class="section-block__empty">
+                <el-empty :image-size="60">
+                  <template #description>
+                    <div
+                      style="
+                        text-align: center;
+                        align-items: center;
+                        display: flex;
+                      "
                     >
-                    中创建
-                  </div>
-                </template>
-              </el-empty>
+                      暂无 SSO 角色 请先在
+                      <el-link type="primary" @click="goToSSORoles"
+                        >SSO 角色管理</el-link
+                      >
+                      中创建
+                    </div>
+                  </template>
+                </el-empty>
+              </div>
             </div>
           </div>
         </div>
@@ -882,6 +886,7 @@ onMounted(() => {
   text-overflow: ellipsis;
   flex: 1;
   min-width: 0;
+  margin-right: 10px;
 }
 
 /* SSO 角色复选框内容样式 */
@@ -926,5 +931,12 @@ onMounted(() => {
   text-overflow: ellipsis;
   flex: 1;
   min-width: 0;
+}
+
+/* 角色列表容器 - 限制最大高度 */
+.role-list-container {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>

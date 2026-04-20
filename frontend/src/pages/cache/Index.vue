@@ -892,6 +892,7 @@ onMounted(() => {
   transform: none;
 }
 
+
 .entry-detail-block {
   border-top: 1px solid var(--border_color);
   margin-top: var(--spacing-medium);

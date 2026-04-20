@@ -668,65 +668,29 @@
               </div>
             </div>
             <div class="section-block__content">
-              <div class="inline-summary inline-summary--stacked">
-                <div class="inline-summary">
-                  <el-tag :type="empStatusType(currentEmployee?.emp_status)">
+              <div class="emp-status-selector">
+                <div class="current-status">
+                  <span class="status-label">当前状态</span>
+                  <span class="status-value" :class="{ 'status-danger': currentEmployee?.emp_status === 0 }">
                     {{ empStatusLabel(currentEmployee?.emp_status) }}
-                  </el-tag>
-                  <el-button
-                    size="small"
-                    :type="
-                      currentEmployee?.emp_status === 3 ? 'success' : 'default'
-                    "
-                    :plain="currentEmployee?.emp_status !== 3"
-                    :disabled="currentEmployee?.emp_status === 3"
-                    @click="handleChangeEmpStatus(currentEmployee || {}, 3)"
-                    >在职</el-button
-                  >
-                  <el-button
-                    size="small"
-                    :type="
-                      currentEmployee?.emp_status === 2 ? 'warning' : 'default'
-                    "
-                    :plain="currentEmployee?.emp_status !== 2"
-                    :disabled="currentEmployee?.emp_status === 2"
-                    @click="handleChangeEmpStatus(currentEmployee || {}, 2)"
-                    >试用期</el-button
-                  >
-                  <el-button
-                    size="small"
-                    :type="
-                      currentEmployee?.emp_status === 1 ? 'primary' : 'default'
-                    "
-                    :plain="currentEmployee?.emp_status !== 1"
-                    :disabled="currentEmployee?.emp_status === 1"
-                    @click="handleChangeEmpStatus(currentEmployee || {}, 1)"
-                    >待入职</el-button
-                  >
-                  <el-button
-                    size="small"
-                    :type="
-                      currentEmployee?.emp_status === 0 ? 'warning' : 'default'
-                    "
-                    :plain="currentEmployee?.emp_status !== 0"
-                    :disabled="currentEmployee?.emp_status === 0"
-                    @click="handleChangeEmpStatus(currentEmployee || {}, 0)"
-                    >停职</el-button
-                  >
-                  <el-button
-                    size="small"
-                    :type="
-                      currentEmployee?.emp_status === -1 ? 'info' : 'default'
-                    "
-                    :plain="currentEmployee?.emp_status !== -1"
-                    :disabled="currentEmployee?.emp_status === -1"
-                    @click="handleChangeEmpStatus(currentEmployee || {}, -1)"
-                    >离职</el-button
-                  >
+                  </span>
                 </div>
-                <el-text type="info"
-                  >基于当前组织直接调整该员工在本组织内的雇佣状态。</el-text
-                >
+                <div class="status-options">
+                  <button
+                    v-for="option in empStatusOptions"
+                    :key="option.value"
+                    class="status-option"
+                    :class="{
+                      'is-active': currentEmployee?.emp_status === option.value,
+                      'is-danger': option.value === 0
+                    }"
+                    :disabled="currentEmployee?.emp_status === option.value"
+                    @click="handleChangeEmpStatus(currentEmployee || {}, option.value)"
+                  >
+                    {{ option.label }}
+                  </button>
+                </div>
+                <p class="status-hint">基于当前组织直接调整该员工在本组织内的雇佣状态。</p>
               </div>
             </div>
           </div>
@@ -990,7 +954,7 @@
             </div>
             <div class="section-block__actions">
               <el-button
-                type="success"
+                type="primary"
                 size="small"
                 @click="handleCreateAndAddEmployee"
               >
@@ -1032,9 +996,8 @@
               v-loading="searchLoading"
               :data="searchResults"
               size="small"
-              max-height="300"
             >
-              <el-table-column prop="name" label="姓名" width="90" />
+              <el-table-column prop="name" label="姓名" width="110" />
               <el-table-column prop="mobile" label="手机" width="130" />
               <el-table-column
                 prop="email"
@@ -1051,7 +1014,7 @@
                   <span>{{ row.primary_dept_name || "未分配" }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="100" align="right">
+              <el-table-column label="操作" width="130" align="right">
                 <template #default="{ row }">
                   <el-button
                     v-if="!isAlreadyInDept(row)"
@@ -1079,12 +1042,11 @@
       </template>
     </el-drawer>
 
-    <!-- 企业微信绑定对话框 -->
-    <el-dialog
+    <!-- 企业微信绑定抽屉 -->
+    <el-drawer
       v-model="wechatBindDialogVisible"
       :title="wechatBindMode === 'bind' ? '绑定企业微信' : '企业微信配置'"
-      width="560px"
-      align-center
+      size="560px"
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0">
@@ -1243,7 +1205,7 @@
           验证并绑定
         </el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
   </div>
 </template>
 
@@ -1945,13 +1907,21 @@ const handleRemoveFromDept = async (emp) => {
 
 // ==================== 状态辅助函数 ====================
 
+const empStatusOptions = [
+  { value: 3, label: '在职' },
+  { value: 2, label: '试用期' },
+  { value: 1, label: '待入职' },
+  { value: 0, label: '停职' },
+  { value: -1, label: '离职' },
+]
+
 const empStatusLabel = (status) => {
   const map = { "-1": "离职", 0: "停职", 1: "待入职", 2: "试用期", 3: "在职" };
   return map[status] ?? "未知";
 };
 
 const empStatusType = (status) => {
-  const map = { "-1": "info", 0: "warning", 1: "", 2: "", 3: "success" };
+  const map = { "-1": "info", 0: "danger", 1: "", 2: "", 3: "" };
   return map[status] ?? "info";
 };
 
@@ -2238,6 +2208,7 @@ onUnmounted(() => {
   padding-right: 8px;
 }
 .dept-icon {
+  margin-left: -6px;
   margin-right: 6px;
   color: var(--el-color-primary);
 }
@@ -2364,5 +2335,82 @@ onUnmounted(() => {
   font-size: var(--el-font-size-xs);
   color: var(--el-text-color-secondary);
   line-height: var(--c-line-height-sm);
+}
+
+/* 雇佣状态选择器 - 简洁设计 */
+.emp-status-selector {
+  padding: 8px 0;
+}
+
+.current-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--el-fill-color-light);
+  border-radius: 8px;
+}
+
+.status-label {
+  font-size: var(--el-font-size-small);
+  color: var(--el-text-color-secondary);
+}
+
+.status-value {
+  font-size: var(--el-font-size-base);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-text-color-primary);
+}
+
+.status-value.status-danger {
+  color: var(--el-color-danger);
+}
+
+.status-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.status-option {
+  padding: 8px 16px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 6px;
+  background: rgb(var(--white));
+  color: var(--el-text-color-regular);
+  font-size: var(--el-font-size-base);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-option:hover:not(:disabled) {
+  border-color: var(--el-color-primary);
+  color: var(--el-color-primary);
+}
+
+.status-option.is-active {
+  background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary);
+  color: var(--el-color-primary);
+  font-weight: var(--el-font-weight-medium);
+}
+
+.status-option.is-danger.is-active {
+  background: var(--el-color-danger-light-9);
+  border-color: var(--el-color-danger);
+  color: var(--el-color-danger);
+}
+
+.status-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status-hint {
+  margin: 0;
+  font-size: var(--el-font-size-small);
+  color: var(--el-text-color-secondary);
 }
 </style>

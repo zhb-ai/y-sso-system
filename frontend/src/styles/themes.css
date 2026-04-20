@@ -380,16 +380,6 @@ input:-internal-autofill-selected {
   border-radius: var(--border-radius);
 }
 
-.el-button--primary {
-  background: var(--el-color-primary);
-  border-color: var(--el-color-primary);
-}
-
-.el-button--primary:hover {
-  background: var(--el-color-primary-light-3);
-  border-color: var(--el-color-primary-light-3);
-}
-
 .el-button--default {
   border-color: rgb(var(--gray-300));
   color: rgb(var(--gray-700));
@@ -401,6 +391,20 @@ input:-internal-autofill-selected {
   color: var(--el-color-primary);
   background: rgb(var(--gray-50));
 }
+
+.el-button--primary {
+  background: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  color: var(--el-color-white);
+}
+
+.el-button--primary:hover {
+  background: var(--el-color-primary-light-3);
+  border-color: var(--el-color-primary-light-3);
+  color: var(--el-color-white);
+}
+
+
 
 /* 链接按钮样式 */
 .el-button.is-link {
@@ -476,6 +480,11 @@ input:-internal-autofill-selected {
 .el-table .cell {
   padding: 5px 12px;
 }
+
+.dialog-table-card .el-table:not(.el-table--border) .el-table__cell{
+  border-bottom: none;
+}
+
 .el-alert {
   --el-alert-title-font-size: var(--el-font-size-base);
 }

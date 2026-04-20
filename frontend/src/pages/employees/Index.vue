@@ -168,7 +168,7 @@
     </el-card>
     
     <!-- 员工编辑抽屉 -->
-    <el-drawer v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" size="820px" destroy-on-close>
+    <el-drawer v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" size="870px" destroy-on-close>
       <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0;">
         <!-- 基本信息 -->
         <div class="section-block" style="margin-bottom: 16px;">
@@ -335,11 +335,13 @@
               </template>
               <template v-else>
                 <el-alert
-                  title="该员工尚未设置主组织，暂时无法在此修改雇佣状态"
+                  title="该员工尚未设置主组织，暂时无法在此修改雇佣状态。"
                   type="warning"
                   :closable="false"
                   show-icon
-                />
+                >
+                  
+                </el-alert>
               </template>
             </div>
           </div>
@@ -403,8 +405,32 @@
                       <span>组织管理</span>
                     </span>
                   </template>
+                  <!-- 加入新组织 -->
+                  <div class="section-block__add" style="margin-bottom: 16px;">
+                    <el-form :inline="true" :model="addOrgForm" size="default" class="org-add-form">
+                      <el-form-item label="组织" style="margin-bottom: 12px;">
+                        <el-select v-model="addOrgForm.org_id" placeholder="选择组织" style="width: 200px;min-width: 200px;">
+                          <el-option v-for="org in availableOrgs" :key="org.id" :label="org.name" :value="org.id" />
+                        </el-select>
+                      </el-form-item>
+                      <div class="form-row-inline">
+                        <el-form-item label="工号" style="margin-bottom: 12px;">
+                          <el-input v-model="addOrgForm.emp_no" placeholder="工号" style="width: 100px;min-width: 100px;" />
+                        </el-form-item>
+                        <el-form-item label="职位" style="margin-bottom: 12px;">
+                          <el-input v-model="addOrgForm.position" placeholder="职位" style="width: 100px;min-width: 100px;" />
+                        </el-form-item>
+                      </div>
+                      <el-form-item style="margin-bottom: 0;">
+                        <el-checkbox v-model="addOrgForm.set_primary" style="margin-right: 12px;">设为主组织</el-checkbox>
+                        <el-button type="primary" @click="addToOrg" :disabled="!addOrgForm.org_id">加入</el-button>
+                      </el-form-item>
+                    </el-form>
+                  </div>
+
+                  <!-- 已加入的组织 -->
                   <div class="section-block__table">
-                    <el-table :data="currentEmployee?.organizations || []" size="small" max-height="260">
+                    <el-table v-if="currentEmployee?.organizations?.length" :data="currentEmployee.organizations" size="small" max-height="260">
                       <el-table-column prop="org_name" label="组织" min-width="140" />
                       <el-table-column prop="emp_no" label="工号" width="120" />
                       <el-table-column prop="position" label="职位" width="120" />
@@ -428,31 +454,13 @@
                         </template>
                       </el-table-column>
                     </el-table>
-                    <div v-if="!currentEmployee?.organizations?.length" class="section-block__empty">
-                      <el-empty description="暂未加入任何组织" :image-size="60" />
-                    </div>
-                  </div>
-
-                  <div class="section-block__add" style="margin-top: 16px;">
-                    <el-form :inline="true" :model="addOrgForm" size="default" class="section-block__add-form">
-                      <el-form-item label="组织">
-                        <el-select v-model="addOrgForm.org_id" placeholder="选择组织" style="width: 150px">
-                          <el-option v-for="org in availableOrgs" :key="org.id" :label="org.name" :value="org.id" />
-                        </el-select>
-                      </el-form-item>
-                      <el-form-item label="工号">
-                        <el-input v-model="addOrgForm.emp_no" placeholder="工号" style="width: 110px" />
-                      </el-form-item>
-                      <el-form-item label="职位">
-                        <el-input v-model="addOrgForm.position" placeholder="职位" style="width: 110px" />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-checkbox v-model="addOrgForm.set_primary">设为主组织</el-checkbox>
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button type="primary" @click="addToOrg" :disabled="!addOrgForm.org_id">加入</el-button>
-                      </el-form-item>
-                    </el-form>
+                    <EmptyState
+                      v-else
+                      type="data"
+                      title="暂无组织"
+                      description="该员工尚未加入任何组织"
+                      compact
+                    />
                   </div>
                 </el-tab-pane>
 
@@ -510,7 +518,7 @@
                   </div>
 
                   <div class="section-block__table">
-                    <el-table :data="currentEmployee?.departments || []" size="small" max-height="260">
+                    <el-table v-if="currentEmployee?.departments?.length" :data="currentEmployee.departments" size="small" max-height="260">
                       <el-table-column prop="dept_name" label="部门" min-width="180" />
                       <el-table-column label="主部门" width="120" align="center">
                         <template #default="{ row }">
@@ -532,9 +540,13 @@
                         </template>
                       </el-table-column>
                     </el-table>
-                    <div v-if="!currentEmployee?.departments?.length" class="section-block__empty">
-                      <el-empty description="暂未加入任何部门" :image-size="60" />
-                    </div>
+                    <EmptyState
+                      v-else
+                      type="data"
+                      title="暂无部门"
+                      description="该员工尚未加入任何部门"
+                      compact
+                    />
                   </div>
                 </el-tab-pane>
               </el-tabs>
@@ -572,7 +584,7 @@
             </div>
           </div>
           <div class="section-block__table">
-            <el-table :data="currentEmployee.organizations || []" size="small" max-height="200">
+            <el-table v-if="currentEmployee.organizations?.length" :data="currentEmployee.organizations" size="small" max-height="200">
               <el-table-column prop="org_name" label="组织" min-width="120" />
               <el-table-column prop="emp_no" label="工号" width="120" />
               <el-table-column prop="position" label="职位" width="120" />
@@ -593,9 +605,13 @@
                 </template>
               </el-table-column>
             </el-table>
-            <div v-if="!currentEmployee.organizations?.length" class="section-block__empty">
-              <el-empty description="暂未加入任何组织" :image-size="60" />
-            </div>
+            <EmptyState
+              v-else
+              type="data"
+              title="暂无组织"
+              description="该员工尚未加入任何组织"
+              compact
+            />
           </div>
         </div>
 
@@ -705,7 +721,7 @@
             </div>
           </div>
           <div class="section-block__table">
-            <el-table :data="currentEmployee.departments || []" size="small" max-height="200">
+            <el-table v-if="currentEmployee.departments?.length" :data="currentEmployee.departments" size="small" max-height="200">
               <el-table-column prop="dept_name" label="部门" min-width="150" />
               <el-table-column label="主部门" width="120" align="center">
                 <template #default="{ row }">
@@ -724,9 +740,13 @@
                 </template>
               </el-table-column>
             </el-table>
-            <div v-if="!currentEmployee.departments?.length" class="section-block__empty">
-              <el-empty description="暂未加入任何部门" :image-size="60" />
-            </div>
+            <EmptyState
+              v-else
+              type="data"
+              title="暂无部门"
+              description="该员工尚未加入任何部门"
+              compact
+            />
           </div>
         </div>
       </div>
@@ -758,6 +778,9 @@
         </el-descriptions-item>
       </el-descriptions>
       <template #footer>
+        <el-button @click="copyUsernameAndPassword">
+          <el-icon><DocumentCopy /></el-icon> 复制用户名密码
+        </el-button>
         <el-button type="primary" @click="accountResultVisible = false">知道了</el-button>
       </template>
     </el-dialog>
@@ -766,10 +789,13 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, RefreshRight, ArrowDown, OfficeBuilding, Folder, User, Key, Edit, Delete, Collection } from '@element-plus/icons-vue'
+import { Plus, Search, RefreshRight, ArrowDown, OfficeBuilding, Folder, User, Key, Edit, Delete, Collection, DocumentCopy } from '@element-plus/icons-vue'
 import { employeeApi, organizationApi, departmentApi } from '@/api'
 import EmptyState from '@/components/EmptyState.vue'
+
+const router = useRouter()
 
 // 数据
 const employees = ref([])
@@ -1163,6 +1189,30 @@ const handleCreateAccount = async (row) => {
   }
 }
 
+// 复制用户名和密码
+const copyUsernameAndPassword = async () => {
+  const text = `用户名：${accountResult.username}\n密码：${accountResult.raw_password}`
+  try {
+    await navigator.clipboard.writeText(text)
+    ElMessage.success('用户名和密码已复制到剪贴板')
+  } catch (err) {
+    // 降级方案
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    try {
+      document.execCommand('copy')
+      ElMessage.success('用户名和密码已复制到剪贴板')
+    } catch (e) {
+      ElMessage.error('复制失败，请手动复制')
+    }
+    document.body.removeChild(textarea)
+  }
+}
+
 // 管理组织
 const handleManageOrg = async (row) => {
   try {
@@ -1537,5 +1587,15 @@ onMounted(() => {
   margin: 0;
   font-size: var(--el-font-size-small);
   color: var(--el-text-color-secondary);
+}
+
+/* 组织添加表单样式 */
+.org-add-form .form-row-inline {
+  display: flex;
+  gap: 16px;
+}
+
+.org-add-form .form-row-inline .el-form-item {
+  margin-right: 0;
 }
 </style>

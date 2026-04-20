@@ -59,7 +59,7 @@
         tooltip-effect="light"
       >
         <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="name" label="应用名称" min-width="100">
+        <el-table-column prop="name" label="应用名称" min-width="200">
           <template #default="scope">
             <div class="app-info">
               <el-avatar :size="32" :src="scope.row.logo_url" class="app-logo" alt="应用图标">
@@ -67,7 +67,7 @@
               </el-avatar>
               <div class="app-details">
                 <div class="app-name truncate">{{ scope.row.name }}</div>
-                <div class="app-desc line-clamp">{{ scope.row.description || '暂无描述' }}</div>
+                <div :title="scope.row.description || ''" class="app-desc line-clamp">{{ scope.row.description || '暂无描述' }}</div>
               </div>
             </div>
           </template>
