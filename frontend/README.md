@@ -33,7 +33,6 @@
 | **overdrive** | 技术突破（Shader、60fps 虚拟表格等） | "overdrive", "技术突破", "高级效果" |
 | **polish** | 最终润色（对齐、间距、一致性检查） | "polish", "最终检查", "shipping前检查" |
 | **critique** | 设计评估和反馈 | "评估设计", "critique this", "设计反馈" |
-| **frontend-design** | 前端设计原则参考 | 需要设计指导时 |
 | **webapp-testing** | 设置和运行 E2E 测试（Playwright） | "create E2E tests", "set up testing", "automated browser tests", "测试", "e2e" |
 | **ui-ux-pro-max** | 一站式 UI/UX 优化专家，自动执行完整的设计优化流程 | "优化这个页面", "让界面更专业", "改进 UI/UX", "美化这个页面", "ui-ux-pro-max" |
 

@@ -350,7 +350,7 @@
             label="操作"
             width="160"
             align="right"
-            class-name="table-cell-flex-end"
+            fixed="right"
           >
             <template #default="{ row }">
               <el-button size="small" link @click="handleEditEmployee(row)">

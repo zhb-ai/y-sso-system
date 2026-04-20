@@ -615,14 +615,11 @@ onUnmounted(() => {
   background-color: rgb(var(--gray-400));
 }
 
-/* 页脚样式 - 底部居中 */
+/* 页脚样式 - 底部居中（相对于主内容区域） */
 .app-footer {
   padding: 5px 1.5rem;
   flex-shrink: 0;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  left: 0;
+  position: relative;
   z-index: 1;
   background-color: var(--bodybg-color);
 }

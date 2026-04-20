@@ -56,9 +56,10 @@
         :data="applications"
         style="width: 100%"
         row-key="id"
+        tooltip-effect="light"
       >
         <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="name" label="应用名称" min-width="200">
+        <el-table-column prop="name" label="应用名称" min-width="100">
           <template #default="scope">
             <div class="app-info">
               <el-avatar :size="32" :src="scope.row.logo_url" class="app-logo" alt="应用图标">
@@ -71,7 +72,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="code" label="应用编码" min-width="150" />
+        <el-table-column prop="code" label="应用编码" min-width="120" />
         <el-table-column prop="client_id" label="客户端ID" min-width="220">
           <template #default="scope">
             <div class="copyable-field">
@@ -82,7 +83,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="client_type" label="客户端类型" width="120" align="center">
+        <el-table-column prop="client_type" label="客户端类型" width="100" align="center">
           <template #default="scope">
             <el-tag
               size="small"
@@ -111,7 +112,7 @@
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" align="right" fixed="right" >
+        <el-table-column label="操作" width="280" fixed="right" align="right">
           <template #default="scope">
             <el-button type="info" size="small" link @click="handleShowIntegrationConfig(scope.row)">
               <el-icon><Document /></el-icon> 对接配置
@@ -1144,14 +1145,5 @@ onMounted(() => {
   overflow-x: auto;
 }
 
-/* 浮动操作列阴影效果 */
-:deep(.el-table-fixed-column--right),
-:deep(.el-table__cell.el-table-fixed-column--right) {
-  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.08) !important;
-}
 
-:deep(.el-table-fixed-column--right.is-first-column),
-:deep(.el-table__cell.el-table-fixed-column--right.is-first-column) {
-  box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1) !important;
-}
 </style>
