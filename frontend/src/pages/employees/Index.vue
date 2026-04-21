@@ -168,7 +168,7 @@
     </el-card>
     
     <!-- 员工编辑抽屉 -->
-    <el-drawer v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" size="870px" destroy-on-close>
+    <el-drawer v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" size="880px" destroy-on-close>
       <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0;">
         <!-- 基本信息 -->
         <div class="section-block" style="margin-bottom: 16px;">
@@ -316,19 +316,16 @@
                     </span>
                   </div>
                   <div class="status-options">
-                    <button
+                    <el-button
                       v-for="option in empStatusOptions"
                       :key="option.value"
-                      class="status-option"
-                      :class="{ 
-                        'is-active': currentEmployee.emp_status === option.value,
-                        'is-danger': option.value === 0
-                      }"
+                      :type="currentEmployee.emp_status === option.value ? (option.value === 0 ? 'danger' : 'primary') : 'default'"
+                      size="small"
                       :disabled="currentEmployee.emp_status === option.value"
                       @click="handleChangeEmpStatus(currentEmployee, option.value)"
                     >
                       {{ option.label }}
-                    </button>
+                    </el-button>
                   </div>
                   <p class="status-hint">基于主组织直接调整当前员工的雇佣状态</p>
                 </div>
@@ -409,7 +406,7 @@
                   <div class="section-block__add" style="margin-bottom: 16px;">
                     <el-form :inline="true" :model="addOrgForm" size="default" class="org-add-form">
                       <el-form-item label="组织" style="margin-bottom: 12px;">
-                        <el-select v-model="addOrgForm.org_id" placeholder="选择组织" style="width: 200px;min-width: 200px;">
+                        <el-select v-model="addOrgForm.org_id" placeholder="选择组织" style="width: 180px;min-width: 180px;">
                           <el-option v-for="org in availableOrgs" :key="org.id" :label="org.name" :value="org.id" />
                         </el-select>
                       </el-form-item>
@@ -561,7 +558,7 @@
     </el-drawer>
     
     <!-- 管理组织抽屉 -->
-    <el-drawer v-model="orgDialogVisible" title="管理员工组织" size="820px">
+    <el-drawer v-model="orgDialogVisible" title="管理员工组织" size="880px">
       <div v-if="currentEmployee" class="section-blocks">
         <!-- 员工信息 -->
         <div class="section-block__info">
@@ -572,6 +569,38 @@
           <div class="section-block__info-item">
             <span class="section-block__info-label">手机号</span>
             <span class="section-block__info-value">{{ currentEmployee.mobile || '-' }}</span>
+          </div>
+        </div>
+
+
+        <!-- 加入新组织 -->
+        <div class="section-block">
+          <div class="section-block__header">
+            <div class="section-block__title">
+              <el-icon><Plus /></el-icon>
+              <span>加入新组织</span>
+            </div>
+          </div>
+          <div class="section-block__add">
+            <el-form :inline="true" :model="addOrgForm" size="default" class="section-block__add-form">
+              <el-form-item label="组织">
+                <el-select v-model="addOrgForm.org_id" placeholder="选择组织" style="width: 180px;min-width: 180px;">
+                  <el-option v-for="org in availableOrgs" :key="org.id" :label="org.name" :value="org.id" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="工号">
+                <el-input v-model="addOrgForm.emp_no" placeholder="工号" style="width: 100px;min-width: 100px;" />
+              </el-form-item>
+              <el-form-item label="职位">
+                <el-input v-model="addOrgForm.position" placeholder="职位" style="width: 100px;min-width: 100px;" />
+              </el-form-item>
+              <el-form-item>
+                <el-checkbox v-model="addOrgForm.set_primary">设为主组织</el-checkbox>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="addToOrg" :disabled="!addOrgForm.org_id">加入</el-button>
+              </el-form-item>
+            </el-form>
           </div>
         </div>
 
@@ -615,36 +644,7 @@
           </div>
         </div>
 
-        <!-- 加入新组织 -->
-        <div class="section-block">
-          <div class="section-block__header">
-            <div class="section-block__title">
-              <el-icon><Plus /></el-icon>
-              <span>加入新组织</span>
-            </div>
-          </div>
-          <div class="section-block__add">
-            <el-form :inline="true" :model="addOrgForm" size="default" class="section-block__add-form">
-              <el-form-item label="组织">
-                <el-select v-model="addOrgForm.org_id" placeholder="选择组织" style="width: 140px">
-                  <el-option v-for="org in availableOrgs" :key="org.id" :label="org.name" :value="org.id" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="工号">
-                <el-input v-model="addOrgForm.emp_no" placeholder="工号" style="width: 100px" />
-              </el-form-item>
-              <el-form-item label="职位">
-                <el-input v-model="addOrgForm.position" placeholder="职位" style="width: 100px" />
-              </el-form-item>
-              <el-form-item>
-                <el-checkbox v-model="addOrgForm.set_primary">设为主组织</el-checkbox>
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="addToOrg" :disabled="!addOrgForm.org_id">加入</el-button>
-              </el-form-item>
-            </el-form>
-          </div>
-        </div>
+        
       </div>
     </el-drawer>
     

@@ -315,13 +315,13 @@
       </template>
     </el-dialog>
 
-    <el-dialog
+    <el-drawer
       v-model="entriesDialogVisible"
       :title="`缓存条目 - ${entriesFunctionName || '-'}`"
-      width="900px"
-      align-center
+      size="900px"
       destroy-on-close
     >
+      <div class="drawer-content">
       <el-alert
         class="dialog-hint-alert compact-hint-alert"
         type="info"
@@ -433,15 +433,14 @@
               :show-line="true"
               :show-length="true"
               :collapsed-on-click-brackets="true"
+              :collapsed="true"
             />
           </div>
         </template>
       </div>
 
-      <template #footer>
-        <el-button @click="entriesDialogVisible = false">关闭</el-button>
-      </template>
-    </el-dialog>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
@@ -931,7 +930,6 @@ onMounted(() => {
   background: var(--light-gray);
   border: 1px solid var(--border_color);
   border-radius: var(--border-radius);
-  max-height: 320px;
   overflow: auto;
   padding: 10px;
 }

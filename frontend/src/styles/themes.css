@@ -404,7 +404,9 @@ input:-internal-autofill-selected {
   color: var(--el-color-white);
 }
 
-
+.el-descriptions__body .el-descriptions__table .el-descriptions__cell{
+  font-size: var(--el-font-size-base);
+}
 
 /* 链接按钮样式 */
 .el-button.is-link {

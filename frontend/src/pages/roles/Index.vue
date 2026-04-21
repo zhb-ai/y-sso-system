@@ -157,66 +157,77 @@
     <el-drawer
       v-model="permDrawerVisible"
       :title="`${permRole && permRole.name}（${permRole && permRole.code}）- 分配权限`"
-      size="480px"
+      size="520px"
       destroy-on-close
     >
-      <div class="section-blocks" style="gap: 0; height: 100%; display: flex; flex-direction: column;">
+      <div class="perm-drawer-content">
         <!-- 操作栏 -->
-        <div class="section-block" style="margin-bottom: 16px; flex-shrink: 0;">
-          <div class="section-block__content" style="padding: 12px 16px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <el-button size="small" type="primary" plain :loading="scanLoading" @click="handleScan">
-                <el-icon><Refresh /></el-icon> 扫描路由更新权限
-              </el-button>
-              <el-text v-if="permRole && permRole.code === 'admin'" type="info" size="small">
-                admin 角色自动拥有所有权限
-              </el-text>
-            </div>
-          </div>
+        <div class="perm-drawer-toolbar">
+          <el-button size="small" type="primary" plain :loading="scanLoading" @click="handleScan">
+            <el-icon><Refresh /></el-icon> 扫描路由更新权限
+          </el-button>
+          <el-alert
+            v-if="permRole && permRole.code === 'admin'"
+            title="admin 角色自动拥有所有权限"
+            type="info"
+            :closable="false"
+            show-icon
+            style="flex: 1; padding: 6px 12px;"
+          />
         </div>
 
         <!-- 权限列表 -->
-        <div class="section-block" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-          <div class="section-block__header" style="flex-shrink: 0;">
-            <div class="section-block__title">
-              <el-icon><Key /></el-icon>
-              <span>权限列表</span>
-            </div>
-          </div>
-          <div class="section-block__content" v-loading="permLoading" style="flex: 1; overflow-y: auto; min-height: 0;">
-            <template v-if="permTree.length > 0">
+        <div class="perm-drawer-body" v-loading="permLoading">
+          <template v-if="permTree.length > 0">
+            <!-- 全选区域 -->
+            <div class="perm-select-all">
               <el-checkbox
                 v-model="checkAll"
                 :indeterminate="isIndeterminate"
                 @change="handleCheckAllChange"
-                style="margin-bottom: 12px"
-              >全选</el-checkbox>
-              <el-divider style="margin: 4px 0 12px" />
+              >全选所有权限</el-checkbox>
+              <el-text type="info" size="small">已选 {{ checkedPermIds.length }} 项</el-text>
+            </div>
+
+            <!-- 权限分组 -->
+            <div class="perm-groups">
               <div v-for="group in permTree" :key="group.module" class="perm-group">
-                <div class="perm-group-title">{{ group.module }}</div>
-                <el-checkbox-group v-model="checkedPermIds">
+                <div class="perm-group-header">
+                  <span class="perm-group-name">{{ group.module }}</span>
+                  <el-text type="info" size="small">{{ group.permissions.length }} 项</el-text>
+                </div>
+                <el-checkbox-group v-model="checkedPermIds" class="perm-checkbox-group">
                   <el-checkbox
                     v-for="perm in group.permissions"
                     :key="perm.id"
                     :value="perm.id"
                     :label="perm.name"
                     :disabled="permRole && permRole.code === 'admin'"
-                    style="margin-bottom: 4px; display: block"
+                    class="perm-checkbox"
                   >
-                    <span>{{ perm.name }}</span>
-                    <el-text type="info" size="small" style="margin-left: 8px">{{ perm.code }}</el-text>
+                    <div class="perm-checkbox-content">
+                      <span class="perm-name">{{ perm.name }}</span>
+                      <el-text type="info" size="small" class="perm-code">{{ perm.code }}</el-text>
+                    </div>
                   </el-checkbox>
                 </el-checkbox-group>
               </div>
-            </template>
-            <div v-else class="section-block__empty">
-              <el-empty description="暂无权限数据，请先点击「扫描路由更新权限」" :image-size="60" />
             </div>
+          </template>
+          <div v-else class="perm-empty">
+            <el-empty description="暂无权限数据" :image-size="80">
+              <template #description>
+                <div style="text-align: center;">
+                  <p>暂无权限数据</p>
+                  <p style="color: var(--el-text-color-secondary); font-size: var(--el-font-size-small); margin-top: 8px;">请先点击上方「扫描路由更新权限」按钮</p>
+                </div>
+              </template>
+            </el-empty>
           </div>
         </div>
 
         <!-- 底部按钮 -->
-        <div class="drawer-footer" style="flex-shrink: 0; padding: 16px 0 0; border-top: 1px solid var(--el-border-color-lighter); display: flex; justify-content: flex-end; gap: 12px;">
+        <div class="perm-drawer-footer">
           <el-button @click="permDrawerVisible = false">取消</el-button>
           <el-button
             type="primary"
@@ -514,5 +525,118 @@ onMounted(() => {
   color: var(--el-text-color-primary);
   border-left: 3px solid var(--el-color-primary);
   padding-left: 8px;
+}
+
+/* 权限抽屉样式 */
+.perm-drawer-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  gap: 16px;
+}
+
+.perm-drawer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.perm-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  background: var(--el-fill-color-light);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.perm-select-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--el-bg-color);
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.perm-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.perm-group {
+  background: var(--el-bg-color);
+  border-radius: 6px;
+  padding: 12px 16px;
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.perm-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.perm-group-name {
+  font-weight: var(--el-font-weight-bold);
+  font-size: var(--el-font-size-base);
+  color: var(--el-text-color-primary);
+}
+
+.perm-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.perm-checkbox {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.perm-checkbox:hover {
+  background-color: var(--el-fill-color);
+}
+
+.perm-checkbox-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.perm-name {
+  font-size: var(--el-font-size-base);
+  color: var(--el-text-color-primary);
+}
+
+.perm-code {
+  font-size: var(--el-font-size-small);
+}
+
+.perm-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+}
+
+.perm-drawer-footer {
+  flex-shrink: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--el-border-color-lighter);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>
