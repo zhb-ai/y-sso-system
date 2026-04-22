@@ -163,7 +163,7 @@
       <div class="perm-drawer-content">
         <!-- 操作栏 -->
         <div class="perm-drawer-toolbar">
-          <el-button size="small" type="primary" plain :loading="scanLoading" @click="handleScan">
+          <el-button type="primary" plain :loading="scanLoading" @click="handleScan">
             <el-icon><Refresh /></el-icon> 扫描路由更新权限
           </el-button>
           <el-alert
@@ -311,10 +311,14 @@ const handleEdit = (row) => {
 
 const handleFormSubmit = async () => {
   if (!roleFormRef.value) return
-  try {
-    await roleFormRef.value.validate()
-    formLoading.value = true
+  
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await roleFormRef.value.validate().catch(() => false)
+  if (!isValid) return
+  
+  formLoading.value = true
 
+  try {
     if (isEdit.value) {
       await roleApi.update(roleForm.code, {
         name: roleForm.name,

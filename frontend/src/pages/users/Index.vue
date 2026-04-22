@@ -92,8 +92,8 @@
         </el-table-column>
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="scope">
-            <span v-if="scope.row.status === 'active'" class="status-enabled">启用</span>
-            <span v-else>禁用</span>
+            <span v-if="scope.row.status === 'active'">启用</span>
+            <span v-else class="status-danger">禁用</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -140,11 +140,11 @@
               link
               @click="handleToggleStatus(scope.row)"
             >
-              <el-icon :class="{ 'status-enabled': scope.row.status !== 'active' }"
+              <el-icon :class="{ 'status-danger': scope.row.status === 'active' }"
                 ><component :is="scope.row.status === 'active' ? Lock : Unlock"
               /></el-icon>
-              <span v-if="scope.row.status !== 'active'" class="status-enabled">启用</span>
-              <span v-else>禁用</span>
+              <span v-if="scope.row.status !== 'active'">启用</span>
+              <span v-else class="status-danger">禁用</span>
             </el-button>
             <el-button
               size="small"

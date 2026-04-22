@@ -179,10 +179,10 @@
             </div>
           </div>
           <div class="section-block__content">
-            <el-form :model="form" label-width="80px">
+            <el-form :model="form" :rules="formRules" ref="formRef" label-width="80px">
               <el-row :gutter="20">
                 <el-col :span="12">
-                  <el-form-item label="姓名" required>
+                  <el-form-item label="姓名" prop="name">
                     <el-input v-model="form.name" placeholder="请输入姓名" autocomplete="off" />
                   </el-form-item>
                 </el-col>
@@ -818,11 +818,15 @@ const editManageTab = ref('account')
 const currentEmployee = ref(null)
 
 // 表单
+const formRef = ref(null)
 const form = reactive({ 
   id: null, name: '', code: '', mobile: '', email: '', gender: 0,
   org_id: null, emp_no: '', position: '', dept_id: null,
   create_account: false,
 })
+const formRules = {
+  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+}
 
 // 账号创建结果
 const accountResultVisible = ref(false)
@@ -1076,10 +1080,15 @@ const handleDelete = async (row) => {
 
 // 提交表单
 const submitForm = async () => {
-  if (!form.name) {
-    ElMessage.warning('请输入姓名')
+  if (!formRef.value) {
+    ElMessage.warning('表单尚未加载完成，请稍后重试')
     return
   }
+
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await formRef.value.validate().catch(() => false)
+  if (!isValid) return
+
   submitLoading.value = true
   try {
     if (form.id) {
@@ -1172,16 +1181,22 @@ const handleCreateAccount = async (row) => {
       raw_password: data.raw_password
     })
     accountResultVisible.value = true
+    // 更新当前员工状态（如果在编辑抽屉中）
     if (currentEmployee.value?.id === row.id) {
-      await refreshCurrentEmployee({
-        employeeId: row.id,
-        fallback: {
-          ...row,
-          account_status: newStatus
-        },
-        syncDept: dialogVisible.value || deptDialogVisible.value,
-        preferredOrgId: selectedOrgForDept.value
-      })
+      currentEmployee.value = {
+        ...currentEmployee.value,
+        user_id: data.user_id,
+        account_status: 1
+      }
+    }
+    // 更新列表中对应员工的状态
+    const empIndex = employees.value.findIndex(e => e.id === row.id)
+    if (empIndex !== -1) {
+      employees.value[empIndex] = {
+        ...employees.value[empIndex],
+        user_id: data.user_id,
+        account_status: 1
+      }
     }
     loadEmployees()
   } catch (e) {

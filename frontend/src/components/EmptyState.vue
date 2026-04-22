@@ -164,8 +164,8 @@ defineEmits(['action'])
 
 .empty-state__title {
   font-size: 14px;
+  color: var(--font-color);
   font-weight: 500;
-  color: var(--font-title-color);
   margin: 0 0 8px;
 }
 

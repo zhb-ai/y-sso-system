@@ -807,10 +807,13 @@ const handleEdit = async (row) => {
 const handleSubmit = async () => {
   if (!applicationFormRef.value) return
   
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await applicationFormRef.value.validate().catch(() => false)
+  if (!isValid) return
+  
+  submitLoading.value = true
+  
   try {
-    await applicationFormRef.value.validate()
-    submitLoading.value = true
-    
     // 转换重定向URI格式：换行分隔文本 → 数组
     const redirectUris = applicationForm.redirect_uris_str
       .split('\n')
@@ -862,6 +865,7 @@ const handleSubmit = async () => {
 
     await getApplications()
   } catch (error) {
+    console.error('提交应用表单失败:', error)
     const operation = isEditing.value ? 'update' : 'create'
     handleApiError(error, getDefaultErrorMessage(operation))
   } finally {

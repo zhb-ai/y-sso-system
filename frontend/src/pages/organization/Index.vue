@@ -319,7 +319,11 @@
                   <span class="status-text-wrapper" style="cursor: pointer">
                     <span
                       v-if="row.account_status === 1"
-                      class="status-enabled"
+                      >{{ accountStatusLabel(row.account_status) }}</span
+                    >
+                    <span
+                      v-else-if="row.account_status === -1"
+                      class="status-danger"
                       >{{ accountStatusLabel(row.account_status) }}</span
                     >
                     <span v-else>{{
@@ -411,15 +415,15 @@
             </div>
           </div>
           <div class="section-block__content">
-            <el-form :model="orgForm" label-width="80px">
-              <el-form-item label="名称" required>
+            <el-form :model="orgForm" :rules="orgRules" ref="orgFormRef" label-width="80px">
+              <el-form-item label="名称" prop="name">
                 <el-input
                   v-model="orgForm.name"
                   placeholder="请输入组织名称"
                   autocomplete="off"
                 />
               </el-form-item>
-              <el-form-item label="编码" required>
+              <el-form-item label="编码" prop="code">
                 <el-input
                   v-model="orgForm.code"
                   placeholder="请输入组织编码"
@@ -467,8 +471,8 @@
             </div>
           </div>
           <div class="section-block__content">
-            <el-form :model="deptForm" label-width="80px">
-              <el-form-item label="名称" required>
+            <el-form :model="deptForm" :rules="deptRules" ref="deptFormRef" label-width="80px">
+              <el-form-item label="名称" prop="name">
                 <el-input
                   v-model="deptForm.name"
                   placeholder="请输入部门名称"
@@ -524,10 +528,10 @@
             </div>
           </div>
           <div class="section-block__content">
-            <el-form :model="employeeForm" label-width="80px">
+            <el-form :model="employeeForm" :rules="employeeRules" ref="employeeFormRef" label-width="80px">
               <el-row :gutter="20">
                 <el-col :span="12">
-                  <el-form-item label="姓名" required>
+                  <el-form-item label="姓名" prop="name">
                     <el-input
                       v-model="employeeForm.name"
                       placeholder="请输入姓名"
@@ -1024,7 +1028,7 @@
                   >
                     添加
                   </el-button>
-                  <el-tag v-else type="info" size="mini">已在部门</el-tag>
+                  <el-tag v-else type="info" size="small">已在部门</el-tag>
                 </template>
               </el-table-column>
             </el-table>
@@ -1078,28 +1082,30 @@
           </div>
         </div>
 
-        <!-- 基础配置 -->
-        <div class="section-block" style="margin-bottom: 16px">
-          <div class="section-block__header">
-            <div class="section-block__title">
-              <el-icon><Connection /></el-icon>
-              <span>基础配置</span>
+        <el-form
+          :model="wechatForm"
+          :rules="wechatRules"
+          ref="wechatFormRef"
+          label-width="160px"
+          :disabled="wechatBindMode === 'view'"
+        >
+          <!-- 基础配置 -->
+          <div class="section-block" style="margin-bottom: 16px">
+            <div class="section-block__header">
+              <div class="section-block__title">
+                <el-icon><Connection /></el-icon>
+                <span>基础配置</span>
+              </div>
             </div>
-          </div>
-          <div class="section-block__content">
-            <el-form
-              :model="wechatForm"
-              label-width="160px"
-              :disabled="wechatBindMode === 'view'"
-            >
-              <el-form-item label="企业 ID (corp_id)" required>
+            <div class="section-block__content">
+              <el-form-item label="企业 ID (corp_id)" prop="corp_id">
                 <el-input
                   v-model="wechatForm.corp_id"
                   placeholder="如 wwxxxxxxxxxxxxxxxxxx"
                   autocomplete="off"
                 />
               </el-form-item>
-              <el-form-item label="通讯录 Secret" required>
+              <el-form-item label="通讯录 Secret" prop="corp_secret">
                 <el-input
                   v-model="wechatForm.corp_secret"
                   placeholder="通讯录同步专用 Secret"
@@ -1107,24 +1113,18 @@
                   autocomplete="off"
                 />
               </el-form-item>
-            </el-form>
-          </div>
-        </div>
-
-        <!-- 扫码登录配置 -->
-        <div class="section-block" style="margin-bottom: 16px">
-          <div class="section-block__header">
-            <div class="section-block__title">
-              <el-icon><Key /></el-icon>
-              <span>扫码登录配置（可选）</span>
             </div>
           </div>
-          <div class="section-block__content">
-            <el-form
-              :model="wechatForm"
-              label-width="160px"
-              :disabled="wechatBindMode === 'view'"
-            >
+
+          <!-- 扫码登录配置 -->
+          <div class="section-block" style="margin-bottom: 16px">
+            <div class="section-block__header">
+              <div class="section-block__title">
+                <el-icon><Key /></el-icon>
+                <span>扫码登录配置（可选）</span>
+              </div>
+            </div>
+            <div class="section-block__content">
               <el-form-item label="自建应用 AgentID">
                 <el-input
                   v-model="wechatForm.login_agent_id"
@@ -1140,24 +1140,18 @@
                   autocomplete="off"
                 />
               </el-form-item>
-            </el-form>
-          </div>
-        </div>
-
-        <!-- 回调配置 -->
-        <div class="section-block">
-          <div class="section-block__header">
-            <div class="section-block__title">
-              <el-icon><Link /></el-icon>
-              <span>回调配置（可选）</span>
             </div>
           </div>
-          <div class="section-block__content">
-            <el-form
-              :model="wechatForm"
-              label-width="160px"
-              :disabled="wechatBindMode === 'view'"
-            >
+
+          <!-- 回调配置 -->
+          <div class="section-block">
+            <div class="section-block__header">
+              <div class="section-block__title">
+                <el-icon><Link /></el-icon>
+                <span>回调配置（可选）</span>
+              </div>
+            </div>
+            <div class="section-block__content">
               <el-form-item label="回调 Token">
                 <el-input
                   v-model="wechatForm.callback_token"
@@ -1188,9 +1182,9 @@
                   将此 URL 填入企业微信「接收事件服务器」的 URL 字段
                 </div>
               </el-form-item>
-            </el-form>
+            </div>
           </div>
-        </div>
+        </el-form>
       </div>
       <template #footer>
         <el-button @click="wechatBindDialogVisible = false">
@@ -1210,7 +1204,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import {
   Plus,
@@ -1266,13 +1260,25 @@ const editManageTab = ref("account");
 const currentEmployee = ref(null);
 
 // 表单
+const orgFormRef = ref(null);
 const orgForm = reactive({ id: null, name: "", code: "", note: "" });
+const orgRules = {
+  name: [{ required: true, message: '请输入组织名称', trigger: 'blur' }],
+  code: [{ required: true, message: '请输入组织编码', trigger: 'blur' }],
+};
+
+const deptFormRef = ref(null);
 const deptForm = reactive({
   id: null,
   name: "",
   parent_id: null,
   sort_order: 0,
 });
+const deptRules = {
+  name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
+};
+
+const employeeFormRef = ref(null);
 const employeeForm = reactive({
   id: null,
   name: "",
@@ -1285,6 +1291,9 @@ const employeeForm = reactive({
   dept_id: null,
   create_account: false,
 });
+const employeeRules = {
+  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+};
 
 const accountResultVisible = ref(false);
 const accountResult = reactive({
@@ -1309,6 +1318,7 @@ const wechatBindDialogVisible = ref(false);
 const wechatBindMode = ref("bind"); // 'bind' | 'view'
 const wechatSubmitLoading = ref(false);
 const wechatSyncLoading = ref(false);
+const wechatFormRef = ref(null);
 const wechatForm = reactive({
   corp_id: "",
   corp_secret: "",
@@ -1317,6 +1327,10 @@ const wechatForm = reactive({
   callback_token: "",
   callback_aes_key: "",
 });
+const wechatRules = {
+  corp_id: [{ required: true, message: '请输入企业 ID', trigger: 'blur' }],
+  corp_secret: [{ required: true, message: '请输入通讯录 Secret', trigger: 'blur' }],
+};
 const wechatWebhookUrl = computed(() => {
   const baseUrl = window.location.origin;
   return currentOrgId.value
@@ -1427,10 +1441,15 @@ const showWechatConfigDialog = async () => {
 
 // 提交绑定
 const submitWechatBind = async () => {
-  if (!wechatForm.corp_id || !wechatForm.corp_secret) {
-    ElMessage.warning("请填写企业 ID 和通讯录 Secret");
+  if (!wechatFormRef.value) {
+    ElMessage.warning("表单尚未加载完成，请稍后重试");
     return;
   }
+
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await wechatFormRef.value.validate().catch(() => false);
+  if (!isValid) return;
+
   wechatSubmitLoading.value = true;
   try {
     await wechatWorkApi.bind({
@@ -1591,10 +1610,12 @@ const handleEditOrg = () => {
 
 // 提交组织表单
 const submitOrgForm = async () => {
-  if (!orgForm.name || !orgForm.code) {
-    ElMessage.warning("请填写必填项");
-    return;
-  }
+  if (!orgFormRef.value) return
+
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await orgFormRef.value.validate().catch(() => false)
+  if (!isValid) return
+
   submitLoading.value = true;
   try {
     if (orgForm.id) {
@@ -1651,10 +1672,12 @@ const handleDeleteDept = async (dept) => {
 
 // 提交部门表单
 const submitDeptForm = async () => {
-  if (!deptForm.name) {
-    ElMessage.warning("请输入部门名称");
-    return;
-  }
+  if (!deptFormRef.value) return
+
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await deptFormRef.value.validate().catch(() => false)
+  if (!isValid) return
+
   submitLoading.value = true;
   try {
     if (deptForm.id) {
@@ -1720,10 +1743,15 @@ const handleEditEmployee = async (emp) => {
 
 // 提交员工表单
 const submitEmployeeForm = async () => {
-  if (!employeeForm.name) {
-    ElMessage.warning("请输入姓名");
+  if (!employeeFormRef.value) {
+    ElMessage.warning("表单尚未加载完成，请稍后重试");
     return;
   }
+
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await employeeFormRef.value.validate().catch(() => false);
+  if (!isValid) return;
+
   submitLoading.value = true;
   try {
     if (employeeForm.id) {

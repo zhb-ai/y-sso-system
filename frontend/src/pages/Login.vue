@@ -162,7 +162,7 @@ const passwordInputRef = ref(null);
 const loading = ref(false);
 
 // 企业微信登录
-const wechatLoginEnabled = ref(false);
+const wechatLoginEnabled = ref(true);
 const wechatLoginConfig = ref({});
 const wechatLoading = ref(false);
 

@@ -76,8 +76,8 @@
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column prop="is_active" label="状态" width="100" align="center">
           <template #default="scope">
-            <span v-if="scope.row.is_active" class="status-enabled">启用</span>
-            <span v-else>禁用</span>
+            <span v-if="scope.row.is_active">启用</span>
+            <span v-else class="status-danger">禁用</span>
           </template>
         </el-table-column>
         <el-table-column prop="sort_order" label="排序" width="80" align="center" />
@@ -274,10 +274,14 @@ const handleEdit = (row) => {
 
 const handleFormSubmit = async () => {
   if (!roleFormRef.value) return
-  try {
-    await roleFormRef.value.validate()
-    formLoading.value = true
+  
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await roleFormRef.value.validate().catch(() => false)
+  if (!isValid) return
+  
+  formLoading.value = true
 
+  try {
     if (isEdit.value) {
       await ssoRoleApi.update(editingCode.value, {
         name: roleForm.name,

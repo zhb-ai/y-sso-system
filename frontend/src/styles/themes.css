@@ -170,12 +170,13 @@
      文字颜色 - 使用灰度系统
      ============================================ */
   --font-color: rgb(106 122 149);
-  --font-title-color: rgb(var(--gray-900));
+  --font-title-color: var(--font-color);
   --font-secondary-color: rgb(var(--gray-600));
   --font-medium-color: rgb(var(--gray-500));
   --font-light-color: rgb(var(--gray-400));
   --font-muted-color: rgb(var(--gray-400));
-
+  --el-text-color-primary: var(--font-color);
+  --el-text-color-regular: var(--font-color);
   /* ============================================
      背景颜色
      ============================================ */
@@ -372,6 +373,10 @@ input:-internal-autofill-selected {
 }
 
 
+.el-breadcrumb{
+  font-size: 12px;
+}
+
 
 /* 按钮样式优化 - 专业简洁 */
 .el-button {
@@ -463,7 +468,7 @@ input:-internal-autofill-selected {
 
 /* 列表状态样式 - 仅给正面状态添加颜色区分 */
 .status-enabled {
-  color: rgb(var(--success));
+  /* color: rgb(var(--success)); */
   font-weight: var(--el-font-weight-medium);
 }
 

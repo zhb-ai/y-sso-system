@@ -116,7 +116,14 @@
           </div>
 
           <!-- 无可用应用 -->
-          <el-empty v-else-if="availableApps.length === 0" description="暂无可用应用" :image-size="80" />
+          <EmptyState
+            v-else-if="availableApps.length === 0"
+            type="data"
+            :icon="Collection"
+            title="暂无可用应用"
+            description="当前没有可访问的应用，请去管理后台添加应用"
+            compact
+          />
 
           <!-- 应用列表 -->
           <div v-else class="sso-app-list" :class="`columns-${Math.min(Math.ceil(availableApps.length / 3), 4)}`">
@@ -217,12 +224,13 @@
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { UserFilled, Lock, Monitor, ArrowRight, Loading, Grid, Setting, SwitchButton } from '@element-plus/icons-vue'
+import { UserFilled, Lock, Monitor, ArrowRight, Loading, Grid, Setting, SwitchButton, Collection } from '@element-plus/icons-vue'
 import { api, oauth2Api } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { useSiteStore } from '@/stores/site'
 import { handleApiError } from '@/utils/errorHandler'
 import { useWechatWorkLogin } from '@/composables/useWechatWorkLogin'
+import EmptyState from '@/components/EmptyState.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -533,15 +541,15 @@ async function handlePortalLogin() {
   4列: 1120 + 36 + 80 = 1236px → 1240px
 */
 .sso-login-box.columns-2 {
-  max-width: 680px;
+  max-width: 610px;
 }
 
 .sso-login-box.columns-3 {
-  max-width: 960px;
+  max-width: 920px;
 }
 
 .sso-login-box.columns-4 {
-  max-width: 1240px;
+  max-width: 1230px;
 }
 
 /* 登录容器添加横向滚动支持 */
