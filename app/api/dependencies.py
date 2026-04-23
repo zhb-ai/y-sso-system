@@ -80,7 +80,7 @@ def get_require_admin():
         require_admin = get_require_admin()
         app.include_router(router, dependencies=[Depends(require_admin)])
     """
-    async def _require_admin(user=Depends(auth.get_current_user)):
+    def _require_admin(user=Depends(auth.get_current_user)):
         if not hasattr(user, 'has_role') or not user.has_role('admin'):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -110,7 +110,7 @@ def get_require_permission(*permission_codes: str):
     """
     from app.domain.permission.entities import RolePermission
 
-    async def _require_permission(user=Depends(auth.get_current_user)):
+    def _require_permission(user=Depends(auth.get_current_user)):
         # admin 直接放行
         if hasattr(user, 'has_role') and user.has_role('admin'):
             return user
