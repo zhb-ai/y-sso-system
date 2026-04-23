@@ -69,7 +69,13 @@
       <el-card class="stat-card" shadow="hover">
         <div class="stat-content">
           <div class="stat-info">
-            <h3>{{ formatSummaryHitRate(summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE]) }}</h3>
+            <h3>
+              {{
+                formatSummaryHitRate(
+                  summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE],
+                )
+              }}
+            </h3>
             <p>总命中率</p>
           </div>
           <div class="stat-icon rate">
@@ -191,7 +197,7 @@
         </el-table-column>
         <el-table-column
           label="操作"
-          width="180"
+          width="160"
           align="right"
           fixed="right"
           class-name="table-cell-flex-end"
@@ -322,123 +328,122 @@
       destroy-on-close
     >
       <div class="drawer-content">
-      <el-alert
-        class="dialog-hint-alert compact-hint-alert"
-        type="info"
-        :closable="false"
-        show-icon
-        description="点击“详情”可查看该 Key 的元信息与脱敏值预览；TTL 为“-”通常表示后端不提供剩余时间。"
-      />
-
-      <div class="data-card dialog-table-card">
-        <el-table
-          v-loading="entriesLoading"
-          :data="entriesList"
-          row-key="key"
-          style="width: 100%"
-        >
-          <el-table-column
-            prop="key"
-            label="Key"
-            min-width="280"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="ttl_remaining"
-            label="剩余TTL(秒)"
-            width="140"
-            align="center"
-          >
-            <template #default="scope">
-              {{ scope.row.ttl_remaining ?? "-" }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="value_type"
-            label="值类型"
-            width="120"
-            align="center"
-          />
-          <el-table-column
-            prop="value_size"
-            label="大小"
-            width="120"
-            align="center"
-          >
-            <template #default="scope">
-              {{ formatSize(scope.row.value_size) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            width="100"
-            align="right"
-            class-name="table-cell-flex-end"
-          >
-            <template #default="scope">
-              <el-button
-                type="primary"
-                link
-                size="small"
-                @click="handleViewEntryDetail(scope.row.key)"
-              >
-                详情
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-
-      <div class="entry-detail-block" v-loading="entryDetailLoading">
-        <div class="entry-detail-header">
-          <div class="entry-detail-title">条目详情（脱敏预览）</div>
-          <el-tooltip
-            content="详情仅展示脱敏预览；密码、密钥、Token 等敏感字段会显示为 ***。"
-            placement="top"
-          >
-            <el-icon class="hint-icon entry-detail-hint"
-              ><QuestionFilled
-            /></el-icon>
-          </el-tooltip>
-        </div>
-        <EmptyState
-          v-if="!entryDetail"
-          type="data"
-          :icon="Collection"
-          title="请选择缓存条目"
-          description="点击上方列表中的条目，查看详细的缓存数据和元信息"
-          compact
+        <el-alert
+          class="dialog-hint-alert compact-hint-alert"
+          type="info"
+          :closable="false"
+          show-icon
+          description="点击“详情”可查看该 Key 的元信息与脱敏值预览；TTL 为“-”通常表示后端不提供剩余时间。"
         />
-        <template v-else>
-          <el-descriptions :column="2" border class="entry-detail-meta">
-            <el-descriptions-item label="Key">{{
-              entryDetail.key
-            }}</el-descriptions-item>
-            <el-descriptions-item label="值类型">{{
-              entryDetail.value_type
-            }}</el-descriptions-item>
-            <el-descriptions-item label="剩余TTL">{{
-              entryDetail.ttl_remaining ?? "-"
-            }}</el-descriptions-item>
-            <el-descriptions-item label="大小">{{
-              formatSize(entryDetail.value_size)
-            }}</el-descriptions-item>
-          </el-descriptions>
-          <div class="preview-title">值预览</div>
-          <div class="preview-json-wrapper">
-            <vue-json-pretty
-              :data="entryDetail.value_preview"
-              :deep="3"
-              :show-double-quotes="true"
-              :show-line="true"
-              :show-length="true"
-              :collapsed-on-click-brackets="true"
-              :collapsed="true"
-            />
-          </div>
-        </template>
-      </div>
 
+        <div class="data-card dialog-table-card">
+          <el-table
+            v-loading="entriesLoading"
+            :data="entriesList"
+            row-key="key"
+            style="width: 100%"
+          >
+            <el-table-column
+              prop="key"
+              label="Key"
+              min-width="280"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="ttl_remaining"
+              label="剩余TTL(秒)"
+              width="140"
+              align="center"
+            >
+              <template #default="scope">
+                {{ scope.row.ttl_remaining ?? "-" }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="value_type"
+              label="值类型"
+              width="120"
+              align="center"
+            />
+            <el-table-column
+              prop="value_size"
+              label="大小"
+              width="120"
+              align="center"
+            >
+              <template #default="scope">
+                {{ formatSize(scope.row.value_size) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="操作"
+              width="100"
+              align="right"
+              class-name="table-cell-flex-end"
+            >
+              <template #default="scope">
+                <el-button
+                  type="primary"
+                  link
+                  size="small"
+                  @click="handleViewEntryDetail(scope.row.key)"
+                >
+                  详情
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+
+        <div class="entry-detail-block" v-loading="entryDetailLoading">
+          <div class="entry-detail-header">
+            <div class="entry-detail-title">条目详情（脱敏预览）</div>
+            <el-tooltip
+              content="详情仅展示脱敏预览；密码、密钥、Token 等敏感字段会显示为 ***。"
+              placement="top"
+            >
+              <el-icon class="hint-icon entry-detail-hint"
+                ><QuestionFilled
+              /></el-icon>
+            </el-tooltip>
+          </div>
+          <EmptyState
+            v-if="!entryDetail"
+            type="data"
+            :icon="Collection"
+            title="请选择缓存条目"
+            description="点击上方列表中的条目，查看详细的缓存数据和元信息"
+            compact
+          />
+          <template v-else>
+            <el-descriptions :column="2" border class="entry-detail-meta">
+              <el-descriptions-item label="Key">{{
+                entryDetail.key
+              }}</el-descriptions-item>
+              <el-descriptions-item label="值类型">{{
+                entryDetail.value_type
+              }}</el-descriptions-item>
+              <el-descriptions-item label="剩余TTL">{{
+                entryDetail.ttl_remaining ?? "-"
+              }}</el-descriptions-item>
+              <el-descriptions-item label="大小">{{
+                formatSize(entryDetail.value_size)
+              }}</el-descriptions-item>
+            </el-descriptions>
+            <div class="preview-title">值预览</div>
+            <div class="preview-json-wrapper">
+              <vue-json-pretty
+                :data="entryDetail.value_preview"
+                :deep="3"
+                :show-double-quotes="true"
+                :show-line="true"
+                :show-length="true"
+                :collapsed-on-click-brackets="true"
+                :collapsed="true"
+              />
+            </div>
+          </template>
+        </div>
       </div>
     </el-drawer>
   </div>
@@ -619,6 +624,12 @@ const handleViewEntries = async (functionName) => {
   try {
     const res = await cacheApi.listEntries(functionName, 100);
     entriesList.value = res?.data?.entries || [];
+    // 如果只有一条数据，自动加载详情
+    setTimeout(() => {
+      if (entriesList.value.length === 1) {
+        handleViewEntryDetail(entriesList.value[0].key);
+      }
+    }, 100);
   } catch (error) {
     entriesList.value = [];
     handleApiError(error, getDefaultErrorMessage("get"));
@@ -661,7 +672,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
 /* 紧凑提示条（用于页面说明/弹窗说明） */
 .compact-hint-alert .el-alert__icon {
   font-size: 14px;
@@ -844,6 +854,7 @@ onMounted(() => {
   color: var(--font-title-color);
   font-size: var(--el-font-size-base);
   font-weight: var(--el-font-weight-extra-bold);
+  margin-bottom: 0px;
 }
 
 .switch-area {
@@ -890,7 +901,6 @@ onMounted(() => {
   box-shadow: none;
   transform: none;
 }
-
 
 .entry-detail-block {
   border-top: 1px solid var(--border_color);

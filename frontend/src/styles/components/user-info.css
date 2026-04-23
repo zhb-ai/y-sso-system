@@ -84,6 +84,26 @@
   overflow: hidden;
 }
 
+.user-menu-popper .el-divider--horizontal {
+  margin: 4px 0;
+  border-top-color: rgb(var(--gray-200));
+}
+
+.user-menu-popper .el-dropdown-menu__item:last-child {
+  color: rgb(var(--gray-700));
+}
+
+.user-menu-popper .el-dropdown-menu__item:last-child:focus {
+  background: transparent;
+  color: rgb(var(--gray-700));
+}
+
+.user-menu-popper .el-dropdown-menu__item:last-child:hover,
+.user-menu-popper .el-dropdown-menu__item:last-child:focus-visible {
+  background: var(--el-color-danger-light-8);
+  color: var(--el-color-danger);
+}
+
 
 
 /* 过渡动画 */

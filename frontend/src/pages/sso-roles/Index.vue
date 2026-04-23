@@ -86,7 +86,7 @@
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" align="right" fixed="right" class-name="table-cell-flex-end">
+        <el-table-column label="操作" width="140" align="right" fixed="right" class-name="table-cell-flex-end">
           <template #default="scope">
             <el-button size="small" link @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon> 编辑

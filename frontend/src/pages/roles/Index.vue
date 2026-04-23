@@ -26,7 +26,7 @@
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="340" align="right" fixed="right" class-name="table-cell-flex-end">
+        <el-table-column label="操作" width="240" align="right" fixed="right" class-name="table-cell-flex-end">
           <template #default="scope">
             <el-button size="small" link @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon> 编辑
@@ -184,6 +184,7 @@
               <el-checkbox
                 v-model="checkAll"
                 :indeterminate="isIndeterminate"
+                :disabled="permRole && permRole.code === 'admin'"
                 @change="handleCheckAllChange"
               >全选所有权限</el-checkbox>
               <el-text type="info" size="small">已选 {{ checkedPermIds.length }} 项</el-text>
@@ -450,8 +451,20 @@ const handlePermissions = async (row) => {
       permissionApi.getRolePermissions(row.code),
     ])
     permTree.value = treeRes.data || []
-    const assignedIds = (rolePermRes.data || []).map(p => p.id)
-    checkedPermIds.value = assignedIds
+
+    // admin 角色默认全选所有权限
+    if (row.code === 'admin') {
+      const allIds = []
+      for (const g of permTree.value) {
+        for (const p of g.permissions) {
+          allIds.push(p.id)
+        }
+      }
+      checkedPermIds.value = allIds
+    } else {
+      const assignedIds = (rolePermRes.data || []).map(p => p.id)
+      checkedPermIds.value = assignedIds
+    }
   } catch (error) {
     handleApiError(error, '加载权限数据失败')
   } finally {

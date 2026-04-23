@@ -50,7 +50,7 @@
     <!-- 员工列表 -->
     <el-card class="data-card" shadow="hover">
       <el-table v-if="employees.length > 0" v-loading="loading" :data="employees" style="width: 100%" tooltip-effect="light">
-        <el-table-column prop="name" label="姓名" min-width="100">
+        <el-table-column prop="name" label="姓名" min-width="160">
           <template #default="{ row }">
             <div class="employee-info">
               <el-avatar :size="32" class="avatar">{{ row.name?.charAt(0) }}</el-avatar>
@@ -70,12 +70,12 @@
             {{ row.gender === 1 ? '男' : row.gender === 2 ? '女' : '未知' }}
           </template>
         </el-table-column>
-        <el-table-column prop="primary_org_name" label="主组织" min-width="100">
+        <el-table-column prop="primary_org_name" label="主组织" min-width="160">
           <template #default="{ row }">
             {{ row.primary_org_name || '未分配' }}
           </template>
         </el-table-column>
-        <el-table-column prop="primary_dept_name" label="主部门" min-width="100">
+        <el-table-column prop="primary_dept_name" label="主部门" min-width="160">
           <template #default="{ row }">
             {{ row.primary_dept_name || '未分配' }}
           </template>
@@ -124,7 +124,7 @@
             <span v-else>无账号</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" align="right" fixed="right" class-name="table-cell-flex-end">
+        <el-table-column label="操作" width="240" align="right" fixed="right" class-name="table-cell-flex-end">
           <template #default="{ row }">
             <el-button size="small" link @click="handleEdit(row)">
               <el-icon><Edit /></el-icon> 编辑

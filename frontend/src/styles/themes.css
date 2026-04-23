@@ -214,11 +214,7 @@
   --spacing-large: 1.5rem;
   --spacing-base: 1rem;
 
-  /* ============================================
-     字体设置 - 专业字体系统
-     ============================================ */
-  --font-size: 14px;
-  --p-font-size: 14px;
+
 
   /* 专业字体层级 - 使用 1.25 比例 */
   --text-xs: 0.75rem; /* 12px - 辅助文字 */
@@ -267,6 +263,12 @@
   --el-font-weight-bold: 500;
   --el-font-weight-medium: 400;
   --el-font-weight-regular: 400;
+
+    /* ============================================
+     字体设置 - 专业字体系统
+     ============================================ */
+  --font-size: var(--el-font-size-base);
+  --p-font-size: var(--el-font-size-base);
 
   /* 行高 */
   --c-line-height-xs: 1.25;
@@ -348,6 +350,11 @@
   --el-menu-base-level-padding: 16px;
   --el-menu-level-padding: 16px;
   --el-menu-icon-width: 20px;
+}
+
+
+.el-message-box__title{
+  font-size: var(--el-font-size-md);
 }
 
 /* ============================================
@@ -445,6 +452,19 @@ input:-internal-autofill-selected {
 .el-button.is-circle .el-icon{
   margin-right: 0;
 }
+.btn-modern .el-icon,
+.btn-modern .el-icon svg {
+  color: currentColor;
+  fill: currentColor;
+}
+
+.el-button--primary.btn-modern .el-icon,
+.el-button--primary.btn-modern .el-icon svg,
+.el-button--primary.btn-modern:hover .el-icon,
+.el-button--primary.btn-modern:hover .el-icon svg {
+  color: var(--el-color-white);
+  fill: currentColor;
+}
 .el-card__header {
   border-bottom: 1px solid rgb(var(--gray-100));
   padding: 1rem 1.25rem;
@@ -492,9 +512,7 @@ input:-internal-autofill-selected {
   border-bottom: none;
 }
 
-.el-alert {
-  --el-alert-title-font-size: var(--el-font-size-base);
-}
+
 
 .el-button--primary.is-link, .el-button--primary.is-plain, .el-button--primary.is-text {
     --el-button-text-color: var(--el-color-white);
@@ -754,9 +772,9 @@ input:-internal-autofill-selected {
 }
 
 .el-alert {
-  --el-alert-title-font-size: 13px;
-  --el-alert-title-with-description-font-size: 12px;
-  --el-alert-description-font-size: 12px;
+    --el-alert-title-font-size: var(--el-font-size-base);
+    --el-alert-title-with-description-font-size: var(--el-font-size-base);;
+    --el-alert-description-font-size: var(--el-font-size-base);;
 }
 
 .el-tabs__item {
@@ -764,7 +782,7 @@ input:-internal-autofill-selected {
 }
 
 .el-collapse {
-  --el-collapse-header-font-size: 12px;
+  --el-collapse-header-font-size: var(--el-font-size-base);
   --el-collapse-header-text-color: var(--font-color);
 }
 

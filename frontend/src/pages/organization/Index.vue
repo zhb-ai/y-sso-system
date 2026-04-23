@@ -352,7 +352,7 @@
           </el-table-column>
           <el-table-column
             label="操作"
-            width="160"
+            width="140"
             align="right"
             fixed="right"
           >
@@ -2164,8 +2164,12 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
 }
-
+.employee-list-card.data-card {
+  flex: 1;
+  margin-bottom: 20px;
+}
 /* 员工列表卡片内部样式 */
+.department-card :deep(.el-card__body),
 .employee-list-card :deep(.el-card__body) {
   padding: 16px;
   flex: 1;

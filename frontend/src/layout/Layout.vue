@@ -91,7 +91,11 @@
           </el-button>
 
           <!-- 用户信息 -->
-          <el-dropdown trigger="click" class="header-action user-info">
+          <el-dropdown
+            trigger="click"
+            class="header-action user-info"
+            popper-class="user-menu-popper"
+          >
             <div class="user-avatar">
               <el-avatar :size="32">{{ userInitial }}</el-avatar>
               <span v-if="userInfo" class="user-name">{{
@@ -108,7 +112,7 @@
                   >系统设置</el-dropdown-item
                 >
                 <el-divider />
-                <el-dropdown-item @click="handleLogout"
+                <el-dropdown-item class="logout-item" @click="handleLogout"
                   >退出登录</el-dropdown-item
                 >
               </el-dropdown-menu>

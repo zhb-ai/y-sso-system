@@ -108,7 +108,7 @@
         </el-table-column>
         <el-table-column
           label="操作"
-          width="380"
+          width="340"
           align="right"
           fixed="right"
           class-name="table-cell-flex-end"

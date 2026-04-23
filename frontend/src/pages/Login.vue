@@ -43,7 +43,7 @@
 
         <div class="login-actions">
           <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
-          <el-link type="primary" href="#" :underline="'never'"
+          <el-link type="primary" :underline="'never'" @click="handleForgotPassword"
             >忘记密码？</el-link
           >
         </div>
@@ -145,7 +145,7 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { User, Lock } from "@element-plus/icons-vue";
 import { wechatWorkApi } from "@/api";
 import { useAuthStore } from "@/stores/auth";
@@ -162,7 +162,7 @@ const passwordInputRef = ref(null);
 const loading = ref(false);
 
 // 企业微信登录
-const wechatLoginEnabled = ref(true);
+const wechatLoginEnabled = ref(false);
 const wechatLoginConfig = ref({});
 const wechatLoading = ref(false);
 
@@ -269,6 +269,13 @@ const handleLogin = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleForgotPassword = () => {
+  ElMessageBox.alert("请联系系统管理员重置密码。", "提示", {
+    confirmButtonText: "我知道了",
+    type: "info",
+  });
 };
 
 // 处理修改密码
