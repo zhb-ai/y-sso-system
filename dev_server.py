@@ -72,7 +72,8 @@ def kill_port_occupants(port: int) -> int:
     return killed
 
 
-def main():
+def build_parser() -> argparse.ArgumentParser:
+    """构建命令行参数解析器"""
     parser = argparse.ArgumentParser(description="单点登录系统API开发服务器")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="绑定的主机地址 (默认: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=8000, help="监听的端口号 (默认: 8000)")
@@ -80,7 +81,11 @@ def main():
     parser.add_argument("--workers", type=int, default=1, help="工作进程数 (默认: 1)")
     parser.add_argument("--debug", action="store_true", default=True, help="启用调试模式")
     parser.add_argument("--log-level", type=str, default="debug", choices=["critical", "error", "warning", "info", "debug"], help="日志级别")
+    return parser
 
+
+def main():
+    parser = build_parser()
     args = parser.parse_args()
 
     # ---- 启动前清理 ----

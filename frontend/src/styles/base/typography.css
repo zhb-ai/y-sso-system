@@ -87,9 +87,6 @@ a:focus-visible {
 }
 
 /* 文本样式 - 使用语义化命名 */
-.text-muted {
-  color: var(--font-light-color);
-}
 
 .text-secondary {
   color: var(--font-secondary-color);

@@ -22,6 +22,12 @@ from yweb.response import Resp, OkResponse
 from yweb.log import get_logger
 
 from app.domain.config.entities import SystemConfig
+from app.services.oauth2_security import (
+    is_rs256_enabled,
+    get_runtime_jwt_public_key,
+    get_oidc_issuer,
+    build_oidc_url,
+)
 
 logger = get_logger()
 
@@ -78,6 +84,35 @@ def create_config_router() -> APIRouter:
             "access_token_expire_minutes": jwt.access_token_expire_minutes,
             "refresh_token_expire_days": jwt.refresh_token_expire_days,
             "refresh_token_sliding_days": getattr(jwt, 'refresh_token_sliding_days', 2),
+        })
+
+    @router.get(
+        "/oauth2-endpoints",
+        response_model=OkResponse,
+        summary="获取 OAuth2/OIDC 对接配置",
+        description="返回第三方系统对接当前 SSO 所需的端点地址和能力声明。",
+    )
+    def get_oauth2_endpoints():
+        """获取 OAuth2/OIDC 对接配置"""
+        from app.config import settings
+
+        issuer = get_oidc_issuer()
+        jwks_uri = None
+        if is_rs256_enabled() and get_runtime_jwt_public_key():
+            jwks_uri = build_oidc_url("/jwks")
+
+        return Resp.OK(data={
+            "issuer": issuer,
+            "discovery_url": build_oidc_url("/.well-known/openid-configuration"),
+            "authorization_endpoint": build_oidc_url("/authorize"),
+            "token_endpoint": build_oidc_url("/token"),
+            "userinfo_endpoint": build_oidc_url("/userinfo"),
+            "jwks_uri": jwks_uri,
+            "discovery_supported": True,
+            "pkce_supported": True,
+            "token_signing_algorithm": settings.jwt.algorithm,
+            "grant_types_supported": ["authorization_code", "refresh_token"],
+            "scopes_supported": ["openid", "profile", "email"],
         })
 
     # ==================== 站点基本信息 ====================

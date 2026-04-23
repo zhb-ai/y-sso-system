@@ -28,44 +28,62 @@
       </div>
     </div>
 
-    <el-row :gutter="16" class="summary-row">
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="summary-card" shadow="hover">
-          <div class="summary-title">缓存函数数</div>
-          <div class="summary-value">
-            {{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_FUNCTIONS] }}
+    <!-- 统计卡片 -->
+    <div class="stats-cards">
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_FUNCTIONS] }}</h3>
+            <p>缓存函数数</p>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="summary-card" shadow="hover">
-          <div class="summary-title">总命中次数</div>
-          <div class="summary-value">
-            {{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HITS] }}
+          <div class="stat-icon function">
+            <el-icon><Collection /></el-icon>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="summary-card" shadow="hover">
-          <div class="summary-title">总未命中次数</div>
-          <div class="summary-value">
-            {{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_MISSES] }}
+        </div>
+      </el-card>
+
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HITS] }}</h3>
+            <p>总命中次数</p>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="summary-card" shadow="hover">
-          <div class="summary-title">总命中率</div>
-          <div class="summary-value">
-            {{
-              formatSummaryHitRate(
-                summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE],
-              )
-            }}
+          <div class="stat-icon hit">
+            <el-icon><CircleCheck /></el-icon>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </div>
+      </el-card>
+
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_MISSES] }}</h3>
+            <p>总未命中次数</p>
+          </div>
+          <div class="stat-icon miss">
+            <el-icon><CircleClose /></el-icon>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3>
+              {{
+                formatSummaryHitRate(
+                  summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE],
+                )
+              }}
+            </h3>
+            <p>总命中率</p>
+          </div>
+          <div class="stat-icon rate">
+            <el-icon><TrendCharts /></el-icon>
+          </div>
+        </div>
+      </el-card>
+    </div>
 
     <el-alert
       class="page-hint-alert compact-hint-alert"
@@ -142,18 +160,7 @@
           label="后端"
           width="120"
           align="center"
-        >
-          <template #default="scope">
-            <el-tag
-              :type="
-                getBackendTagType(scope.row[CACHE_FUNCTION_COLUMNS.BACKEND])
-              "
-              effect="light"
-            >
-              {{ scope.row[CACHE_FUNCTION_COLUMNS.BACKEND] }}
-            </el-tag>
-          </template>
-        </el-table-column>
+        />
         <el-table-column
           :prop="CACHE_FUNCTION_COLUMNS.TTL"
           label="TTL(秒)"
@@ -190,13 +197,13 @@
         </el-table-column>
         <el-table-column
           label="操作"
-          width="180"
-          align="center"
-          class-name="table-cell-flex-center"
+          width="160"
+          align="right"
+          fixed="right"
+          class-name="table-cell-flex-end"
         >
           <template #default="scope">
             <el-button
-              type="info"
               link
               size="small"
               @click="handleViewEntries(scope.row.name)"
@@ -204,7 +211,6 @@
               条目
             </el-button>
             <el-button
-              type="primary"
               link
               size="small"
               @click="handleViewSingleStats(scope.row.name)"
@@ -212,7 +218,6 @@
               统计
             </el-button>
             <el-button
-              type="danger"
               link
               size="small"
               @click="handleClearOne(scope.row.name)"
@@ -316,133 +321,140 @@
       </template>
     </el-dialog>
 
-    <el-dialog
+    <el-drawer
       v-model="entriesDialogVisible"
       :title="`缓存条目 - ${entriesFunctionName || '-'}`"
-      width="900px"
-      align-center
+      size="900px"
       destroy-on-close
     >
-      <el-alert
-        class="dialog-hint-alert compact-hint-alert"
-        type="info"
-        :closable="false"
-        show-icon
-        description="点击“详情”可查看该 Key 的元信息与脱敏值预览；TTL 为“-”通常表示后端不提供剩余时间。"
-      />
-
-      <div class="data-card dialog-table-card">
-        <el-table
-          v-loading="entriesLoading"
-          :data="entriesList"
-          row-key="key"
-          style="width: 100%"
-        >
-          <el-table-column
-            prop="key"
-            label="Key"
-            min-width="280"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="ttl_remaining"
-            label="剩余TTL(秒)"
-            width="140"
-            align="center"
-          >
-            <template #default="scope">
-              {{ scope.row.ttl_remaining ?? "-" }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="value_type"
-            label="值类型"
-            width="120"
-            align="center"
-          />
-          <el-table-column
-            prop="value_size"
-            label="大小"
-            width="120"
-            align="center"
-          >
-            <template #default="scope">
-              {{ formatSize(scope.row.value_size) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            width="100"
-            align="center"
-            class-name="table-cell-flex-center"
-          >
-            <template #default="scope">
-              <el-button
-                type="primary"
-                link
-                size="small"
-                @click="handleViewEntryDetail(scope.row.key)"
-              >
-                详情
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-
-      <div class="entry-detail-block" v-loading="entryDetailLoading">
-        <div class="entry-detail-header">
-          <div class="entry-detail-title">条目详情（脱敏预览）</div>
-          <el-tooltip
-            content="详情仅展示脱敏预览；密码、密钥、Token 等敏感字段会显示为 ***。"
-            placement="top"
-          >
-            <el-icon class="hint-icon entry-detail-hint"
-              ><QuestionFilled
-            /></el-icon>
-          </el-tooltip>
-        </div>
-        <EmptyState
-          v-if="!entryDetail"
-          type="data"
-          :icon="Collection"
-          title="请选择缓存条目"
-          description="点击上方列表中的条目，查看详细的缓存数据和元信息"
-          compact
+      <div class="drawer-content">
+        <el-alert
+          class="dialog-hint-alert compact-hint-alert"
+          type="info"
+          :closable="false"
+          show-icon
+          description="点击“详情”可查看该 Key 的元信息与脱敏值预览；TTL 为“-”通常表示后端不提供剩余时间。"
         />
-        <template v-else>
-          <el-descriptions :column="2" border class="entry-detail-meta">
-            <el-descriptions-item label="Key">{{
-              entryDetail.key
-            }}</el-descriptions-item>
-            <el-descriptions-item label="值类型">{{
-              entryDetail.value_type
-            }}</el-descriptions-item>
-            <el-descriptions-item label="剩余TTL">{{
-              entryDetail.ttl_remaining ?? "-"
-            }}</el-descriptions-item>
-            <el-descriptions-item label="大小">{{
-              formatSize(entryDetail.value_size)
-            }}</el-descriptions-item>
-          </el-descriptions>
-          <div class="preview-title">值预览</div>
-          <pre class="preview-json">{{
-            formatPreview(entryDetail.value_preview)
-          }}</pre>
-        </template>
-      </div>
 
-      <template #footer>
-        <el-button @click="entriesDialogVisible = false">关闭</el-button>
-      </template>
-    </el-dialog>
+        <div class="data-card dialog-table-card">
+          <el-table
+            v-loading="entriesLoading"
+            :data="entriesList"
+            row-key="key"
+            style="width: 100%"
+          >
+            <el-table-column
+              prop="key"
+              label="Key"
+              min-width="280"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="ttl_remaining"
+              label="剩余TTL(秒)"
+              width="140"
+              align="center"
+            >
+              <template #default="scope">
+                {{ scope.row.ttl_remaining ?? "-" }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="value_type"
+              label="值类型"
+              width="120"
+              align="center"
+            />
+            <el-table-column
+              prop="value_size"
+              label="大小"
+              width="120"
+              align="center"
+            >
+              <template #default="scope">
+                {{ formatSize(scope.row.value_size) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="操作"
+              width="100"
+              align="right"
+              class-name="table-cell-flex-end"
+            >
+              <template #default="scope">
+                <el-button
+                  type="primary"
+                  link
+                  size="small"
+                  @click="handleViewEntryDetail(scope.row.key)"
+                >
+                  详情
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+
+        <div class="entry-detail-block" v-loading="entryDetailLoading">
+          <div class="entry-detail-header">
+            <div class="entry-detail-title">条目详情（脱敏预览）</div>
+            <el-tooltip
+              content="详情仅展示脱敏预览；密码、密钥、Token 等敏感字段会显示为 ***。"
+              placement="top"
+            >
+              <el-icon class="hint-icon entry-detail-hint"
+                ><QuestionFilled
+              /></el-icon>
+            </el-tooltip>
+          </div>
+          <EmptyState
+            v-if="!entryDetail"
+            type="data"
+            :icon="Collection"
+            title="请选择缓存条目"
+            description="点击上方列表中的条目，查看详细的缓存数据和元信息"
+            compact
+          />
+          <template v-else>
+            <el-descriptions :column="2" border class="entry-detail-meta">
+              <el-descriptions-item label="Key">{{
+                entryDetail.key
+              }}</el-descriptions-item>
+              <el-descriptions-item label="值类型">{{
+                entryDetail.value_type
+              }}</el-descriptions-item>
+              <el-descriptions-item label="剩余TTL">{{
+                entryDetail.ttl_remaining ?? "-"
+              }}</el-descriptions-item>
+              <el-descriptions-item label="大小">{{
+                formatSize(entryDetail.value_size)
+              }}</el-descriptions-item>
+            </el-descriptions>
+            <div class="preview-title">值预览</div>
+            <div class="preview-json-wrapper">
+              <vue-json-pretty
+                :data="entryDetail.value_preview"
+                :deep="3"
+                :show-double-quotes="true"
+                :show-line="true"
+                :show-length="true"
+                :collapsed-on-click-brackets="true"
+                :collapsed="true"
+              />
+            </div>
+          </template>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, QuestionFilled, RefreshRight, Collection, DataLine } from "@element-plus/icons-vue";
+import { Delete, QuestionFilled, RefreshRight, Collection, DataLine, CircleCheck, CircleClose, TrendCharts } from "@element-plus/icons-vue";
+import VueJsonPretty from "vue-json-pretty";
+import "vue-json-pretty/lib/styles.css";
 import { cacheApi } from "@/api";
 import { handleApiError, getDefaultErrorMessage } from "@/utils/errorHandler";
 import EmptyState from "@/components/EmptyState.vue";
@@ -612,6 +624,12 @@ const handleViewEntries = async (functionName) => {
   try {
     const res = await cacheApi.listEntries(functionName, 100);
     entriesList.value = res?.data?.entries || [];
+    // 如果只有一条数据，自动加载详情
+    setTimeout(() => {
+      if (entriesList.value.length === 1) {
+        handleViewEntryDetail(entriesList.value[0].key);
+      }
+    }, 100);
   } catch (error) {
     entriesList.value = [];
     handleApiError(error, getDefaultErrorMessage("get"));
@@ -654,7 +672,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
 /* 紧凑提示条（用于页面说明/弹窗说明） */
 .compact-hint-alert .el-alert__icon {
   font-size: 14px;
@@ -675,7 +692,7 @@ onMounted(() => {
 }
 
 .hint-icon:hover {
-  color: rgba(var(--primary), 1);
+  color: var(--el-color-primary);
 }
 
 .page-header-actions {
@@ -727,6 +744,102 @@ onMounted(() => {
   line-height: var(--c-line-height-xs);
 }
 
+/* 统计卡片样式 - 参考仪表盘 */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-cards .stat-card {
+  border-radius: var(--app-border-radius);
+  border: 1px solid var(--border_color);
+  transition: var(--app-transition);
+  background: rgb(var(--white));
+  box-shadow: none;
+}
+
+.stats-cards .stat-card:hover {
+  border-color: var(--el-color-primary-light-5);
+}
+
+.stat-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+}
+
+.stat-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--font-title-color);
+  line-height: 1.2;
+}
+
+.stat-info p {
+  margin: 0;
+  color: var(--font-light-color);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  transition: var(--app-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-icon.function {
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+.stat-icon.hit {
+  background: var(--el-color-success-light-9);
+  color: var(--el-color-success);
+}
+
+.stat-icon.miss {
+  background: var(--el-color-warning-light-9);
+  color: var(--el-color-warning);
+}
+
+.stat-icon.rate {
+  background: var(--el-color-info-light-9);
+  color: var(--el-color-info);
+}
+
+.stat-icon:hover {
+  transform: translateY(-2px);
+}
+
+.stat-icon.function:hover {
+  background: var(--el-color-primary-light-8);
+}
+
+.stat-icon.hit:hover {
+  background: var(--el-color-success-light-8);
+}
+
+.stat-icon.miss:hover {
+  background: var(--el-color-warning-light-8);
+}
+
+.stat-icon.rate:hover {
+  background: var(--el-color-info-light-8);
+}
+
 .registrations-card {
   margin-top: var(--spacing-medium);
 }
@@ -741,6 +854,7 @@ onMounted(() => {
   color: var(--font-title-color);
   font-size: var(--el-font-size-base);
   font-weight: var(--el-font-weight-extra-bold);
+  margin-bottom: 0px;
 }
 
 .switch-area {
@@ -822,19 +936,49 @@ onMounted(() => {
   margin-bottom: 6px;
 }
 
-.preview-json {
+.preview-json-wrapper {
   background: var(--light-gray);
   border: 1px solid var(--border_color);
   border-radius: var(--border-radius);
-  color: var(--font-color);
+  overflow: auto;
+  padding: 10px;
+}
+
+.preview-json-wrapper :deep(.vjs-tree) {
   font-family: var(--font-family-mono);
   font-size: var(--el-font-size-xs);
   line-height: var(--c-line-height-md);
-  margin: 0;
-  max-height: 260px;
-  overflow: auto;
-  padding: 10px;
-  white-space: pre-wrap;
-  word-break: break-word;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-key) {
+  color: #881391;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-value__string) {
+  color: #1a1aa6;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-value__number) {
+  color: #1c00cf;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-value__boolean) {
+  color: #1c00cf;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-value__null) {
+  color: #808080;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-brackets) {
+  color: #1a1aa6;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-tree__brackets) {
+  cursor: pointer;
+}
+
+.preview-json-wrapper :deep(.vjs-tree .vjs-tree__content) {
+  padding-left: 1em;
 }
 </style>

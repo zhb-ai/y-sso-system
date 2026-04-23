@@ -40,7 +40,7 @@
   flex-direction: column;
   width: 100%;
   pointer-events: auto;
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   background-clip: padding-box;
   border: 1px solid var(--border_color);
   border-radius: var(--border-radius-lg);

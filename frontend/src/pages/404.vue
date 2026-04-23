@@ -30,7 +30,7 @@ const goHome = () => {
 
 .error-content {
   text-align: center;
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   padding: 3rem 2rem;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--hover-shadow);
@@ -43,7 +43,7 @@ const goHome = () => {
   font-size: 6rem;
   font-weight: var(--el-font-weight-extra-bold);
   margin: 0 0 1.5rem 0;
-  color: rgba(var(--primary), 1);
+  color: var(--el-color-primary);
   line-height: var(--c-line-height-xs);
 }
 
@@ -62,8 +62,8 @@ const goHome = () => {
 }
 
 :deep(.el-button--primary) {
-  background-color: rgba(var(--primary), 1);
-  border-color: rgba(var(--primary), 1);
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
   border-radius: var(--border-radius);
   transition: all 0.2s ease;
   box-shadow: none;
@@ -73,9 +73,8 @@ const goHome = () => {
 }
 
 :deep(.el-button--primary:hover) {
-  background-color: rgba(var(--primary), 0.9);
-  border-color: rgba(var(--primary), 0.9);
+  background-color: var(--el-color-primary-light-3);
+  border-color: var(--el-color-primary-light-3);
   box-shadow: var(--hover-shadow);
-  transform: translateY(-1px);
 }
 </style>

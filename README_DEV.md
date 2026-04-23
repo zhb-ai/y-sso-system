@@ -11,6 +11,7 @@ pip install -r requirements.txt
 
 ### 2. 初始化数据库（首次启动时执行）
 ```bash
+alembic upgrade head
 python init_db.py
 ```
 
@@ -23,7 +24,7 @@ python dev_server.py
 
 ### 2. 指定主机和端口
 ```bash
-python dev_server.py --host 0.0.0.0 --port 8001
+python dev_server.py --host 0.0.0.0 --port 8000
 ```
 
 ### 3. 禁用自动重载（模拟生产环境）
@@ -38,7 +39,7 @@ python dev_server.py --debug --log-level debug
 
 ### 5. 完整配置启动
 ```bash
-python dev_server.py --host 127.0.0.1 --port 8001 --reload --debug --log-level info
+python dev_server.py --host 127.0.0.1 --port 8000 --reload --debug --log-level info
 ```
 
 ## 参数说明
@@ -98,7 +99,7 @@ venv\Scripts\python.exe -m pytest tests/test_api/test_sso_portal.py::TestSSOPort
 ## 注意事项
 
 1. 确保已安装所有依赖包：`pip install -r requirements.txt`
-2. 确保数据库文件存在，如不存在请先运行初始化脚本：`python init_db.py`
+2. 首次安装请先执行官方初始化流程：`alembic upgrade head && python init_db.py`
 3. 在生产环境中不要使用 `--reload` 参数
 4. 默认端口为 8000，如需修改请使用 `--port` 参数
 5. 详细的配置说明请参考：[配置指南](CONFIG_GUIDE.md)

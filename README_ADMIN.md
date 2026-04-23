@@ -22,7 +22,7 @@
 
 ### 1. 数据库初始化
 
-系统提供了 `init_db.py` 脚本用于初始化数据库，包括：
+首次安装建议先执行数据库迁移，再运行 `init_db.py` 补齐初始数据。`init_db.py` 主要用于：
 
 - 创建所有数据库表
 - 创建管理员角色、内部员工角色、外部用户角色
@@ -32,6 +32,7 @@
 **执行方式**：
 ```bash
 cd y-sso-system
+alembic upgrade head
 python init_db.py
 ```
 

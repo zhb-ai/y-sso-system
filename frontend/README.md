@@ -33,8 +33,8 @@
 | **overdrive** | 技术突破（Shader、60fps 虚拟表格等） | "overdrive", "技术突破", "高级效果" |
 | **polish** | 最终润色（对齐、间距、一致性检查） | "polish", "最终检查", "shipping前检查" |
 | **critique** | 设计评估和反馈 | "评估设计", "critique this", "设计反馈" |
-| **frontend-design** | 前端设计原则参考 | 需要设计指导时 |
 | **webapp-testing** | 设置和运行 E2E 测试（Playwright） | "create E2E tests", "set up testing", "automated browser tests", "测试", "e2e" |
+| **ui-ux-pro-max** | 一站式 UI/UX 优化专家，自动执行完整的设计优化流程 | "优化这个页面", "让界面更专业", "改进 UI/UX", "美化这个页面", "ui-ux-pro-max" |
 
 ---
 
@@ -224,7 +224,66 @@
 | 需要自动化测试 | webapp-testing |
 | 需要 E2E 测试 | webapp-testing |
 | 需要回归测试 | webapp-testing |
+| 需要完整 UI/UX 优化（一键优化） | **ui-ux-pro-max** |
 
+---
+
+## ui-ux-pro-max 使用指南
+
+**ui-ux-pro-max** 是一站式 UI/UX 优化专家，自动执行完整的设计优化流程。
+
+### 触发方式
+
+```
+ui-ux-pro-max                          # 优化当前文件或项目
+ui-ux-pro-max src/pages/users/Index.vue # 优化指定文件
+ui-ux-pro-max src/pages/               # 优化指定目录
+ui-ux-pro-max --quick                  # 快速模式（跳过可选步骤）
+ui-ux-pro-max --visual-only            # 仅视觉优化
+```
+
+### 执行流程
+
+```
+第一阶段：诊断和准备
+├── 1. teach-impeccable（如未运行）
+├── 2. web-design-guidelines
+└── 3. audit
+
+第二阶段：结构性优化
+├── 4. normalize
+├── 5. distill
+└── 6. arrange
+
+第三阶段：视觉优化
+├── 7. typeset
+├── 8. colorize（谨慎）
+└── 9. bolder/quieter（按需）
+
+第四阶段：交互优化
+├── 10. animate
+├── 11. clarify
+└── 12. delight（可选）
+
+第五阶段：健壮性和适配
+├── 13. harden
+├── 14. adapt
+└── 15. onboard
+
+第六阶段：最终交付
+├── 16. extract
+├── 17. optimize
+└── 18. polish
+```
+
+### 注意事项
+
+1. **必须先运行 teach-impeccable** - 确保设计上下文已建立
+2. **建议先提交代码** - 虽然会谨慎修改，但建议先备份
+3. **大型项目分页面执行** - 避免一次改动过多
+4. **执行后请审查改动** - 确保符合预期
+
+---
 
 # 在 UI 模式下运行测试
 npx playwright test applications.spec.js --ui

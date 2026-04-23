@@ -117,18 +117,18 @@ defineEmits(['action'])
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #e8f7f9 0%, #f4fbfc 100%);
+  background: var(--el-color-primary-light-9);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
-  border: 2px solid rgba(72, 190, 206, 0.2);
+  border: 2px solid var(--el-color-primary-light-5);
   animation: float 3s ease-in-out infinite;
 }
 
 .empty-state__icon .el-icon {
   font-size: 40px;
-  color: #48bece;
+  color: var(--el-color-primary);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -163,15 +163,15 @@ defineEmits(['action'])
 }
 
 .empty-state__title {
-  font-size: 16px;
+  font-size: 14px;
+  color: var(--font-color);
   font-weight: 500;
-  color: var(--font-title-color);
   margin: 0 0 8px;
 }
 
 .empty-state__description {
-  font-size: 14px;
-  color: var(--font-light-color);
+  font-size: 12px;
+  color: var(--font-color);
   margin: 0 0 20px;
   max-width: 400px;
   line-height: 1.6;
@@ -193,53 +193,53 @@ defineEmits(['action'])
   color: var(--font-light-color);
 }
 
-/* 搜索空状态 - 使用紫色系 */
+/* 搜索空状态 - 使用主题色 */
 .empty-state--search .empty-state__icon {
-  background: linear-gradient(135deg, #f0f0fd 0%, #f8f8fe 100%);
-  border-color: rgba(83, 90, 231, 0.2);
+  background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary-light-5);
 }
 
 .empty-state--search .empty-state__icon .el-icon {
-  color: #535ae7;
+  color: var(--el-color-primary);
 }
 
-/* 错误空状态 - 使用红色系 */
+/* 错误空状态 - 使用主题色 */
 .empty-state--error .empty-state__icon {
-  background: linear-gradient(135deg, #fceae7 0%, #fef5f3 100%);
-  border-color: rgba(229, 94, 64, 0.2);
+  background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary-light-5);
 }
 
 .empty-state--error .empty-state__icon .el-icon {
-  color: #e55e40;
+  color: var(--el-color-primary);
 }
 
-/* 权限空状态 - 使用橙色系 */
+/* 权限空状态 - 使用主题色 */
 .empty-state--permission .empty-state__icon {
-  background: linear-gradient(135deg, #fcf6e6 0%, #fefbf3 100%);
-  border-color: rgba(235, 195, 63, 0.2);
+  background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary-light-5);
 }
 
 .empty-state--permission .empty-state__icon .el-icon {
-  color: #d4a72c;
+  color: var(--el-color-primary);
 }
 
-/* 创建/首次使用空状态 - 使用绿色系 */
+/* 创建/首次使用空状态 - 使用主题色 */
 .empty-state--create .empty-state__icon {
-  background: linear-gradient(135deg, #f0f9e8 0%, #f7fcf4 100%);
-  border-color: rgba(174, 204, 52, 0.2);
+  background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary-light-5);
 }
 
 .empty-state--create .empty-state__icon .el-icon {
-  color: #aecc34;
+  color: var(--el-color-primary);
 }
 
 /* 网络错误空状态 - 使用灰色系 */
 .empty-state--network .empty-state__icon {
-  background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
-  border-color: rgba(139, 132, 118, 0.2);
+  background: var(--el-fill-color-light);
+  border-color: var(--el-border-color);
 }
 
 .empty-state--network .empty-state__icon .el-icon {
-  color: #8b8476;
+  color: var(--el-text-color-secondary);
 }
 </style>

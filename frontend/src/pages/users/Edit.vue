@@ -145,10 +145,13 @@ const loadUserData = () => {
 const handleSubmit = async () => {
   if (!userFormRef.value) return
   
-  try {
-    await userFormRef.value.validate()
-    submitLoading.value = true
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await userFormRef.value.validate().catch(() => false)
+  if (!isValid) return
+  
+  submitLoading.value = true
 
+  try {
     await userApi.update(userForm.id, userForm)
     ElMessage.success('用户更新成功')
     

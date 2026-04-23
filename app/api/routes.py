@@ -21,6 +21,7 @@ from app.config import settings
 from app.models_registry import User, LoginRecord, EmployeeUserMixin, set_app_org_models, EmployeeOrgRelMixin
 from app.domain.auth.impl.auth_service_impl import AuthServiceImpl
 from app.domain.permission.permission_service import PermissionRegistry, PermissionService
+from app.services.oauth2_security import build_runtime_jwt_settings
 
 logger = get_logger()
 
@@ -68,7 +69,7 @@ def register_all_routes(app):
         app=app,
         user_model=User,
         login_record_model=LoginRecord,
-        jwt_settings=settings.jwt,
+        jwt_settings=build_runtime_jwt_settings(),
         api_prefix="/api/v1",
         auth_routes=True,
         auth_service_class=AuthServiceImpl,

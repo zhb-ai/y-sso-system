@@ -1,7 +1,7 @@
 /* 底部布局样式 */
 
 .footer {
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   border-top: 1px solid var(--border_color);
   padding: var(--spacing-medium) var(--spacing-large);
   margin-top: auto;

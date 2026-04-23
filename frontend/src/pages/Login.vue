@@ -43,7 +43,7 @@
 
         <div class="login-actions">
           <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
-          <el-link type="primary" href="#" :underline="'never'"
+          <el-link type="primary" :underline="'never'" @click="handleForgotPassword"
             >忘记密码？</el-link
           >
         </div>
@@ -92,6 +92,7 @@
       v-model="changePasswordVisible"
       title="首次登录 — 请修改密码"
       width="420px"
+      align-center
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :show-close="false"
@@ -144,7 +145,7 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { User, Lock } from "@element-plus/icons-vue";
 import { wechatWorkApi } from "@/api";
 import { useAuthStore } from "@/stores/auth";
@@ -268,6 +269,13 @@ const handleLogin = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleForgotPassword = () => {
+  ElMessageBox.alert("请联系系统管理员重置密码。", "提示", {
+    confirmButtonText: "我知道了",
+    type: "info",
+  });
 };
 
 // 处理修改密码
@@ -448,7 +456,7 @@ onMounted(async () => {
 
 .login-form .el-link {
   font-size: var(--p-font-size);
-  color: rgba(var(--primary), 1);
+  color: var(--el-color-primary);
 }
 
 .login-form .el-button--primary {
@@ -458,21 +466,19 @@ onMounted(async () => {
   font-weight: 500;
   letter-spacing: normal;
   box-shadow: none;
-  background-color: rgba(var(--primary), 1);
-  border-color: rgba(var(--primary), 1);
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
   transition: var(--app-transition);
   width: 100%;
 }
 
 .login-form .el-button--primary:hover {
-  background-color: rgba(var(--primary), 0.9);
-  border-color: rgba(var(--primary), 0.9);
+  background-color: var(--el-color-primary-light-3);
+  border-color: var(--el-color-primary-light-3);
   box-shadow: var(--hover-shadow);
-  transform: translateY(-1px);
 }
 
 .login-form .el-button--primary:active {
-  transform: translateY(0);
   box-shadow: none;
 }
 
@@ -485,10 +491,9 @@ onMounted(async () => {
 }
 
 .login-form .el-button--default:hover {
-  border-color: rgba(var(--primary), 1);
-  color: rgba(var(--primary), 1);
+  border-color: var(--el-color-primary);
+  color: var(--el-color-primary);
   box-shadow: var(--hover-shadow);
-  transform: translateY(-1px);
 }
 
 </style>

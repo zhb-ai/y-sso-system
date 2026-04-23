@@ -3,7 +3,7 @@
 测试场景：
     1. async def 路由直接调用 ORM → 收到 SynchronousOnlyOperation (HTTP 500)
     2. def 路由直接调用 ORM → 正常返回 (HTTP 200)
-    3. async def 路由 + run_db() → 正常返回 (HTTP 200)
+    3. async def 路由 + async_db_call() → 正常返回 (HTTP 200)
 
 验证目标：
     确认 yweb-core 的防御性设计（async 安全检测）在业务项目中正常工作，
@@ -13,13 +13,13 @@
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import String, Integer
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from yweb.orm import (
     init_database,
     BaseModel,
-    run_db,
+    async_db_call,
     SynchronousOnlyOperation,
     db_manager,
 )
@@ -58,16 +58,16 @@ def test_app():
         users = _TestUser.query.all()
         return {"count": len(users)}
 
-    # ✅ 场景3：async def + run_db()
+    # ✅ 场景3：async def + async_db_call()
     @app.get("/good-async")
     async def good_async_route():
-        users = await run_db(_TestUser.get_all)
+        users = await async_db_call(_TestUser.get_all)
         return {"count": len(users)}
 
-    # ✅ 场景4：async def + run_db() + lambda 复杂查询
+    # ✅ 场景4：async def + async_db_call() + lambda 复杂查询
     @app.get("/good-async-lambda")
     async def good_async_lambda_route():
-        users = await run_db(
+        users = await async_db_call(
             lambda: _TestUser.query.filter_by(username="zhangsan").all()
         )
         return {"count": len(users), "name": users[0].name if users else ""}
@@ -116,8 +116,8 @@ class TestAsyncSafetyInSSOSystem:
         print(f"  返回数据: {data}")
         print("=" * 64)
 
-    def test_async_route_with_run_db_works(self, client):
-        """async def + run_db() → 正常返回 200"""
+    def test_async_route_with_async_db_call_works(self, client):
+        """async def + async_db_call() → 正常返回 200"""
         resp = client.get("/good-async")
 
         assert resp.status_code == 200
@@ -125,12 +125,12 @@ class TestAsyncSafetyInSSOSystem:
         assert data["count"] == 2
         print()
         print("=" * 64)
-        print("  ✅ async def + run_db() → 200 正常（线程池安全包装）")
+        print("  ✅ async def + async_db_call() → 200 正常（线程池安全包装）")
         print(f"  返回数据: {data}")
         print("=" * 64)
 
-    def test_async_route_with_run_db_lambda_works(self, client):
-        """async def + run_db(lambda: ...) 复杂查询 → 正常返回 200"""
+    def test_async_route_with_async_db_call_lambda_works(self, client):
+        """async def + async_db_call(lambda: ...) 复杂查询 → 正常返回 200"""
         resp = client.get("/good-async-lambda")
 
         assert resp.status_code == 200
@@ -139,7 +139,7 @@ class TestAsyncSafetyInSSOSystem:
         assert data["name"] == "张三"
         print()
         print("=" * 64)
-        print("  ✅ async def + run_db(lambda) → 200 正常（复杂查询）")
+        print("  ✅ async def + async_db_call(lambda) → 200 正常（复杂查询）")
         print(f"  返回数据: {data}")
         print("=" * 64)
 
@@ -152,20 +152,24 @@ class TestSynchronousOnlyOperationException:
         assert issubclass(SynchronousOnlyOperation, RuntimeError)
 
     @pytest.mark.asyncio
-    async def test_direct_orm_in_async_raises_exception(self):
-        """在 async 函数中直接调用 ORM → 抛出 SynchronousOnlyOperation"""
+    async def test_direct_orm_in_async_raises_exception(self, test_app):
+        """在 async 函数中直接访问 Model.query → 立即抛 SynchronousOnlyOperation
+
+        yweb-core 0.1.4 将 Model.query 包装为 AsyncSafeQueryProperty，
+        在 async 上下文中访问会立即抛出 SynchronousOnlyOperation，
+        并在异常消息中给出修复指引（使用 def 路由或 async_db_call）。
+        """
         with pytest.raises(SynchronousOnlyOperation) as exc_info:
-            _TestUser.query.all()
+            _ = _TestUser.query
 
         error_msg = str(exc_info.value)
-        assert "async" in error_msg or "事件循环" in error_msg
-        assert "run_db" in error_msg or "def" in error_msg
+        assert "async" in error_msg.lower()
+        assert "async_db_call" in error_msg or "def" in error_msg
 
         print()
         print("=" * 64)
-        print("  ✅ 异常信息验证:")
+        print("  ✅ SynchronousOnlyOperation 行为验证:")
         print("-" * 64)
-        for line in error_msg.split("\n")[:8]:
-            print(f"  {line}")
-        print("  ...")
+        print(f"  异常类型: {type(exc_info.value).__name__}")
+        print(f"  异常消息片段: {error_msg.splitlines()[0]}")
         print("=" * 64)

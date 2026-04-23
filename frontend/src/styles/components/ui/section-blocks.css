@@ -48,7 +48,7 @@
 }
 
 .section-block:hover {
-  border-color: rgba(var(--primary), 0.2);
+  border-color: rgba(var(--primary), 0.15);
   box-shadow: var(--hover-shadow);
 }
 
@@ -66,14 +66,14 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--font-title-color);
 }
 
 .section-block__title .el-icon {
-  font-size: 18px;
-  color: rgba(var(--primary), 1);
+  font-size: 16px;
+  color: var(--el-color-primary);
 }
 
 .section-block__actions {
@@ -114,7 +114,7 @@
 }
 
 .section-block__table .el-table__body tr:hover td {
-  background-color: rgba(var(--primary), 0.02);
+  background-color: rgba(var(--primary), 0.03);
 }
 
 /* 空状态 */

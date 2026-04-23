@@ -70,50 +70,30 @@
 
     <el-card class="data-card" shadow="hover">
       <el-table
+        v-if="userList.length > 0"
         v-loading="loading"
         :data="userList"
         style="width: 100%"
         row-key="id"
         tooltip-effect="light"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center">
-          <template #default="scope">
-            <el-tag type="info" size="small" effect="plain"
-              >#{{ scope.row.id }}</el-tag
-            >
-          </template>
-        </el-table-column>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="username" label="用户名" min-width="120" />
         <el-table-column prop="name" label="姓名" min-width="100" />
         <el-table-column prop="email" label="邮箱" min-width="180" show-overflow-tooltip />
         <el-table-column prop="phone" label="手机号" min-width="120" />
         <el-table-column label="角色" min-width="150">
           <template #default="scope">
-            <el-tag
-              v-for="role in scope.row.roles || []"
-              :key="role.code"
-              size="small"
-              :type="getRoleTagType(role.code)"
-              effect="light"
-              style="margin-right: 4px"
-              >{{ role.name }}</el-tag
-            >
-            <el-text
-              v-if="!(scope.row.roles || []).length"
-              type="info"
-              size="small"
-              >无角色</el-text
-            >
+            <span v-for="(role, index) in scope.row.roles || []" :key="role.code">
+              {{ role.name }}{{ index < (scope.row.roles || []).length - 1 ? '、' : '' }}
+            </span>
+            <span v-if="!(scope.row.roles || []).length" class="text-muted">无角色</span>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100" align="center">
+        <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="scope">
-            <el-tag
-              :type="scope.row.status === 'active' ? 'success' : 'danger'"
-              size="small"
-            >
-              {{ scope.row.status === "active" ? "启用" : "禁用" }}
-            </el-tag>
+            <span v-if="scope.row.status === 'active'">启用</span>
+            <span v-else class="status-danger">禁用</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -123,21 +103,18 @@
           align="center"
         >
           <template #default="scope">
-            <el-text class="time-text" size="small">{{
-              formatDate(scope.row.created_at)
-            }}</el-text>
+            {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
         <el-table-column
           label="操作"
-          width="380"
-          align="center"
+          width="340"
+          align="right"
           fixed="right"
-          class-name="table-cell-flex-center"
+          class-name="table-cell-flex-end"
         >
           <template #default="scope">
             <el-button
-              type="primary"
               size="small"
               link
               @click="handleEdit(scope.row)"
@@ -145,7 +122,6 @@
               <el-icon><Edit /></el-icon> 编辑
             </el-button>
             <el-button
-              type="success"
               size="small"
               link
               @click="handleAssignRole(scope.row)"
@@ -153,7 +129,6 @@
               <el-icon><Medal /></el-icon> 角色
             </el-button>
             <el-button
-              type="warning"
               size="small"
               link
               @click="handleAssignSSORole(scope.row)"
@@ -161,18 +136,17 @@
               <el-icon><Connection /></el-icon> SSO
             </el-button>
             <el-button
-              :type="scope.row.status === 'active' ? 'danger' : 'success'"
               size="small"
               link
               @click="handleToggleStatus(scope.row)"
             >
-              <el-icon
+              <el-icon :class="{ 'status-danger': scope.row.status === 'active' }"
                 ><component :is="scope.row.status === 'active' ? Lock : Unlock"
               /></el-icon>
-              {{ scope.row.status === "active" ? "禁用" : "启用" }}
+              <span v-if="scope.row.status !== 'active'">启用</span>
+              <span v-else class="status-danger">禁用</span>
             </el-button>
             <el-button
-              type="primary"
               size="small"
               link
               @click="handleResetPassword(scope.row)"
@@ -185,7 +159,7 @@
 
       <!-- 空状态 -->
       <EmptyState
-        v-if="!loading && userList.length === 0"
+        v-else-if="!loading"
         type="data"
         :icon="Collection"
         title="暂无用户"
@@ -263,38 +237,30 @@
             >
               勾选要分配给该用户的角色：
             </p>
-            <el-checkbox-group v-model="selectedRoleCodes">
-              <el-checkbox
-                v-for="role in allRoles"
-                :key="role.code"
-                :label="role.code"
-                :value="role.code"
-                style="display: block; margin-bottom: 12px"
-              >
-                <span style="font-weight: var(--el-font-weight-bold)">{{
-                  role.name
-                }}</span>
-                <span
-                  style="
-                    color: var(--el-text-color-secondary);
-                    margin-left: 8px;
-                    font-size: var(--el-font-size-xs);
-                  "
+            <div class="role-list-container">
+              <el-checkbox-group v-model="selectedRoleCodes">
+                <el-checkbox
+                  v-for="role in allRoles"
+                  :key="role.code"
+                  :label="role.code"
+                  :value="role.code"
+                  style="display: flex; align-items: flex-start; margin-bottom: 12px"
                 >
-                  {{ role.code }}
-                </span>
-                <span
-                  v-if="role.description"
-                  style="
-                    color: var(--el-text-color-placeholder);
-                    margin-left: 8px;
-                    font-size: var(--el-font-size-xs);
-                  "
-                >
-                  - {{ role.description }}
-                </span>
-              </el-checkbox>
-            </el-checkbox-group>
+                  <el-tooltip
+                    :content="role.description || role.name"
+                    placement="right"
+                    show-after="1000"
+                    :disabled="!role.description || role.description.length < 30"
+                  >
+                    <div class="role-checkbox-content">
+                      <span class="role-name">{{ role.name }}</span>
+                      <span class="role-code">{{ role.code }}</span>
+                      <span v-if="role.description" class="role-desc">- {{ role.description }}</span>
+                    </div>
+                  </el-tooltip>
+                </el-checkbox>
+              </el-checkbox-group>
+            </div>
           </div>
         </div>
       </div>
@@ -335,64 +301,56 @@
             >
               勾选要分配给该用户的 SSO 角色（用于同步给外部系统）：
             </p>
-            <el-checkbox-group v-model="selectedSSORoleCodes">
-              <el-checkbox
-                v-for="role in allSSORoles"
-                :key="role.code"
-                :label="role.code"
-                :value="role.code"
-                :disabled="!role.is_active"
-                style="display: block; margin-bottom: 12px"
-              >
-                <span style="font-weight: var(--el-font-weight-bold)">{{
-                  role.name
-                }}</span>
-                <span
-                  style="
-                    color: var(--el-text-color-secondary);
-                    margin-left: 8px;
-                    font-size: var(--el-font-size-xs);
-                  "
+            <div class="role-list-container">
+              <el-checkbox-group v-model="selectedSSORoleCodes">
+                <el-checkbox
+                  v-for="role in allSSORoles"
+                  :key="role.code"
+                  :label="role.code"
+                  :value="role.code"
+                  :disabled="!role.is_active"
+                  style="display: flex; align-items: flex-start; margin-bottom: 12px"
                 >
-                  {{ role.code }}
-                </span>
-                <el-tag
-                  v-if="!role.is_active"
-                  type="info"
-                  size="small"
-                  style="margin-left: 8px"
-                  >已禁用</el-tag
-                >
-                <span
-                  v-if="role.description"
-                  style="
-                    color: var(--el-text-color-placeholder);
-                    margin-left: 8px;
-                    font-size: var(--el-font-size-xs);
-                  "
-                >
-                  - {{ role.description }}
-                </span>
-              </el-checkbox>
-            </el-checkbox-group>
-            <div v-if="allSSORoles.length === 0" class="section-block__empty">
-              <el-empty :image-size="60">
-                <template #description>
-                  <div
-                    style="
-                      text-align: center;
-                      align-items: center;
-                      display: flex;
-                    "
+                  <el-tooltip
+                    :content="role.description || role.name"
+                    placement="right"
+                    show-after="1000"
+                    :disabled="!role.description || role.description.length < 30"
                   >
-                    暂无 SSO 角色 请先在
-                    <el-link type="primary" @click="goToSSORoles"
-                      >SSO 角色管理</el-link
+                    <div class="sso-role-checkbox-content">
+                      <span class="sso-role-name">{{ role.name }}</span>
+                      <span class="sso-role-code">{{ role.code }}</span>
+                      <el-tag
+                        v-if="!role.is_active"
+                        type="info"
+                        size="small"
+                        class="sso-role-status"
+                        >已禁用</el-tag
+                      >
+                      <span v-if="role.description" class="sso-role-desc">- {{ role.description }}</span>
+                    </div>
+                  </el-tooltip>
+                </el-checkbox>
+              </el-checkbox-group>
+              <div v-if="allSSORoles.length === 0" class="section-block__empty">
+                <el-empty :image-size="60">
+                  <template #description>
+                    <div
+                      style="
+                        text-align: center;
+                        align-items: center;
+                        display: flex;
+                      "
                     >
-                    中创建
-                  </div>
-                </template>
-              </el-empty>
+                      暂无 SSO 角色 请先在
+                      <el-link type="primary" @click="goToSSORoles"
+                        >SSO 角色管理</el-link
+                      >
+                      中创建
+                    </div>
+                  </template>
+                </el-empty>
+              </div>
             </div>
           </div>
         </div>
@@ -889,4 +847,96 @@ onMounted(() => {
   getUsersList();
 });
 </script>
-<style scoped></style>
+<style scoped>
+/* 角色复选框内容样式 */
+.role-checkbox-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  max-width: 360px;
+  width: 360px;
+}
+
+.role-name {
+  font-weight: var(--el-font-weight-bold);
+  flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-code {
+  color: var(--el-text-color-secondary);
+  font-size: var(--el-font-size-xs);
+  flex-shrink: 0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-desc {
+  color: var(--el-text-color-placeholder);
+  font-size: var(--el-font-size-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  margin-right: 10px;
+}
+
+/* SSO 角色复选框内容样式 */
+.sso-role-checkbox-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  max-width: 360px;
+  width: 360px;
+}
+
+.sso-role-name {
+  font-weight: var(--el-font-weight-bold);
+  flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sso-role-code {
+  color: var(--el-text-color-secondary);
+  font-size: var(--el-font-size-xs);
+  flex-shrink: 0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sso-role-status {
+  flex-shrink: 0;
+}
+
+.sso-role-desc {
+  color: var(--el-text-color-placeholder);
+  font-size: var(--el-font-size-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 角色列表容器 - 限制最大高度 */
+.role-list-container {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+</style>
