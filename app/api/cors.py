@@ -36,6 +36,7 @@ from typing import Set, List, Optional
 from urllib.parse import urlparse
 
 from yweb.log import get_logger
+from yweb.orm import async_db_call
 
 logger = get_logger()
 
@@ -95,15 +96,12 @@ class DynamicCORSMiddleware:
             pass
         return None
 
-    def _get_allowed_origins(self) -> Set[str]:
-        """获取当前允许的 Origin 集合（带 TTL 缓存）
+    def _refresh_origins_sync(self) -> Set[str]:
+        """同步刷新允许的 Origin 集合（在线程池中执行，内含 DB 查询）
 
         使用锁防止缓存过期时多个并发请求同时查询数据库。
         """
         now = time.time()
-        if now - self._cache_time < self.cache_ttl and self._cached_origins:
-            return self._cached_origins
-
         if not self._refresh_lock.acquire(blocking=False):
             return self._cached_origins or self.always_allow
 
@@ -132,11 +130,18 @@ class DynamicCORSMiddleware:
         finally:
             self._refresh_lock.release()
 
+    async def _ensure_origins_fresh(self) -> None:
+        """缓存过期时异步触发一次刷新；命中缓存时零开销"""
+        now = time.time()
+        if now - self._cache_time < self.cache_ttl and self._cached_origins:
+            return
+        await async_db_call(self._refresh_origins_sync)
+
     def _is_origin_allowed(self, origin: str) -> bool:
-        """判断 origin 是否被允许"""
+        """判断 origin 是否被允许（纯内存判断，调用前须保证缓存已刷新）"""
         if self.allow_localhost and _LOCALHOST_RE.match(origin):
             return True
-        return origin in self._get_allowed_origins()
+        return origin in (self._cached_origins or self.always_allow)
 
     def _cors_headers_raw(self, origin: str) -> list:
         """构造 CORS 响应头（ASGI raw 格式）"""
@@ -163,6 +168,7 @@ class DynamicCORSMiddleware:
             await self.app(scope, receive, send)
             return
 
+        await self._ensure_origins_fresh()
         is_allowed = self._is_origin_allowed(origin)
 
         # 预检请求（OPTIONS）— 统一拦截，不透传到路由

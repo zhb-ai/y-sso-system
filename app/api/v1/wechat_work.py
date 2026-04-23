@@ -31,6 +31,7 @@ from pydantic import BaseModel, Field
 
 from yweb.response import Resp, OkResponse
 from yweb.log import get_logger
+from yweb.orm import async_db_call
 
 from app.services.wechat_work_config_app import WechatWorkConfigAppService
 
@@ -298,15 +299,17 @@ def create_wechat_work_router(org_models, management_deps: list = None):
         处理失败时记录错误日志，由定期全量同步兜底数据一致性。
         """
         try:
-            org = _get_wechat_org(org_id)
-            handler = _build_webhook_handler(org)
-
             body = await request.body()
             body_str = body.decode("utf-8")
 
-            handler.handle_callback(
-                org, msg_signature, timestamp, nonce, body_str,
-            )
+            def _handle_callback_sync():
+                org = _get_wechat_org(org_id)
+                handler = _build_webhook_handler(org)
+                handler.handle_callback(
+                    org, msg_signature, timestamp, nonce, body_str,
+                )
+
+            await async_db_call(_handle_callback_sync)
         except Exception as e:
             logger.error(
                 f"处理企微回调异常: org_id={org_id}, {e}", exc_info=True,
