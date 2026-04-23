@@ -78,7 +78,7 @@ h6 {
 }
 
 code {
-  color: rgba(var(--danger), 1);
+  color: rgb(var(--danger));
   background-color: rgba(var(--danger), 0.1);
   padding: 0 3px;
   border-radius: 5px;
@@ -110,7 +110,7 @@ code {
 
 /*  04 卡片样式 */
 .card {
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   border-radius: var(--app-border-radius);
   box-shadow: var(--box-shadow);
   transition: var(--app-transition);
@@ -165,7 +165,7 @@ code {
   font-weight: 400;
   line-height: 1.5;
   color: var(--font-color);
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   background-clip: padding-box;
   border: 1px solid var(--border_color);
   appearance: none;
@@ -175,8 +175,8 @@ code {
 
 .form-control:focus {
   outline: 0;
-  border-color: rgba(var(--primary), 0.8);
-  box-shadow: 0 0 0 0.25rem rgba(var(--primary), 0.25);
+  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(var(--primary), 0.15);
 }
 
 .form-control::placeholder {
@@ -186,13 +186,13 @@ code {
 
 /*  06 表单错误状态 */
 .form-control.is-invalid {
-  border-color: rgba(var(--danger), 1);
-  box-shadow: 0 0 0 0.25rem rgba(var(--danger), 0.25);
+  border-color: rgb(var(--danger));
+  box-shadow: 0 0 0 0.25rem rgba(var(--danger), 0.15);
 }
 
 .form-control.is-valid {
-  border-color: rgba(var(--success), 1);
-  box-shadow: 0 0 0 0.25rem rgba(var(--success), 0.25);
+  border-color: rgb(var(--success));
+  box-shadow: 0 0 0 0.25rem rgba(var(--success), 0.15);
 }
 
 .invalid-feedback {
@@ -200,7 +200,7 @@ code {
   width: 100%;
   margin-top: 0.25rem;
   font-size: 0.875em;
-  color: rgba(var(--danger), 1);
+  color: rgb(var(--danger));
 }
 
 .valid-feedback {
@@ -208,7 +208,7 @@ code {
   width: 100%;
   margin-top: 0.25rem;
   font-size: 0.875em;
-  color: rgba(var(--success), 1);
+  color: rgb(var(--success));
 }
 
 /*  07 容器样式 */
@@ -244,27 +244,27 @@ code {
 
 /*  10 文本颜色 */
 .text-primary {
-  color: rgba(var(--primary), 1);
+  color: var(--el-color-primary);
 }
 
 .text-secondary {
-  color: rgba(var(--secondary), 1);
+  color: rgb(var(--gray-600));
 }
 
 .text-success {
-  color: rgba(var(--success), 1);
+  color: rgb(var(--success));
 }
 
 .text-danger {
-  color: rgba(var(--danger), 1);
+  color: rgb(var(--danger));
 }
 
 .text-warning {
-  color: rgba(var(--warning), 1);
+  color: rgb(var(--warning));
 }
 
 .text-info {
-  color: rgba(83, 90, 231, 1);
+  color: rgb(var(--gray-500));
 }
 
 .text-light {
@@ -275,53 +275,51 @@ code {
   color: rgba(var(--dark), 1);
 }
 
-.text-muted {
-  color: var(--font-light-color);
-}
+
 
 /*  11 背景颜色 */
 .bg-primary {
-  background-color: rgba(var(--primary), 1);
-  color: var(--white);
+  background-color: var(--el-color-primary);
+  color: rgb(var(--white));
 }
 
 .bg-secondary {
-  background-color: rgba(var(--secondary), 1);
-  color: var(--white);
+  background-color: rgb(var(--gray-500));
+  color: rgb(var(--white));
 }
 
 .bg-success {
-  background-color: rgba(var(--success), 1);
-  color: var(--white);
+  background-color: rgb(var(--success));
+  color: rgb(var(--white));
 }
 
 .bg-danger {
-  background-color: rgba(var(--danger), 1);
-  color: var(--white);
+  background-color: rgb(var(--danger));
+  color: rgb(var(--white));
 }
 
 .bg-warning {
-  background-color: rgba(var(--warning), 1);
-  color: var(--white);
+  background-color: rgb(var(--warning));
+  color: rgb(var(--white));
 }
 
 .bg-info {
-  background-color: rgba(83, 90, 231, 1);
-  color: var(--white);
+  background-color: rgb(var(--gray-500));
+  color: rgb(var(--white));
 }
 
 .bg-light {
-  background-color: rgba(var(--light), 1);
+  background-color: rgb(var(--gray-100));
   color: var(--font-color);
 }
 
 .bg-dark {
-  background-color: rgba(var(--dark), 1);
-  color: var(--white);
+  background-color: rgb(var(--gray-800));
+  color: rgb(var(--white));
 }
 
 .bg-white {
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   color: var(--font-color);
 }
 
@@ -485,16 +483,16 @@ code {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--secondary), 0.5);
+  background: rgb(var(--gray-400));
 }
 
 /*  17 选择文本样式 */
 ::selection {
-  background: rgba(var(--primary), 0.2);
+  background: rgba(var(--primary), 0.15);
   color: var(--font-color);
 }
 
 ::-moz-selection {
-  background: rgba(var(--primary), 0.2);
+  background: rgba(var(--primary), 0.15);
   color: var(--font-color);
 }

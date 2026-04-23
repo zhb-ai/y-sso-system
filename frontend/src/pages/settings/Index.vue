@@ -8,47 +8,58 @@
       <!-- 站点信息 -->
       <el-tab-pane label="站点信息" name="site">
         <el-card class="form-card">
-          <el-form :model="siteSettings" ref="siteFormRef" label-position="top">
-            <el-form-item label="系统名称" prop="system_name">
-              <el-input
-                v-model="siteSettings.system_name"
-                placeholder="请输入系统名称"
-                size="large"
-                maxlength="100"
-                show-word-limit
-              />
-            </el-form-item>
+          <div class="section-header">
+            <div class="section-icon">
+              <el-icon><Monitor /></el-icon>
+            </div>
+            <div class="section-info">
+              <h3 class="section-title">站点信息配置</h3>
+              <p class="section-desc">配置系统的基本信息，包括名称、描述和 Logo</p>
+            </div>
+          </div>
+          
+          <el-form :model="siteSettings" ref="siteFormRef" label-position="top" class="compact-form">
+            <div class="form-row">
+              <el-form-item label="系统名称" prop="system_name" class="form-item-half">
+                <el-input
+                  v-model="siteSettings.system_name"
+                  placeholder="请输入系统名称"
+                  maxlength="100"
+                  show-word-limit
+                />
+              </el-form-item>
+              
+              <el-form-item label="系统 Logo URL" prop="system_logo" class="form-item-half">
+                <el-input
+                  v-model="siteSettings.system_logo"
+                  placeholder="请输入系统 Logo 图片地址"
+                />
+              </el-form-item>
+            </div>
             
+            <div v-if="siteSettings.system_logo" class="logo-preview">
+              <span class="preview-label">Logo 预览</span>
+              <el-image :src="siteSettings.system_logo" style="height: 48px" fit="contain">
+                <template #error>
+                  <span class="preview-error">图片加载失败</span>
+                </template>
+              </el-image>
+            </div>
+
             <el-form-item label="系统描述" prop="system_desc">
               <el-input
                 v-model="siteSettings.system_desc"
                 type="textarea"
-                :rows="3"
+                :rows="4"
                 placeholder="请输入系统描述"
-                size="large"
                 maxlength="500"
                 show-word-limit
               />
             </el-form-item>
             
-            <el-form-item label="系统 Logo URL" prop="system_logo">
-              <el-input
-                v-model="siteSettings.system_logo"
-                placeholder="请输入系统 Logo 图片地址"
-                size="large"
-              />
-              <div v-if="siteSettings.system_logo" style="margin-top: 8px">
-                <el-image :src="siteSettings.system_logo" style="height: 40px" fit="contain">
-                  <template #error>
-                    <span style="font-size: var(--el-font-size-xs); color: var(--el-text-color-secondary)">图片加载失败</span>
-                  </template>
-                </el-image>
-              </div>
-            </el-form-item>
-            
-            <el-form-item>
-              <el-button type="primary" @click="handleSaveSite" :loading="saveLoading" size="large">
-                保存
+            <el-form-item class="form-actions">
+              <el-button type="primary" @click="handleSaveSite" :loading="saveLoading">
+                <el-icon><Check /></el-icon> 保存配置
               </el-button>
             </el-form-item>
           </el-form>
@@ -58,31 +69,38 @@
       <!-- JWT 认证（只读） -->
       <el-tab-pane label="JWT 认证" name="jwt">
         <el-card class="form-card">
-          <el-alert
-            title="JWT 配置为只读"
-            description="JWT 配置来自 config/settings.yaml，如需修改请直接编辑配置文件并重启服务。"
-            type="info"
-            :closable="false"
-            show-icon
-            style="margin-bottom: 20px"
-          />
-          <el-descriptions :column="2" border>
-            <el-descriptions-item label="JWT 密钥">
-              <el-tag type="info">{{ jwtSettings.secret_key }}</el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="签名算法">
-              {{ jwtSettings.algorithm }}
-            </el-descriptions-item>
-            <el-descriptions-item label="Access Token 有效期">
-              {{ jwtSettings.access_token_expire_minutes }} 分钟
-            </el-descriptions-item>
-            <el-descriptions-item label="Refresh Token 有效期">
-              {{ jwtSettings.refresh_token_expire_days }} 天
-            </el-descriptions-item>
-            <el-descriptions-item label="滑动续期阈值">
-              {{ jwtSettings.refresh_token_sliding_days }} 天
-            </el-descriptions-item>
-          </el-descriptions>
+          <div class="section-header">
+            <div class="section-icon jwt">
+              <el-icon><Key /></el-icon>
+            </div>
+            <div class="section-info">
+              <h3 class="section-title">JWT 认证配置</h3>
+              <p class="section-desc">JWT 配置为只读,JWT 配置来自 config/settings.yaml，如需修改请直接编辑配置文件并重启服务。</p>
+            </div>
+          </div>
+          
+          <div class="jwt-config-grid">
+            <div class="jwt-config-item">
+              <span class="config-label">JWT 密钥</span>
+              <span class="config-value">{{ jwtSettings.secret_key || '未配置' }}</span>
+            </div>
+            <div class="jwt-config-item">
+              <span class="config-label">签名算法</span>
+              <span class="config-value">{{ jwtSettings.algorithm }}</span>
+            </div>
+            <div class="jwt-config-item">
+              <span class="config-label">Access Token 有效期</span>
+              <span class="config-value">{{ jwtSettings.access_token_expire_minutes }} 分钟</span>
+            </div>
+            <div class="jwt-config-item">
+              <span class="config-label">Refresh Token 有效期</span>
+              <span class="config-value">{{ jwtSettings.refresh_token_expire_days }} 天</span>
+            </div>
+            <div class="jwt-config-item full-width">
+              <span class="config-label">滑动续期阈值</span>
+              <span class="config-value">{{ jwtSettings.refresh_token_sliding_days }} 天</span>
+            </div>
+          </div>
         </el-card>
       </el-tab-pane>
     </el-tabs>
@@ -92,6 +110,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Monitor, Key, Check } from '@element-plus/icons-vue'
 import { api } from '@/api'
 import { useSiteStore } from '@/stores/site'
 
@@ -156,8 +175,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
-
 .page-header {
   margin-bottom: 20px;
 }
@@ -168,5 +185,163 @@ onMounted(() => {
 
 .form-card {
   margin-bottom: 20px;
+  padding: 8px;
+}
+
+/* 区块头部样式 */
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.section-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+.section-icon.jwt {
+  background: var(--el-color-warning-light-9);
+  color: var(--el-color-warning);
+}
+
+.section-info {
+  flex: 1;
+  padding-top: 4px;
+}
+
+.section-title {
+  margin: 0 0 6px 0;
+  font-size: var(--el-font-size-large);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-text-color-primary);
+}
+
+.section-desc {
+  margin: 0;
+  font-size: var(--el-font-size-small);
+  color: var(--el-text-color-secondary);
+  max-width: 1600px;
+}
+
+/* 紧凑表单样式 */
+.compact-form {
+  max-width: 1600px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-item-half {
+  margin-bottom: 18px;
+}
+
+.form-item-half :deep(.el-input) {
+  width: 100%;
+}
+
+/* Logo 预览 */
+.logo-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--el-fill-color-light);
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
+
+.preview-label {
+  font-size: var(--el-font-size-small);
+  color: var(--el-text-color-secondary);
+  flex-shrink: 0;
+}
+
+.preview-error {
+  font-size: var(--el-font-size-small);
+  color: var(--el-text-color-secondary);
+}
+
+/* 表单操作 */
+.form-actions {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.form-actions :deep(.el-button) {
+  min-width: 120px;
+}
+
+/* JWT 提示样式 - 更紧凑 */
+.jwt-alert {
+  margin-bottom: 20px;
+}
+
+/* JWT 配置网格 */
+.jwt-config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.jwt-config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  background: var(--el-fill-color-light);
+  border-radius: 8px;
+}
+
+.jwt-config-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.config-label {
+  font-size: var(--el-font-size-small);
+  color: var(--el-text-color-secondary);
+}
+
+.config-value {
+  font-size: var(--el-font-size-base);
+  font-weight: var(--el-font-weight-medium);
+  color: var(--el-text-color-primary);
+  justify-content: flex-start;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .jwt-config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    gap: 12px;
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
 }
 </style>

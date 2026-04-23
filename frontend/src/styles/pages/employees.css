@@ -1,10 +1,7 @@
 /* 员工管理页面样式 */
 
 /* 页面基础结构 */
-.page-container {
-  padding: 0 20px 20px;
-  position: relative;
-}
+
 
 .page-header {
   display: flex;
@@ -18,9 +15,7 @@
   margin-bottom: 20px;
 }
 
-.filter-form {
-  width: 100%;
-}
+
 
 /* 员工筛选表单样式 */
 

@@ -2,79 +2,76 @@
 
 /* 背景颜色 */
 .bg-primary {
-  background-color: rgba(var(--primary), 1) !important;
+  background-color: var(--el-color-primary) !important;
 }
 
 .bg-secondary {
-  background-color: rgba(var(--secondary), 1) !important;
+  background-color: rgb(var(--gray-500)) !important;
 }
 
 .bg-success {
-  background-color: rgba(var(--success), 1) !important;
+  background-color: rgb(var(--success)) !important;
 }
 
 .bg-danger {
-  background-color: rgba(var(--danger), 1) !important;
+  background-color: rgb(var(--danger)) !important;
 }
 
 .bg-warning {
-  background-color: rgba(var(--warning), 1) !important;
+  background-color: rgb(var(--warning)) !important;
 }
 
 .bg-info {
-  background-color: rgba(83, 90, 231, 1) !important;
+  background-color: rgb(var(--gray-500)) !important;
 }
 
 .bg-light {
-  background-color: var(--light-gray) !important;
+  background-color: rgb(var(--gray-100)) !important;
 }
 
 .bg-dark {
-  background-color: rgba(var(--dark), 1) !important;
+  background-color: rgb(var(--gray-800)) !important;
 }
 
 .bg-white {
-  background-color: var(--white) !important;
+  background-color: rgb(var(--white)) !important;
 }
 
 /* 文本颜色 */
 .text-primary {
-  color: rgba(var(--primary), 1) !important;
+  color: var(--el-color-primary) !important;
 }
 
 .text-secondary {
-  color: rgba(var(--secondary), 1) !important;
+  color: rgb(var(--gray-600)) !important;
 }
 
 .text-success {
-  color: rgba(var(--success), 1) !important;
+  color: rgb(var(--success)) !important;
 }
 
 .text-danger {
-  color: rgba(var(--danger), 1) !important;
+  color: rgb(var(--danger)) !important;
 }
 
 .text-warning {
-  color: rgba(var(--warning), 1) !important;
+  color: rgb(var(--warning)) !important;
 }
 
 .text-info {
-  color: rgba(83, 90, 231, 1) !important;
+  color: rgb(var(--gray-500)) !important;
 }
 
 .text-light {
-  color: var(--light-gray) !important;
+  color: rgb(var(--gray-300)) !important;
 }
 
 .text-dark {
-  color: rgba(var(--dark), 1) !important;
+  color: rgb(var(--gray-800)) !important;
 }
 
-.text-muted {
-  color: var(--font-light-color) !important;
-}
+
 
 /* 边框颜色 */
 
 /* 主题颜色工具类 */
-

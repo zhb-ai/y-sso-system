@@ -1,66 +1,38 @@
-/* 统计卡片图标样式 - 使用渐变色增强视觉吸引力 */
+/* 统计卡片样式 - 现代简洁设计 */
 
 .stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--border-radius-lg);
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: var(--app-transition);
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
   position: relative;
   overflow: hidden;
 }
 
-/* 应用图标 - 青色渐变 */
-.stat-icon.application {
-  background: linear-gradient(135deg, #48bece 0%, #6ecdd9 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(72, 190, 206, 0.3);
-}
-
-/* 用户图标 - 绿色渐变 */
-.stat-icon.user {
-  background: linear-gradient(135deg, #aecc34 0%, #c2d962 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(174, 204, 52, 0.3);
-}
-
-/* 角色图标 - 橙色渐变 */
-.stat-icon.role {
-  background: linear-gradient(135deg, #ebc33f 0%, #f0d56a 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(235, 195, 63, 0.3);
-}
-
-/* 部门图标 - 紫色渐变 */
-.stat-icon.department {
-  background: linear-gradient(135deg, #535ae7 0%, #7a7fed 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(83, 90, 231, 0.3);
+/* 添加微妙的装饰效果 */
+.stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+  border-radius: 0 12px 0 0;
 }
 
 /* 悬停效果 */
 .stat-icon:hover {
-  transform: translateY(-2px) scale(1.05);
-}
-
-.stat-icon.application:hover {
-  box-shadow: 0 6px 16px rgba(72, 190, 206, 0.4);
-}
-
-.stat-icon.user:hover {
-  box-shadow: 0 6px 16px rgba(174, 204, 52, 0.4);
-}
-
-.stat-icon.role:hover {
-  box-shadow: 0 6px 16px rgba(235, 195, 63, 0.4);
-}
-
-.stat-icon.department:hover {
-  box-shadow: 0 6px 16px rgba(83, 90, 231, 0.4);
+  background: var(--el-color-primary-light-8);
+  color: var(--el-color-primary);
+  transform: translateY(-2px);
 }
 
 /* 统计卡片响应式设计 */
@@ -75,19 +47,19 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .stat-content {
     padding: 1rem;
   }
-  
+
   .stat-info h3 {
     font-size: 28px;
   }
-  
+
   .stat-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
   }
 }
 
@@ -95,14 +67,8 @@
   .stat-info h3 {
     font-size: 24px;
   }
-  
+
   .stat-info p {
     font-size: 12px;
-  }
-  
-  .stat-icon {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
   }
 }

@@ -5,7 +5,7 @@
 
 /* ===== 基础卡片样式 ===== */
 .card {
-  background-color: var(--white);
+  background-color: rgb(var(--white));
   border-radius: var(--app-border-radius);
   box-shadow: var(--box-shadow);
   transition: var(--app-transition);
@@ -48,7 +48,7 @@
 
 .el-card:hover {
   box-shadow: var(--hover-shadow);
-  border-color: rgba(var(--primary), 0.2) !important;
+  border-color: rgba(var(--primary), 0.15) !important;
 }
 
 /* ===== 数据卡片样式 ===== */
@@ -61,8 +61,8 @@
 }
 
 .app-logo {
-  background: rgba(var(--primary), 0.1);
-  color: rgba(var(--primary), 1);
+  background: rgba(var(--primary), 0.08);
+  color: var(--el-color-primary);
   box-shadow: none;
   flex-shrink: 0;
   transition: var(--app-transition);
@@ -100,6 +100,3 @@
   font-family: 'Courier New', monospace;
 }
 
-.time-text {
-  color: var(--font-light-color);
-}

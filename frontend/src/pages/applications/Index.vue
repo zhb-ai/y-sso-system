@@ -51,16 +51,14 @@
     <!-- 数据表格 -->
     <el-card class="data-card" shadow="hover">
       <el-table
+        v-if="applications.length > 0"
         v-loading="loading"
         :data="applications"
         style="width: 100%"
         row-key="id"
+        tooltip-effect="light"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center">
-          <template #default="scope">
-            <el-tag type="info" size="small" effect="plain">#{{ scope.row.id }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="name" label="应用名称" min-width="200">
           <template #default="scope">
             <div class="app-info">
@@ -69,27 +67,23 @@
               </el-avatar>
               <div class="app-details">
                 <div class="app-name truncate">{{ scope.row.name }}</div>
-                <div class="app-desc line-clamp">{{ scope.row.description || '暂无描述' }}</div>
+                <div :title="scope.row.description || ''" class="app-desc line-clamp">{{ scope.row.description || '暂无描述' }}</div>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="code" label="应用编码" min-width="150">
-          <template #default="scope">
-            <el-tag type="primary" size="small" effect="light">{{ scope.row.code }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="code" label="应用编码" min-width="120" />
         <el-table-column prop="client_id" label="客户端ID" min-width="220">
           <template #default="scope">
             <div class="copyable-field">
-              <el-text class="client-id-text" truncated>{{ scope.row.client_id }}</el-text>
-              <el-button size="small" type="primary" link @click="handleCopy(scope.row.client_id)">
+              <span class="client-id-text">{{ scope.row.client_id }}</span>
+              <el-button size="small" link @click="handleCopy(scope.row.client_id)">
                 <el-icon><CopyDocument /></el-icon>
               </el-button>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="client_type" label="客户端类型" width="120" align="center">
+        <el-table-column prop="client_type" label="客户端类型" width="100" align="center">
           <template #default="scope">
             <el-tag
               size="small"
@@ -115,10 +109,10 @@
         </el-table-column>
         <el-table-column prop="created_at" label="创建时间" width="180" align="center">
           <template #default="scope">
-            <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
+            {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="320" align="center" fixed="right" class-name="table-cell-flex-center">
+        <el-table-column label="操作" width="280" fixed="right" align="right">
           <template #default="scope">
             <el-button type="info" size="small" link @click="handleShowIntegrationConfig(scope.row)">
               <el-icon><Document /></el-icon> 对接配置
@@ -126,10 +120,10 @@
             <el-button type="primary" size="small" link @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon> 编辑
             </el-button>
-            <el-button type="success" size="small" link @click="handleResetSecret(scope.row)">
+            <el-button size="small" link @click="handleResetSecret(scope.row)">
               <el-icon><RefreshRight /></el-icon> 密钥
             </el-button>
-            <el-button type="danger" size="small" link @click="handleDelete(scope.row)">
+            <el-button size="small" link class="btn-delete" @click="handleDelete(scope.row)">
               <el-icon><Delete /></el-icon> 删除
             </el-button>
           </template>
@@ -138,7 +132,7 @@
 
       <!-- 空状态 -->
       <EmptyState
-        v-if="!loading && applications.length === 0"
+        v-else-if="!loading"
         type="data"
         :icon="Collection"
         title="暂无应用"
@@ -162,12 +156,11 @@
       </div>
     </el-card>
     
-    <!-- 新建/编辑对话框 -->
-    <el-dialog
+    <!-- 新建/编辑抽屉 -->
+    <el-drawer
       v-model="formDialogVisible"
       :title="isEditing ? '编辑应用' : '新建应用'"
-      width="600px"
-      align-center
+      size="820px"
       destroy-on-close
     >
       <div class="section-blocks" style="gap: 0;">
@@ -372,15 +365,14 @@
           {{ applicationForm.id ? '保存' : '创建并生成配置' }}
         </el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
     
-    <!-- 密钥展示对话框 -->
-    <el-dialog
+    <!-- 密钥展示抽屉 -->
+    <el-drawer
       v-model="secretDialogVisible"
       title="客户端凭证"
-      width="700px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
+      size="820px"
+      destroy-on-close
     >
       <el-alert
         :title="secretInfo.client_type === 'public' ? '当前应用为公开客户端，无需客户端密钥。请保存客户端 ID 并按 PKCE 方式接入。' : '请妥善保存以下凭证信息，客户端密钥仅显示一次！'"
@@ -421,12 +413,13 @@
       <template #footer>
         <el-button type="primary" @click="secretDialogVisible = false">我已保存，关闭</el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
 
-    <el-dialog
+    <!-- 第三方系统对接配置抽屉 -->
+    <el-drawer
       v-model="integrationDialogVisible"
       title="第三方系统对接配置"
-      width="820px"
+      size="820px"
       destroy-on-close
     >
       <el-alert
@@ -533,7 +526,7 @@
         <el-button @click="handleCopyIntegrationConfig">复制全部</el-button>
         <el-button type="primary" @click="integrationDialogVisible = false">关闭</el-button>
       </template>
-    </el-dialog>
+    </el-drawer>
   </div>
 </template>
 
@@ -814,10 +807,13 @@ const handleEdit = async (row) => {
 const handleSubmit = async () => {
   if (!applicationFormRef.value) return
   
+  // 先进行表单校验，校验失败直接返回，不进入后续逻辑
+  const isValid = await applicationFormRef.value.validate().catch(() => false)
+  if (!isValid) return
+  
+  submitLoading.value = true
+  
   try {
-    await applicationFormRef.value.validate()
-    submitLoading.value = true
-    
     // 转换重定向URI格式：换行分隔文本 → 数组
     const redirectUris = applicationForm.redirect_uris_str
       .split('\n')
@@ -869,6 +865,7 @@ const handleSubmit = async () => {
 
     await getApplications()
   } catch (error) {
+    console.error('提交应用表单失败:', error)
     const operation = isEditing.value ? 'update' : 'create'
     handleApiError(error, getDefaultErrorMessage(operation))
   } finally {
@@ -1039,6 +1036,15 @@ onMounted(() => {
 
 <style scoped>
 
+/* 删除按钮样式 - 默认无颜色，hover 显示 danger 色 */
+.btn-delete {
+  transition: color 0.2s ease;
+}
+
+.btn-delete:hover {
+  color: var(--el-color-danger) !important;
+}
+
 .app-info {
   display: flex;
   align-items: center;
@@ -1070,7 +1076,7 @@ onMounted(() => {
 
 .client-id-text {
   font-family: 'Courier New', Courier, monospace;
-  font-size: var(--font-size-sm, 12px);
+  word-break: break-all;
 }
 
 .secret-alert {
@@ -1137,4 +1143,11 @@ onMounted(() => {
   min-width: 0;
   flex: 1;
 }
+
+/* 表格容器横向滚动 */
+.data-card :deep(.el-card__body) {
+  overflow-x: auto;
+}
+
+
 </style>
