@@ -89,6 +89,17 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column prop="client_type" label="客户端类型" width="120" align="center">
+          <template #default="scope">
+            <el-tag
+              :type="scope.row.client_type === 'public' ? 'warning' : 'success'"
+              size="small"
+              effect="light"
+            >
+              {{ scope.row.client_type === 'public' ? '公开 (SPA)' : '机密' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="is_active" label="状态" width="100" align="center">
           <template #default="scope">
             <el-switch
@@ -107,10 +118,13 @@
             <el-text class="time-text" size="small">{{ formatDate(scope.row.created_at) }}</el-text>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" align="center" fixed="right" class-name="table-cell-flex-center">
+        <el-table-column label="操作" width="300" align="center" fixed="right" class-name="table-cell-flex-center">
           <template #default="scope">
             <el-button type="primary" size="small" link @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon> 编辑
+            </el-button>
+            <el-button type="warning" size="small" link @click="handleShowIntegration(scope.row)">
+              <el-icon><Link /></el-icon> 接入
             </el-button>
             <el-button type="success" size="small" link @click="handleResetSecret(scope.row)">
               <el-icon><RefreshRight /></el-icon> 密钥
@@ -188,6 +202,23 @@
                   </el-form-item>
                 </el-col>
               </el-row>
+              <el-form-item label="客户端类型" prop="client_type">
+                <el-radio-group v-model="applicationForm.client_type">
+                  <el-radio value="confidential">
+                    机密客户端
+                    <el-text type="info" size="small">（服务端应用，如 Superset）</el-text>
+                  </el-radio>
+                  <el-radio value="public">
+                    公开客户端
+                    <el-text type="info" size="small">（浏览器 SPA / 移动端，如 Data Formulator）</el-text>
+                  </el-radio>
+                </el-radio-group>
+                <div class="form-tip" v-if="applicationForm.client_type === 'public'">
+                  <el-text type="warning" size="small">
+                    公开客户端不使用 client_secret，将强制使用 PKCE 进行安全验证
+                  </el-text>
+                </div>
+              </el-form-item>
               <el-form-item label="应用描述" prop="description">
                 <el-input
                   v-model="applicationForm.description"
@@ -210,6 +241,26 @@
                 <el-input v-model="applicationForm.logo_url" placeholder="请输入应用Logo URL（可选）" autocomplete="off" />
               </el-form-item>
             </el-form>
+          </div>
+        </div>
+
+        <!-- 编辑模式下显示接入端点入口 -->
+        <div class="section-block" v-if="isEditing">
+          <div class="section-block__header">
+            <div class="section-block__title">
+              <el-icon><Link /></el-icon>
+              <span>接入端点</span>
+            </div>
+          </div>
+          <div class="section-block__content">
+            <div class="integration-entry">
+              <el-text type="info" size="small">
+                外部系统接入此应用时需要 Discovery URL、Client ID 等信息
+              </el-text>
+              <el-button type="primary" link @click="handleShowIntegrationFromForm">
+                <el-icon><Link /></el-icon> 查看接入端点信息
+              </el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -259,13 +310,124 @@
         <el-button type="primary" @click="secretDialogVisible = false">我已保存，关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 接入信息对话框 -->
+    <el-dialog
+      v-model="integrationDialogVisible"
+      title="接入信息"
+      width="750px"
+    >
+      <el-alert
+        title="以下信息供外部系统接入 SSO 时使用，可直接复制对应地址进行配置。"
+        type="info"
+        :closable="false"
+        show-icon
+        style="margin-bottom: 16px;"
+      />
+
+      <el-descriptions :column="1" border>
+        <el-descriptions-item label="应用名称">
+          {{ integrationInfo.name }}
+        </el-descriptions-item>
+        <el-descriptions-item label="客户端类型">
+          <el-tag
+            :type="integrationInfo.client_type === 'public' ? 'warning' : 'success'"
+            size="small"
+          >
+            {{ integrationInfo.client_type === 'public' ? '公开客户端 (SPA/PKCE)' : '机密客户端' }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="Client ID">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.client_id }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.client_id)">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+          </div>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <div class="integration-section-title">
+        <el-icon><Link /></el-icon>
+        <span>端点地址</span>
+      </div>
+
+      <el-descriptions :column="1" border>
+        <el-descriptions-item label="OIDC Discovery">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.discoveryUrl }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.discoveryUrl)">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="Issuer URL">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.issuerUrl }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.issuerUrl)">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="授权端点">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.authorizeUrl }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.authorizeUrl)">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="令牌端点">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.tokenUrl }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.tokenUrl)">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="用户信息端点">
+          <div class="secret-field">
+            <code class="secret-text">{{ integrationInfo.userinfoUrl }}</code>
+            <el-button size="small" type="primary" link @click="handleCopy(integrationInfo.userinfoUrl)">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+          </div>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <div class="integration-section-title" v-if="integrationInfo.client_type === 'public'">
+        <el-icon><Warning /></el-icon>
+        <span>公开客户端接入说明</span>
+      </div>
+      <el-alert
+        v-if="integrationInfo.client_type === 'public'"
+        type="warning"
+        :closable="false"
+      >
+        <template #title>
+          <div>
+            <p>此应用为公开客户端，接入时请注意：</p>
+            <ul style="margin: 4px 0 0 16px; line-height: 1.8;">
+              <li><strong>不需要</strong> client_secret（前端不应保存密钥）</li>
+              <li><strong>必须使用</strong> PKCE（code_challenge + code_verifier）</li>
+              <li>推荐使用 <code>oidc-client-ts</code> 等标准 OIDC 客户端库</li>
+              <li>Issuer URL 填写上方的 Issuer URL 即可自动发现所有端点</li>
+            </ul>
+          </div>
+        </template>
+      </el-alert>
+
+      <template #footer>
+        <el-button type="primary" @click="integrationDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid, Collection } from '@element-plus/icons-vue'
+import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid, Collection, Link, Warning } from '@element-plus/icons-vue'
 import { applicationApi } from '@/api'
 import EmptyState from '@/components/EmptyState.vue'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
@@ -294,6 +456,7 @@ const applicationForm = reactive({
   id: null,
   name: '',
   code: '',
+  client_type: 'confidential',
   description: '',
   redirect_uris_str: '',
   logo_url: ''
@@ -318,6 +481,48 @@ const secretInfo = reactive({
   client_id: '',
   client_secret: ''
 })
+
+// 接入信息对话框
+const integrationDialogVisible = ref(false)
+const integrationInfo = reactive({
+  name: '',
+  client_id: '',
+  client_type: 'confidential',
+  discoveryUrl: '',
+  issuerUrl: '',
+  authorizeUrl: '',
+  tokenUrl: '',
+  userinfoUrl: '',
+})
+
+const getOAuth2BaseUrl = () => {
+  const origin = window.location.origin
+  return `${origin}/api/v1/oauth2`
+}
+
+const showIntegrationFor = (name, clientId, clientType) => {
+  const base = getOAuth2BaseUrl()
+  integrationInfo.name = name
+  integrationInfo.client_id = clientId
+  integrationInfo.client_type = clientType || 'confidential'
+  integrationInfo.discoveryUrl = `${base}/.well-known/openid-configuration`
+  integrationInfo.issuerUrl = base
+  integrationInfo.authorizeUrl = `${base}/authorize`
+  integrationInfo.tokenUrl = `${base}/token`
+  integrationInfo.userinfoUrl = `${base}/userinfo`
+  integrationDialogVisible.value = true
+}
+
+const handleShowIntegration = (row) => {
+  showIntegrationFor(row.name, row.client_id, row.client_type)
+}
+
+const handleShowIntegrationFromForm = () => {
+  const row = applications.value.find(a => a.id === applicationForm.id)
+  if (row) {
+    showIntegrationFor(row.name, row.client_id, applicationForm.client_type)
+  }
+}
 
 // 格式化日期
 const formatDate = (dateString) => {
@@ -380,6 +585,7 @@ const handleEdit = (row) => {
   applicationForm.id = row.id
   applicationForm.name = row.name
   applicationForm.code = row.code
+  applicationForm.client_type = row.client_type || 'confidential'
   applicationForm.description = row.description || ''
   applicationForm.redirect_uris_str = Array.isArray(row.redirect_uris)
     ? row.redirect_uris.join('\n')
@@ -406,6 +612,7 @@ const handleSubmit = async () => {
       // 更新应用
       const updateData = {
         name: applicationForm.name,
+        client_type: applicationForm.client_type,
         description: applicationForm.description || null,
         redirect_uris: redirectUris,
         logo_url: applicationForm.logo_url || null
@@ -417,6 +624,7 @@ const handleSubmit = async () => {
       const createData = {
         name: applicationForm.name,
         code: applicationForm.code,
+        client_type: applicationForm.client_type,
         description: applicationForm.description || null,
         redirect_uris: redirectUris,
         logo_url: applicationForm.logo_url || null
@@ -517,6 +725,7 @@ const resetForm = () => {
   applicationForm.id = null
   applicationForm.name = ''
   applicationForm.code = ''
+  applicationForm.client_type = 'confidential'
   applicationForm.description = ''
   applicationForm.redirect_uris_str = ''
   applicationForm.logo_url = ''
@@ -638,5 +847,26 @@ onMounted(() => {
 .app-details {
   min-width: 0;
   flex: 1;
+}
+
+.form-tip {
+  margin-top: 4px;
+}
+
+.integration-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.integration-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--el-text-color-primary);
 }
 </style>

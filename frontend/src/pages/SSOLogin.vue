@@ -250,6 +250,8 @@ const redirectUri = computed(() => route.query.redirect_uri || '')
 const responseType = computed(() => route.query.response_type || 'code')
 const scope = computed(() => route.query.scope || '')
 const state = computed(() => route.query.state || '')
+const codeChallenge = computed(() => route.query.code_challenge || '')
+const codeChallengeMethod = computed(() => route.query.code_challenge_method || '')
 const appName = computed(() => route.query.app_name || '')
 
 // 两种模式判断：有 client_id → OAuth2 模式，否则 → 门户模式
@@ -388,6 +390,11 @@ onMounted(async () => {
 
   // 初始化企业微信登录
   await initWechatWorkLogin()
+
+  // 已登录 + OAuth2 模式 → 自动授权，跳过确认页面
+  if (isOAuth2Mode.value && isLoggedIn.value) {
+    await doAuthorize()
+  }
 })
 
 // ==================== OAuth2 模式操作 ====================
@@ -400,6 +407,8 @@ async function doAuthorize() {
       redirect_uri: redirectUri.value,
       scope: scope.value || null,
       state: state.value || null,
+      code_challenge: codeChallenge.value || null,
+      code_challenge_method: codeChallengeMethod.value || null,
     })
     const redirectUrl = response.data?.redirect_url || response.redirect_url
     if (redirectUrl) {

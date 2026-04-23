@@ -278,6 +278,7 @@ input:-internal-autofill-selected {
 .el-popper.is-light,
 .el-popper.is-light > .el-popper__arrow:before {
   background-color: var(--white);
+  border-color: var(--el-color-primary);
 }
 
 .el-dialog {
