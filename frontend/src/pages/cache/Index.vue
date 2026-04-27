@@ -505,21 +505,12 @@ const getBackendTagType = (backend) =>
   CACHE_BACKEND_TAG_TYPE[backend] || "info";
 
 const getFunctionHits = (item) => {
-  let key = item.name;
-  for (const k in perFunctionStats.value) {
-    if (k.indexOf(item.module) !== -1 && perFunctionStats.value[k]?.function === key) {
-      return perFunctionStats.value[k]?.hits ?? 0;
-    }
-  }
-  return 0;
+  let key = item.fqn;
+  return perFunctionStats.value[key]?.hits ?? 0;
 };
 const getFunctionMisses = (item) => {
-  let key = item.name;
-  for (const k in perFunctionStats.value) {
-    if (k.indexOf(item.module) !== -1 && perFunctionStats.value[k]?.function === key) {
-      return perFunctionStats.value[k]?.misses ?? 0;
-    }
-  }
+  let key = item.fqn;
+  return perFunctionStats.value[key]?.misses ?? 0;
   return 0;
 };
 

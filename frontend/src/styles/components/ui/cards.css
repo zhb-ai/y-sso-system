@@ -37,20 +37,6 @@
   border-top: 1px solid var(--border_color);
 }
 
-/* ===== Element Plus 卡片样式 ===== */
-.el-card {
-  border: 1px solid var(--border_color) !important;
-  border-radius: var(--app-border-radius) !important;
-  overflow: hidden;
-  transition: all 0.2s ease;
-  box-shadow: var(--box-shadow);
-}
-
-.el-card:hover {
-  box-shadow: var(--hover-shadow);
-  border-color: rgba(var(--primary), 0.15) !important;
-}
-
 /* ===== 数据卡片样式 ===== */
 
 /* ===== 应用信息卡片样式 ===== */

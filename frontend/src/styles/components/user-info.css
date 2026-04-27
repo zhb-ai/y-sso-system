@@ -75,7 +75,7 @@
 }
 
 /* 下拉菜单样式 */
-.el-dropdown-menu {
+.user-menu-popper .el-dropdown-menu {
   border-radius: var(--app-border-radius);
   border: 1px solid var(--border_color);
   box-shadow: var(--hover-shadow);

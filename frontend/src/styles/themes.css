@@ -436,7 +436,7 @@ input:-internal-autofill-selected {
 
 /* 卡片样式优化 - 更简洁 */
 .el-card {
-  border: 1px solid rgb(var(--gray-200));
+  border: 1px solid var(--border_color);
   border-radius: var(--app-border-radius);
   box-shadow: none;
   transition: var(--app-transition);
