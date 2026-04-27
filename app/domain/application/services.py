@@ -11,6 +11,7 @@ from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 
 from jose import JWTError, jwt
+from sqlalchemy import func
 from yweb.log import get_logger
 from yweb.auth.schemas import TokenData, TokenPayload
 from yweb.orm import transaction_manager as tm
@@ -192,7 +193,38 @@ class ApplicationService:
         if is_active is not None:
             query = query.filter(Application.is_active == is_active)
 
-        return query.paginate(page=page, page_size=page_size)
+        page_result = query.paginate(page=page, page_size=page_size)
+        self._attach_call_counts_to_page(page_result)
+        return page_result
+
+    def _attach_call_counts_to_page(self, page_result, now: datetime = None) -> None:
+        """为应用分页结果补充近期调用次数"""
+        apps = getattr(page_result, "rows", None) or getattr(page_result, "items", [])
+        app_ids = [app.id for app in apps if getattr(app, "id", None) is not None]
+        if not app_ids:
+            return
+
+        current_time = now or datetime.now(timezone.utc)
+        counts_24h = self._get_authorization_counts_since(app_ids, current_time - timedelta(days=1))
+        counts_7d = self._get_authorization_counts_since(app_ids, current_time - timedelta(days=7))
+
+        for app in apps:
+            app.call_count_24h = counts_24h.get(app.id, 0)
+            app.call_count_7d = counts_7d.get(app.id, 0)
+
+    def _get_authorization_counts_since(self, app_ids: List[int], since: datetime) -> dict:
+        """按应用统计指定时间之后生成的授权码数量"""
+        rows = (
+            AuthorizationCode.query
+            .with_entities(AuthorizationCode.application_id, func.count(AuthorizationCode.id))
+            .filter(
+                AuthorizationCode.application_id.in_(app_ids),
+                AuthorizationCode.created_at >= since,
+            )
+            .group_by(AuthorizationCode.application_id)
+            .all()
+        )
+        return {application_id: count for application_id, count in rows}
 
     def reset_client_secret(self, app_id: int) -> tuple:
         """重置客户端密钥

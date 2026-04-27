@@ -36,8 +36,8 @@
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-info">
-              <h3>{{ userCount }}</h3>
-              <p>日活用户</p>
+              <h3>{{ userCount }}/{{ totalUserCount }}</h3>
+              <p>日活用户/总用户</p>
             </div>
             <div class="stat-icon user">
               <el-icon><User /></el-icon>
@@ -210,6 +210,7 @@ const loginLoading = ref(true)
 // 统计数据
 const applicationCount = ref(0)
 const userCount = ref(0)
+const totalUserCount = ref(0)
 const departmentCount = ref(0)
 const employeeCount = ref(0)
 
@@ -238,6 +239,7 @@ const fetchStatistics = async () => {
     const data = response.data || {}
     applicationCount.value = data.application_count || 0
     userCount.value = data.user_count || 0
+    totalUserCount.value = data.total_user_count || 0
     departmentCount.value = data.department_count || 0
     employeeCount.value = data.employee_count || 0
   } catch (error) {

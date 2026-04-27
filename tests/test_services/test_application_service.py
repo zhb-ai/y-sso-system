@@ -1,6 +1,7 @@
 """ApplicationService 测试"""
 
 import pytest
+from datetime import datetime, timezone
 
 from app.domain.application.entities import Application
 from app.domain.application.services import ApplicationService
@@ -27,6 +28,34 @@ def application_service():
 
 class TestApplicationService:
     """ApplicationService 行为测试"""
+
+    def test_attach_call_counts_sets_24h_and_7d_counts(self, application_service, monkeypatch):
+        """应用列表统计应补充 24 小时和 7 天调用次数"""
+        apps = [
+            type("AppStub", (), {"id": 1})(),
+            type("AppStub", (), {"id": 2})(),
+        ]
+        page_result = type("PageStub", (), {"rows": apps})()
+
+        def _get_authorization_counts_since(app_ids, since):
+            assert app_ids == [1, 2]
+            return {1: 3, 2: 5} if since.day == 7 else {1: 10}
+
+        monkeypatch.setattr(
+            application_service,
+            "_get_authorization_counts_since",
+            _get_authorization_counts_since,
+        )
+
+        application_service._attach_call_counts_to_page(
+            page_result,
+            now=datetime(2026, 1, 8, tzinfo=timezone.utc),
+        )
+
+        assert apps[0].call_count_24h == 3
+        assert apps[0].call_count_7d == 10
+        assert apps[1].call_count_24h == 5
+        assert apps[1].call_count_7d == 0
 
     def test_create_public_application_clears_secret(self, application_service):
         """创建公开客户端时不应保留客户端密钥"""
