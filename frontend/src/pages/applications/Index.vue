@@ -72,6 +72,16 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column prop="call_count_24h" label="24小时调用次数" width="130" align="center">
+          <template #default="scope">
+            {{ scope.row.call_count_24h || 0 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="call_count_7d" label="一周调用次数" width="120" align="center">
+          <template #default="scope">
+            {{ scope.row.call_count_7d || 0 }}
+          </template>
+        </el-table-column>
         <el-table-column prop="code" label="应用编码" min-width="120" />
         <el-table-column prop="client_id" label="客户端ID" min-width="220">
           <template #default="scope">

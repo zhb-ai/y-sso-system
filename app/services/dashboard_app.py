@@ -32,8 +32,9 @@ class DashboardAppService:
         """获取系统概览统计
 
         Returns:
-            包含 application_count, user_count, employee_count, department_count 的字典
+            包含 application_count, user_count, total_user_count, employee_count, department_count 的字典
             user_count: 过去24小时内活跃用户数（基于 last_login_at 筛选）
+            total_user_count: 系统总用户数
         """
         since = datetime.now() - timedelta(hours=24)
         daily_active_count = (
@@ -41,9 +42,11 @@ class DashboardAppService:
             .filter(self.user_model.last_login_at >= since)
             .count()
         )
+        total_user_count = self.user_model.query.count()
         stats = {
             "application_count": self.application_model.query.count(),
             "user_count": daily_active_count,
+            "total_user_count": total_user_count,
             "employee_count": 0,
             "department_count": 0,
         }

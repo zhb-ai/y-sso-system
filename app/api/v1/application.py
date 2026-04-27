@@ -60,6 +60,8 @@ class ApplicationResponse(DTO):
     allowed_ip_cidrs: list = []
     logo_url: Optional[str] = None
     is_active: bool = True
+    call_count_24h: int = 0
+    call_count_7d: int = 0
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
