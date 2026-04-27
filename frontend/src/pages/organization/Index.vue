@@ -239,26 +239,24 @@
           :data="deptEmployees"
           style="width: 100%"
           row-key="id"
-          tooltip-effect="light"
+          tooltip-effect="dark"
         >
-          <el-table-column prop="name" label="姓名" min-width="80">
+          <el-table-column prop="name" show-overflow-tooltip label="姓名" width="120">
             <template #default="{ row }">
-              <div class="employee-info">
                 <el-avatar :size="32" class="avatar">{{
                   row.name?.charAt(0)
                 }}</el-avatar>
-                <span>{{ row.name }}</span>
-              </div>
+                <span style="margin-left: 8px">{{ row.name }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="code" label="员工编码" min-width="120">
+          <el-table-column prop="code" label="员工编码" width="120">
             <template #default="{ row }">
               {{ row.code || "未设置" }}
             </template>
           </el-table-column>
           <el-table-column prop="emp_no" label="工号" width="100" />
-          <el-table-column prop="position" label="职位" min-width="100" />
-          <el-table-column prop="mobile" label="手机" min-width="120" />
+          <el-table-column prop="position" label="职位" />
+          <el-table-column prop="mobile" label="手机" width="120" align="center" />
           <el-table-column
             label="雇佣状态"
             width="120"
@@ -1002,7 +1000,7 @@
               size="small"
             >
               <el-table-column prop="name" label="姓名" width="110" />
-              <el-table-column prop="mobile" label="手机" width="130" />
+              <el-table-column prop="mobile" label="手机" width="130" align="center" />
               <el-table-column
                 prop="email"
                 label="邮箱"

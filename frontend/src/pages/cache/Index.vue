@@ -142,7 +142,7 @@
         :data="functions"
         row-key="name"
         style="width: 100%"
-        tooltip-effect="light"
+        tooltip-effect="dark"
       >
         <el-table-column
           :prop="CACHE_FUNCTION_COLUMNS.NAME"

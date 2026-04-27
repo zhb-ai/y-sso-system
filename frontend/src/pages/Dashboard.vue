@@ -158,7 +158,7 @@
         <el-table-column prop="username" label="用户名" width="90" />
         <el-table-column prop="ip_address" label="登录IP" width="120" />
         <el-table-column prop="user_agent" label="浏览器信息" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="created_at" label="登录时间" width="160">
+        <el-table-column prop="created_at" label="登录时间" width="160" align="center">
           <template #default="scope">
             {{ formatDate(scope.row.created_at) }}
           </template>

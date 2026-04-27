@@ -49,7 +49,7 @@
     
     <!-- 员工列表 -->
     <el-card class="data-card" shadow="hover">
-      <el-table v-if="employees.length > 0" v-loading="loading" :data="employees" style="width: 100%" tooltip-effect="light">
+      <el-table v-if="employees.length > 0" v-loading="loading" :data="employees" style="width: 100%" tooltip-effect="dark">
         <el-table-column prop="name" label="姓名" min-width="160">
           <template #default="{ row }">
             <div class="employee-info">
@@ -63,7 +63,7 @@
             {{ row.code || '未设置' }}
           </template>
         </el-table-column>
-        <el-table-column prop="mobile" label="手机号" min-width="130" show-overflow-tooltip />
+        <el-table-column prop="mobile" label="手机号" min-width="130" align="center" show-overflow-tooltip />
         <el-table-column prop="email" label="邮箱" min-width="180" show-overflow-tooltip />
         <el-table-column label="性别" width="70">
           <template #default="{ row }">

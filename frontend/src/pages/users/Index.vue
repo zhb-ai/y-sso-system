@@ -75,13 +75,13 @@
         :data="userList"
         style="width: 100%"
         row-key="id"
-        tooltip-effect="light"
+        tooltip-effect="dark"
       >
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="username" label="用户名" min-width="120" />
         <el-table-column prop="name" label="姓名" min-width="100" />
         <el-table-column prop="email" label="邮箱" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="phone" label="手机号" min-width="120" />
+        <el-table-column prop="phone" label="手机号" min-width="120" align="center" />
         <el-table-column label="角色" min-width="150">
           <template #default="scope">
             <span v-for="(role, index) in scope.row.roles || []" :key="role.code">

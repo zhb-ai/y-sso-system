@@ -139,6 +139,7 @@
 
 .section-block__add-form .el-form-item {
   margin-bottom: 0;
+  min-height: 32px;
 }
 
 /* 紧凑模式 */

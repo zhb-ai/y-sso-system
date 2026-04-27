@@ -68,7 +68,7 @@
         :data="filteredRoles"
         style="width: 100%"
         row-key="id"
-        tooltip-effect="light"
+        tooltip-effect="dark"
       >
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="name" label="角色名称" min-width="120" />

@@ -56,10 +56,10 @@
         :data="applications"
         style="width: 100%"
         row-key="id"
-        tooltip-effect="light"
+        tooltip-effect="dark"
       >
         <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="name" label="应用名称" min-width="200">
+        <el-table-column prop="name" show-overflow-tooltip label="应用名称" min-width="200">
           <template #default="scope">
             <div class="app-info">
               <el-avatar :size="32" :src="scope.row.logo_url" class="app-logo" alt="应用图标">
