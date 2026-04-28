@@ -6,6 +6,16 @@ import { test, expect } from '@playwright/test';
 import { navigateTo, ROUTES } from './fixtures/shared-auth.js';
 import { generateAppData, generateAppName } from './fixtures/test-data.js';
 
+function getDrawerByTitle(page, title) {
+  return page.locator('.el-drawer').filter({ has: page.locator('.el-drawer__header', { hasText: title }) });
+}
+
+function getApplicationFormDrawer(page) {
+  return page.locator('.el-drawer').filter({
+    has: page.locator('.el-drawer__header').filter({ hasText: /新建应用|编辑应用/ })
+  });
+}
+
 test.describe.serial('应用管理页面 - 完整测试流程', () => {
   let createdApp = null;
   let updatedAppName = null;
@@ -43,27 +53,26 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
     createdApp = generateAppData();
 
     await page.locator('button:has-text("新建")').first().click();
-    await expect(page.locator('.el-dialog')).toBeVisible();
-    await expect(page.locator('.el-dialog__title')).toContainText('新建应用');
+    const createDrawer = getDrawerByTitle(page, '新建应用');
+    await expect(createDrawer).toBeVisible();
+    await expect(createDrawer.locator('.el-drawer__header')).toContainText('新建应用');
 
-    const dialog = page.locator('.el-dialog');
-    await dialog.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
-    await dialog.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
-    await dialog.locator('textarea[placeholder*="请输入应用描述"]').fill(createdApp.description);
+    await createDrawer.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
+    await createDrawer.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
+    await createDrawer.locator('textarea[placeholder*="请输入应用描述"]').fill(createdApp.description);
 
-    await page.locator('.el-dialog__footer button:has-text("确认")').click();
+    await createDrawer.locator('.el-drawer__footer button:has-text("创建并生成配置")').click();
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
     await page.waitForTimeout(1000);
 
-    const credentialDialog = page.locator('.el-dialog').filter({ hasText: '客户端凭证' });
-    await expect(credentialDialog).toBeVisible();
-
-    await credentialDialog.locator('.el-dialog__footer button:has-text("我已保存，关闭")').click();
-    await page.waitForTimeout(1500);
-
-    await expect(credentialDialog).not.toBeVisible();
+    const formDrawer = getApplicationFormDrawer(page);
+    await expect(formDrawer).toBeVisible();
+    await expect(formDrawer).toContainText('SSO 对接信息');
+    await expect(formDrawer).toContainText('客户端 ID');
+    await formDrawer.locator('.el-drawer__footer button:has-text("取消")').click();
+    await expect(formDrawer).not.toBeVisible();
     await expect(page.locator('.el-table__body')).toContainText(createdApp.name);
   });
 
@@ -101,11 +110,12 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
     if (!createdApp) {
       createdApp = generateAppData();
       await page.locator('button:has-text("新建")').first().click();
-      const dialog = page.locator('.el-dialog');
-      await dialog.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
-      await dialog.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
-      await page.locator('.el-dialog__footer button:has-text("确认")').click();
+      const createDrawer = getDrawerByTitle(page, '新建应用');
+      await createDrawer.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
+      await createDrawer.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
+      await createDrawer.locator('.el-drawer__footer button:has-text("创建并生成配置")').click();
       await page.waitForTimeout(2000);
+      await createDrawer.locator('.el-drawer__footer button:has-text("取消")').click();
     }
 
     await page.waitForSelector('.el-table__row', { timeout: 10000 });
@@ -126,21 +136,22 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
     await targetRow.locator('button:has-text("编辑")').click();
     await page.waitForTimeout(500);
 
-    const editDialog = page.locator('.el-dialog').filter({ hasText: '编辑应用' });
-    await expect(editDialog).toBeVisible();
-    await expect(editDialog.locator('.el-dialog__title')).toContainText('编辑应用');
+    const editDrawer = getDrawerByTitle(page, '编辑应用');
+    await expect(editDrawer).toBeVisible();
+    await expect(editDrawer.locator('.el-drawer__header')).toContainText('编辑应用');
 
     updatedAppName = generateAppName();
 
-    const nameInput = editDialog.locator('input[placeholder*="请输入应用名称"]');
+    const nameInput = editDrawer.locator('input[placeholder*="请输入应用名称"]');
     await nameInput.clear();
     await nameInput.fill(updatedAppName);
 
-    await editDialog.locator('.el-dialog__footer button:has-text("确认")').click();
+    await editDrawer.locator('.el-drawer__footer button:has-text("保存")').click();
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
     await page.waitForTimeout(1000);
+    await expect(editDrawer).not.toBeVisible();
 
     await expect(page.locator('.el-table__body')).toContainText(updatedAppName);
   });
@@ -151,11 +162,12 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
     if (!appNameToDelete) {
       createdApp = generateAppData();
       await page.locator('button:has-text("新建")').first().click();
-      const dialog = page.locator('.el-dialog');
-      await dialog.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
-      await dialog.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
-      await page.locator('.el-dialog__footer button:has-text("确认")').click();
+      const createDrawer = getDrawerByTitle(page, '新建应用');
+      await createDrawer.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
+      await createDrawer.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
+      await createDrawer.locator('.el-drawer__footer button:has-text("创建并生成配置")').click();
       await page.waitForTimeout(2000);
+      await createDrawer.locator('.el-drawer__footer button:has-text("取消")').click();
     }
 
     const nameToDelete = appNameToDelete || createdApp.name;

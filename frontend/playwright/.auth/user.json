@@ -6,15 +6,15 @@
       "localStorage": [
         {
           "name": "token",
-          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6IiIsInJvbGVzIjpbImFkbWluIl0sInRva2VuX3R5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NzU3OTAxOTgsImlhdCI6MTc3NTc5MDEzOH0.UdLKF1hcEpKd-7fA_sff_YguS0Xd-xt1JI9T117y_bk"
+          "value": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNzby1yczI1Ni1rZXktMSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6IiIsInJvbGVzIjpbImFkbWluIl0sInRva2VuX3R5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NzczNjM1NTEsImlhdCI6MTc3NzM2MzQ5MX0.fwbfK9Hn_h9QSkv5IlSdw0FJ8hyUdey_6FeNuOK_5yM"
         },
         {
           "name": "refreshToken",
-          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInRva2VuX3R5cGUiOiJyZWZyZXNoIiwiZXhwIjoxNzc2Mzk0OTM4LCJpYXQiOjE3NzU3OTAxMzh9.q5J6yuw0IDEdVWJ7rjNtgSTosVAODql2gjsCbHsgPnA"
+          "value": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNzby1yczI1Ni1rZXktMSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInRva2VuX3R5cGUiOiJyZWZyZXNoIiwiZXhwIjoxNzc3OTY4MjkxLCJpYXQiOjE3NzczNjM0OTF9.ohcuamsQGuE1ugZ1mCB1FbnRBFNY6hvg7v3_x2hB0e8"
         },
         {
           "name": "userInfo",
-          "value": "{\"id\":1,\"username\":\"admin\",\"email\":\"\",\"phone\":\"\",\"is_active\":true,\"roles\":[\"admin\"],\"sso_roles\":[],\"must_change_password\":false}"
+          "value": "{\"id\":1,\"name\":\"管理员\",\"username\":\"admin\",\"email\":\"\",\"phone\":\"\",\"is_active\":true,\"roles\":[\"admin\"],\"sso_roles\":[],\"must_change_password\":false}"
         }
       ]
     }

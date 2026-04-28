@@ -6,6 +6,10 @@ import { test, expect } from '@playwright/test';
 import { navigateTo, ROUTES } from './fixtures/shared-auth.js';
 import { generateRoleData, generateRoleName, generateRoleDescription } from './fixtures/test-data.js';
 
+function getPermissionDrawer(page) {
+  return page.locator('.el-drawer').filter({ has: page.locator('.el-drawer__header', { hasText: '分配权限' }) });
+}
+
 test.describe.serial('角色管理页面 - 完整测试流程', () => {
   let createdRole = null;
   let updatedRoleName = null;
@@ -131,13 +135,15 @@ test.describe.serial('角色管理页面 - 完整测试流程', () => {
     expect(targetRow).not.toBeNull();
 
     await targetRow.locator('button:has-text("权限")').click();
-    await expect(page.locator('.el-drawer')).toBeVisible();
-    await expect(page.locator('.el-drawer__header')).toContainText('权限');
+    const permissionDrawer = getPermissionDrawer(page);
+    await expect(permissionDrawer).toBeVisible();
+    await expect(permissionDrawer.locator('.el-drawer__header')).toContainText('分配权限');
 
     await page.waitForTimeout(1000);
 
-    await page.locator('.el-drawer__close-btn, button:has-text("关闭")').first().click();
+    await permissionDrawer.locator('.el-drawer__close-btn, button:has-text("关闭")').first().click();
     await page.waitForTimeout(500);
+    await expect(permissionDrawer).not.toBeVisible();
   });
 
   test('5. 删除角色', async () => {

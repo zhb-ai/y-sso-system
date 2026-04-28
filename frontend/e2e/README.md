@@ -1,42 +1,42 @@
 # Y-SSO 系统 E2E 测试
 
-本项目使用 [Playwright](https://playwright.dev/) 进行端到端测试。
+本项目使用 [Playwright](https://playwright.dev/) 进行真实后端联调的端到端测试。
 
-## 测试账号配置
+## 当前测试策略
 
-所有需要登录的测试使用以下默认测试账号：
+### 1. 统一认证基座
 
-- **用户名**: `admin`
-- **密码**: `admin123`
+默认使用 `playwright.config.js` 中的 `globalSetup` 先生成共享登录态，再通过 `storageState` 复用到大多数后台测试。
 
-账号配置位于 `e2e/fixtures/auth.js` 中的 `TEST_CREDENTIALS` 常量。
+- 共享登录态文件：`playwright/.auth/user.json`
+- 主认证逻辑：`e2e/fixtures/smart-auth.js`
+- 全局登录入口：`e2e/fixtures/global-setup.js`
 
-## 测试特点
+登录成功的判定不再依赖页面文案，而是基于：
 
-### 显式登录流程
+1. token / `userInfo` 已写入浏览器存储
+2. 已进入受保护页面或 SSO 门户页
+3. 测试账号满足后台访问前置条件（默认要求 `admin` 角色）
 
-**每个需要登录的测试都会独立执行完整的登录流程**：
+### 2. 公共页面与后台页面分离
 
-1. 访问登录页面 `/login`
-2. 输入用户名 `admin`
-3. 输入密码 `admin123`
-4. 点击登录按钮
-5. 等待跳转到仪表盘 `/dashboard`
-6. 验证登录成功
-7. 导航到目标测试页面
-8. 验证页面元素
+- `login.spec.js`、`sso-login.spec.js` 属于公共页面测试，不复用登录态
+- 其余后台页面测试默认复用共享登录态
 
-这样可以确保：
-- 每个测试都是独立的
-- 登录状态正确
-- 页面数据正常加载
+### 3. Smoke 与 Stateful 分层
+
+- `npm run test:smoke`：登录、SSO 门户、仪表盘、系统设置、缓存等稳定页面验证
+- `npm run test:stateful`：应用、用户、角色、组织、员工、个人资料等带数据变更的联调用例
 
 ## 目录结构
 
 ```
 e2e/
 ├── fixtures/           # 测试 fixtures
-│   └── auth.js        # 认证相关的 fixtures，提供 performLogin 函数
+│   ├── global-setup.js # 全局登录，生成共享 storageState
+│   ├── smart-auth.js   # 统一登录 / 校验 / 导航能力
+│   ├── shared-auth.js  # 基于共享登录态的后台导航
+│   └── auth.js         # 兼容层，复用 smart-auth
 ├── pages/             # Page Object Models
 │   ├── BasePage.js    # 基础页面对象
 │   ├── LoginPage.js   # 登录页面对象
@@ -63,21 +63,24 @@ e2e/
 └── cache.spec.js      # 缓存管理测试（显式登录）
 ```
 
-## 测试覆盖页面
+## 环境变量
 
-| 页面 | 测试文件 | 登录方式 |
-|------|----------|----------|
-| 登录页 | `login.spec.js` | 无需登录 |
-| 单点登录页 | `sso-login.spec.js` | 显示登录 |
-| 仪表盘 | `dashboard.spec.js` | 显式登录 |
-| 应用管理 | `applications.spec.js` | 显式登录 |
-| 用户管理 | `users.spec.js` | 显式登录 |
-| 角色管理 | `roles.spec.js` | 显式登录 |
-| SSO角色 | `sso-roles.spec.js` | 显式登录 |
-| 组织架构 | `organization.spec.js` | 显式登录 |
-| 员工管理 | `employees.spec.js` | 显式登录 |
-| 系统设置 | `settings.spec.js` | 显式登录 |
-| 缓存管理 | `cache.spec.js` | 显式登录 |
+可选环境变量如下：
+
+- `PLAYWRIGHT_BASE_URL`：前端地址，默认 `http://localhost:5200`
+- `E2E_USERNAME`：测试账号用户名，默认 `admin`
+- `E2E_PASSWORD`：测试账号密码，默认 `admin123`
+- `PLAYWRIGHT_AUTH_FILE`：共享登录态文件路径
+- `E2E_REQUIRE_ADMIN`：是否要求测试账号具备 `admin` 角色，默认 `true`
+
+## 环境前置条件
+
+运行后台联调测试前，请确保：
+
+1. 前端可在 `PLAYWRIGHT_BASE_URL` 正常访问
+2. 后端接口可用，登录接口与受保护页面可联通
+3. 测试账号不是“首次登录必须改密”状态
+4. 若运行后台测试，测试账号具备 `admin` 角色
 
 ## 快速开始
 
@@ -92,6 +95,12 @@ npm run test:install
 ```bash
 # 运行所有测试
 npm run test
+
+# 运行稳定 smoke 套件
+npm run test:smoke
+
+# 运行带数据变更的 stateful 套件
+npm run test:stateful
 
 # 运行特定测试文件
 npx playwright test login.spec.js
@@ -115,40 +124,6 @@ npm run test:report
 
 ## 测试说明
 
-### 测试类型
-
-所有测试都是**简单的元素存在性验证**，不做功能测试：
-
-- 验证页面标题是否存在
-- 验证输入框是否存在
-- 验证按钮是否存在
-- 验证表格是否存在
-- 验证分页组件是否存在
-
-### 显式登录示例
-
-```javascript
-import { test, expect, performLogin } from './fixtures/auth.js';
-import { DashboardPage } from './pages/DashboardPage.js';
-
-test('仪表盘页面测试', async ({ page }) => {
-  // 显式执行登录流程（访问登录页 -> 输入账号密码 -> 点击登录 -> 验证成功）
-  await performLogin(page);
-  
-  // 登录成功后，导航到目标页面
-  const dashboardPage = new DashboardPage(page);
-  await dashboardPage.goto();
-  await dashboardPage.expectPageLoaded();
-  
-  // 验证页面元素
-  await expect(dashboardPage.pageTitle).toBeVisible();
-});
-```
-
-### 测试账号
-
-默认测试账号：
-- 用户名：`admin`
-- 密码：`admin123`
-
-如需修改，请编辑 `e2e/fixtures/auth.js` 文件中的 `TEST_CREDENTIALS` 常量。
+- smoke 套件以页面加载和关键元素可见为主，用于快速验证登录链路和核心页面可用性
+- stateful 套件包含新建、编辑、删除等操作，对测试数据与账号权限更敏感
+- 若全局登录失败，优先检查测试账号权限、是否触发强制改密，以及后端接口是否正常

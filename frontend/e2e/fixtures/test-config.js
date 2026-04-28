@@ -4,13 +4,19 @@
  */
 
 // 基础URL配置
-export const BASE_URL = 'http://localhost:5200';
+export const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5200';
 
 // 测试账号配置
 export const TEST_CREDENTIALS = {
-  username: 'admin',
-  password: 'admin123'
+  username: process.env.E2E_USERNAME || 'admin',
+  password: process.env.E2E_PASSWORD || 'admin123'
 };
+
+// 共享认证状态
+export const AUTH_STORAGE_FILE = process.env.PLAYWRIGHT_AUTH_FILE || 'playwright/.auth/user.json';
+
+// 测试环境前置条件
+export const E2E_REQUIRE_ADMIN = process.env.E2E_REQUIRE_ADMIN !== 'false';
 
 // 页面路由配置
 export const ROUTES = {
@@ -51,7 +57,8 @@ export const MENU_PATH_MAP = {
 export const TIMEOUTS = {
   DEFAULT: 5000,
   LONG: 10000,
-  NAVIGATION: 3000
+  NAVIGATION: 3000,
+  AUTH: 15000
 };
 
 /**

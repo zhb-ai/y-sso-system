@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "playwright test",
+    "test:smoke": "playwright test e2e/login.spec.js e2e/sso-login.spec.js e2e/dashboard.spec.js e2e/settings.spec.js e2e/cache.spec.js",
+    "test:stateful": "playwright test e2e/applications.spec.js e2e/users.spec.js e2e/roles.spec.js e2e/sso-roles.spec.js e2e/organization.spec.js e2e/employees.spec.js e2e/profile.spec.js",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",

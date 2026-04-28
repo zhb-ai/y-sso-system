@@ -3,7 +3,7 @@
  * 所有测试共享同一个登录状态，避免并发登录冲突
  */
 import { chromium } from '@playwright/test';
-import { TEST_CREDENTIALS, ROUTES, getFullUrl } from './test-config.js';
+import { AUTH_STORAGE_FILE } from './test-config.js';
 import { login } from './smart-auth.js';
 
 async function globalSetup() {
@@ -14,11 +14,9 @@ async function globalSetup() {
   console.log('[Global Setup] 执行全局登录...');
 
   try {
-    // 执行登录
     await login(page);
 
-    // 保存登录状态
-    await context.storageState({ path: 'playwright/.auth/user.json' });
+    await context.storageState({ path: AUTH_STORAGE_FILE });
     console.log('[Global Setup] 登录状态已保存');
   } catch (error) {
     console.error('[Global Setup] 登录失败:', error.message);

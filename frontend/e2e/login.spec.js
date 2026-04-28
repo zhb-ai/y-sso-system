@@ -5,6 +5,8 @@
 import { test, expect } from '@playwright/test';
 import { ROUTES, getFullUrl } from './fixtures/test-config.js';
 
+test.use({ storageState: undefined });
+
 test.describe.serial('登录页面 - 元素存在性验证', () => {
 
   test('页面标题存在', async ({ browser }) => {

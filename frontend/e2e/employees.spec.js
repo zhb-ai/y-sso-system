@@ -6,6 +6,14 @@ import { test, expect } from '@playwright/test';
 import { navigateTo, ROUTES } from './fixtures/shared-auth.js';
 import { generateEmployeeData, generateEmployeeName, generateEmail, generatePhone } from './fixtures/test-data.js';
 
+function getEmployeeDrawer(page, title) {
+  return page.locator('.el-drawer').filter({ has: page.locator('.el-drawer__header', { hasText: title }) });
+}
+
+function getAccountResultDialog(page) {
+  return page.locator('.el-dialog').filter({ hasText: '用户账号已创建' });
+}
+
 test.describe.serial('员工管理页面 - 完整测试流程', () => {
   let createdEmployee = null;
   let updatedEmployeeName = null;
@@ -42,27 +50,32 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
     createdEmployee = generateEmployeeData();
 
     await page.locator('button:has-text("新建")').first().click();
-    await expect(page.locator('.el-dialog')).toBeVisible();
-    await expect(page.locator('.el-dialog__title')).toContainText('新建员工');
+    const createDrawer = getEmployeeDrawer(page, '新建员工');
+    await expect(createDrawer).toBeVisible();
+    await expect(createDrawer.locator('.el-drawer__header')).toContainText('新建员工');
 
-    // 使用更精确的选择器，限定在对话框内
-    const dialog = page.locator('.el-dialog');
-    await dialog.locator('input[placeholder*="请输入姓名"]').fill(createdEmployee.name);
-    await dialog.locator('input[placeholder*="邮箱"]').fill(createdEmployee.email);
-    await dialog.locator('input[placeholder*="手机"]').fill(createdEmployee.phone);
+    await createDrawer.locator('input[placeholder*="请输入姓名"]').fill(createdEmployee.name);
+    await createDrawer.locator('input[placeholder*="邮箱"]').fill(createdEmployee.email);
+    await createDrawer.locator('input[placeholder*="手机"]').fill(createdEmployee.phone);
     // 工号可能是自动生成的，如果输入框被禁用则跳过
-    const employeeNoInput = dialog.locator('input[placeholder*="工号"]');
+    const employeeNoInput = createDrawer.locator('input[placeholder*="工号"]');
     const isDisabled = await employeeNoInput.isDisabled().catch(() => true);
     if (!isDisabled) {
       await employeeNoInput.fill(createdEmployee.employeeNo);
     }
 
-    await dialog.locator('.el-dialog__footer button:has-text("确定")').click();
+    await createDrawer.locator('.el-drawer__footer button:has-text("确定")').click();
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
     await page.waitForTimeout(1000);
-    await expect(page.locator('.el-dialog')).not.toBeVisible();
+
+    const accountResultDialog = getAccountResultDialog(page);
+    if (await accountResultDialog.isVisible().catch(() => false)) {
+      await accountResultDialog.locator('.el-dialog__footer button:has-text("知道了")').click();
+      await expect(accountResultDialog).not.toBeVisible();
+    }
+    await expect(createDrawer).not.toBeVisible();
 
     await expect(page.locator('.el-table__body')).toContainText(createdEmployee.name);
   });
@@ -93,11 +106,15 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
     if (!createdEmployee) {
       createdEmployee = generateEmployeeData();
       await page.locator('button:has-text("新建")').first().click();
-      const dialog = page.locator('.el-dialog');
-      await dialog.locator('input[placeholder*="请输入姓名"]').fill(createdEmployee.name);
-      await dialog.locator('input[placeholder*="邮箱"]').fill(createdEmployee.email);
-      await dialog.locator('.el-dialog__footer button:has-text("确定")').click();
+      const createDrawer = getEmployeeDrawer(page, '新建员工');
+      await createDrawer.locator('input[placeholder*="请输入姓名"]').fill(createdEmployee.name);
+      await createDrawer.locator('input[placeholder*="邮箱"]').fill(createdEmployee.email);
+      await createDrawer.locator('.el-drawer__footer button:has-text("确定")').click();
       await page.waitForTimeout(2000);
+      const accountResultDialog = getAccountResultDialog(page);
+      if (await accountResultDialog.isVisible().catch(() => false)) {
+        await accountResultDialog.locator('.el-dialog__footer button:has-text("知道了")').click();
+      }
     }
 
     await page.waitForSelector('.el-table__row', { timeout: 10000 });
@@ -116,26 +133,27 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
     expect(targetRow).not.toBeNull();
 
     await targetRow.locator('button:has-text("编辑")').click();
-    await expect(page.locator('.el-dialog')).toBeVisible();
-    await expect(page.locator('.el-dialog__title')).toContainText('编辑员工');
+    const editDrawer = getEmployeeDrawer(page, '编辑员工');
+    await expect(editDrawer).toBeVisible();
+    await expect(editDrawer.locator('.el-drawer__header')).toContainText('编辑员工');
 
     updatedEmployeeName = generateEmployeeName();
     const newEmail = generateEmail();
 
-    const dialog = page.locator('.el-dialog');
-    const nameInput = dialog.locator('input[placeholder*="请输入姓名"]');
+    const nameInput = editDrawer.locator('input[placeholder*="请输入姓名"]');
     await nameInput.clear();
     await nameInput.fill(updatedEmployeeName);
 
-    const emailInput = dialog.locator('input[placeholder*="邮箱"]');
+    const emailInput = editDrawer.locator('input[placeholder*="邮箱"]');
     await emailInput.clear();
     await emailInput.fill(newEmail);
 
-    await dialog.locator('.el-dialog__footer button:has-text("确定")').click();
+    await editDrawer.locator('.el-drawer__footer button:has-text("确定")').click();
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
     await page.waitForTimeout(1000);
+    await expect(editDrawer).not.toBeVisible();
 
     await expect(page.locator('.el-table__body')).toContainText(updatedEmployeeName);
   });
@@ -146,10 +164,15 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
     if (!employeeNameToDelete) {
       createdEmployee = generateEmployeeData();
       await page.locator('button:has-text("新建")').first().click();
-      await page.locator('input[placeholder*="姓名"]').fill(createdEmployee.name);
-      await page.locator('input[placeholder*="邮箱"]').fill(createdEmployee.email);
-      await page.locator('.el-dialog__footer button:has-text("确定")').click();
+      const createDrawer = getEmployeeDrawer(page, '新建员工');
+      await createDrawer.locator('input[placeholder*="姓名"]').fill(createdEmployee.name);
+      await createDrawer.locator('input[placeholder*="邮箱"]').fill(createdEmployee.email);
+      await createDrawer.locator('.el-drawer__footer button:has-text("确定")').click();
       await page.waitForTimeout(2000);
+      const accountResultDialog = getAccountResultDialog(page);
+      if (await accountResultDialog.isVisible().catch(() => false)) {
+        await accountResultDialog.locator('.el-dialog__footer button:has-text("知道了")').click();
+      }
     }
 
     const nameToDelete = employeeNameToDelete || createdEmployee.name;

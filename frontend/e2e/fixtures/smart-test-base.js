@@ -4,19 +4,15 @@
  */
 import { test as base, expect } from '@playwright/test';
 import {
+  AUTH_STORAGE_FILE,
   login,
   isAuthenticated,
   smartNavigate,
   smartNavigateToMenu,
-  getMenuPathMap
+  getMenuPathMap,
+  openAdminDashboard
 } from './smart-auth.js';
 import { ROUTES, getFullUrl } from './test-config.js';
-
-// 全局认证状态（在serial模式下共享）
-let globalAuthState = {
-  isLoggedIn: false,
-  lastAuthTime: null
-};
 
 /**
  * 扩展的 test 对象，包含智能认证相关的 fixtures
@@ -27,18 +23,9 @@ export const test = base.extend({
    * 会自动检测登录状态，如果未登录则执行登录
    */
   authenticatedPage: async ({ page }, use) => {
-    // 检查是否需要登录
-    if (!globalAuthState.isLoggedIn) {
+    const auth = await isAuthenticated(page);
+    if (!auth) {
       await login(page);
-      globalAuthState.isLoggedIn = true;
-      globalAuthState.lastAuthTime = Date.now();
-    } else {
-      // 检查当前页面是否已认证
-      const auth = await isAuthenticated(page);
-      if (!auth) {
-        await login(page);
-        globalAuthState.lastAuthTime = Date.now();
-      }
     }
     await use(page);
   },
@@ -48,17 +35,12 @@ export const test = base.extend({
    */
   authenticatedContext: async ({ browser }, use) => {
     const context = await browser.newContext({
-      storageState: undefined // 可以在这里指定storageState文件路径
+      storageState: AUTH_STORAGE_FILE
     });
     const page = await context.newPage();
+    await openAdminDashboard(page);
 
-    // 执行登录
-    await login(page);
-
-    // 保存状态供后续使用
     await use({ context, page });
-
-    // 清理
     await context.close();
   }
 });
@@ -80,10 +62,9 @@ export function createSmartPageTests(pageName, route, testCallback) {
 
     test.beforeAll(async ({ browser }) => {
       // 创建新的浏览器上下文
-      context = await browser.newContext();
+      context = await browser.newContext({ storageState: AUTH_STORAGE_FILE });
       page = await context.newPage();
 
-      // 直接导航到目标页面，smartNavigate会自动处理登录
       console.log(`[${pageName}] 开始测试，直接访问页面: ${route}`);
       await smartNavigate(page, route, { checkAuth: true });
       isAuthReady = true;
@@ -94,7 +75,6 @@ export function createSmartPageTests(pageName, route, testCallback) {
       if (context) {
         await context.close();
       }
-      isAuthReady = false;
     });
 
     // 执行具体的测试
@@ -126,8 +106,10 @@ export async function navigateToMenu(page, menuName, options = {}) {
  * 重新导出智能认证函数
  */
 export {
+  AUTH_STORAGE_FILE,
   login,
   isAuthenticated,
+  openAdminDashboard,
   smartNavigate,
   smartNavigateToMenu,
   getMenuPathMap

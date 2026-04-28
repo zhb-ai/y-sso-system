@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig, devices } from '@playwright/test';
+import { AUTH_STORAGE_FILE, BASE_URL } from './e2e/fixtures/test-config.js';
 
 /**
  * Y-SSO System E2E 测试配置
@@ -32,10 +33,10 @@ export default defineConfig({
   /* 共享配置 */
   use: {
     /* 基础 URL */
-    baseURL: 'http://localhost:5200',
+    baseURL: BASE_URL,
 
     /* 使用全局登录状态 */
-    storageState: 'playwright/.auth/user.json',
+    storageState: AUTH_STORAGE_FILE,
 
     /* 收集追踪信息 */
     trace: 'on-first-retry',
@@ -60,22 +61,33 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: ['login.spec.js', 'sso-login.spec.js'],
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'firefox',
+      testIgnore: ['login.spec.js', 'sso-login.spec.js'],
       use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
+      testIgnore: ['login.spec.js', 'sso-login.spec.js'],
       use: { ...devices['Desktop Safari'] },
     },
+    {
+      name: 'public-pages',
+      testMatch: ['login.spec.js', 'sso-login.spec.js'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: undefined
+      }
+    }
   ],
 
   /* 本地开发服务器配置 */
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:5200',
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

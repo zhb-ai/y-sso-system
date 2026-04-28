@@ -2,9 +2,9 @@
  * 个人资料页面 E2E 测试
  * 优化：直接访问个人资料页面，如果token不存在或失效则自动登录
  */
-import { test, expect, smartNavigate } from './fixtures/smart-test-base.js';
+import { test, expect, login, openAdminDashboard, smartNavigate } from './fixtures/smart-test-base.js';
 import { generateDisplayName, generateEmail, generatePhone } from './fixtures/test-data.js';
-import { ROUTES, TEST_CREDENTIALS, getFullUrl } from './fixtures/test-config.js';
+import { ROUTES, getFullUrl } from './fixtures/test-config.js';
 
 test.describe.serial('个人资料页面 - 完整测试流程', () => {
   // 存储测试过程中使用的数据
@@ -102,39 +102,11 @@ test.describe.serial('个人资料页面 - 完整测试流程', () => {
   });
 
   test('3. 重新登录验证资料更新', async () => {
-    // 重新登录
-    await page.goto(getFullUrl(ROUTES.LOGIN));
-    await page.waitForLoadState('networkidle');
+    await login(page, true);
+    await openAdminDashboard(page);
 
-    // 输入用户名
-    const usernameInput = page.locator('.login-form input[placeholder="用户名"]').first();
-    await usernameInput.waitFor({ timeout: 10000 });
-    await usernameInput.fill(TEST_CREDENTIALS.username);
-
-    // 输入密码
-    const passwordInput = page.locator('.login-form input[placeholder="密码"]').first();
-    await passwordInput.fill(TEST_CREDENTIALS.password);
-
-    // 点击登录按钮
-    await page.locator('.login-form button:has-text("登录")').click();
-
-    // 等待跳转到SSO登录页或仪表盘
-    await page.waitForTimeout(3000);
-
-    // 检查当前URL
-    const currentUrl = page.url();
-
-    // 如果跳转到sso/login，需要点击"进入管理后台"
-    if (currentUrl.includes('/sso/login')) {
-      await page.locator('a').filter({ hasText: '进入管理后台' }).waitFor({ timeout: 10000 });
-      await page.locator('a').filter({ hasText: '进入管理后台' }).click();
-      await page.waitForTimeout(2000);
-    }
-
-    // 导航到个人资料页面
     await page.goto(getFullUrl(ROUTES.PROFILE));
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.page-header h2')).toContainText('个人资料');
 
     // 验证更新后的数据
     const nameInput = page.locator('input[placeholder="请输入姓名"]').first();
@@ -147,10 +119,8 @@ test.describe.serial('个人资料页面 - 完整测试流程', () => {
   });
 
   test('4. 修改密码表单验证', async () => {
-    // 导航到个人资料页面
     await page.goto(getFullUrl(ROUTES.PROFILE));
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.page-header h2')).toContainText('个人资料');
 
     // 不填写任何内容直接点击修改密码
     await page.locator('button:has-text("修改密码")').first().click();
@@ -160,10 +130,8 @@ test.describe.serial('个人资料页面 - 完整测试流程', () => {
   });
 
   test('5. 修改密码 - 密码不一致验证', async () => {
-    // 导航到个人资料页面
     await page.goto(getFullUrl(ROUTES.PROFILE));
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.page-header h2')).toContainText('个人资料');
 
     // 填写当前密码
     const currentPasswordInput = page.locator('input[type="password"]').nth(0);
@@ -185,10 +153,8 @@ test.describe.serial('个人资料页面 - 完整测试流程', () => {
   });
 
   test('6. 恢复原始资料', async () => {
-    // 导航到个人资料页面
     await page.goto(getFullUrl(ROUTES.PROFILE));
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.page-header h2')).toContainText('个人资料');
 
     // 恢复原始数据
     const nameInput = page.locator('input[placeholder="请输入姓名"]').first();

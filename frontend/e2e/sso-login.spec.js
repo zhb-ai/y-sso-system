@@ -6,6 +6,8 @@ import { test, expect } from '@playwright/test';
 import { login } from './fixtures/auth.js';
 import { ROUTES, getFullUrl } from './fixtures/test-config.js';
 
+test.use({ storageState: undefined });
+
 test.describe.serial('单点登录页面 - 元素存在性验证', () => {
 
   test('页面标题存在', async ({ browser }) => {
@@ -65,7 +67,6 @@ test.describe.serial('单点登录页面 - 元素存在性验证', () => {
 
     // 访问SSO登录页
     await page.goto(getFullUrl(ROUTES.SSO_LOGIN));
-    await page.waitForTimeout(2000);
 
     // 验证显示用户信息 - 使用更通用的选择器
     await expect(page.locator('.sso-username, .sso-user-info, .sso-user-detail').first()).toBeVisible();
@@ -73,7 +74,7 @@ test.describe.serial('单点登录页面 - 元素存在性验证', () => {
     await context.close();
   });
 
-  test('已登录时显示进入管理后台链接', async ({ browser }) => {
+  test('已登录时显示管理后台链接', async ({ browser }) => {
     const context = await browser.newContext({ storageState: undefined });
     const page = await context.newPage();
 
@@ -82,10 +83,9 @@ test.describe.serial('单点登录页面 - 元素存在性验证', () => {
 
     // 访问SSO登录页
     await page.goto(getFullUrl(ROUTES.SSO_LOGIN));
-    await page.waitForTimeout(2000);
 
-    // 验证显示"进入管理后台"链接
-    await expect(page.locator('a:has-text("进入管理后台")')).toBeVisible();
+    // 验证显示"管理后台"链接
+    await expect(page.locator('a:has-text("管理后台")')).toBeVisible();
 
     await context.close();
   });
