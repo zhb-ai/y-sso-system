@@ -678,19 +678,16 @@
                   </span>
                 </div>
                 <div class="status-options">
-                  <button
+                  <el-button
                     v-for="option in empStatusOptions"
                     :key="option.value"
-                    class="status-option"
-                    :class="{
-                      'is-active': currentEmployee?.emp_status === option.value,
-                      'is-danger': option.value === 0
-                    }"
+                    size="small"
+                    :type="currentEmployee?.emp_status === option.value ? (option.value === 0 ? 'danger' : 'primary') : 'default'"
                     :disabled="currentEmployee?.emp_status === option.value"
                     @click="handleChangeEmpStatus(currentEmployee || {}, option.value)"
                   >
                     {{ option.label }}
-                  </button>
+                  </el-button>
                 </div>
                 <p class="status-hint">基于当前组织直接调整该员工在本组织内的雇佣状态。</p>
               </div>

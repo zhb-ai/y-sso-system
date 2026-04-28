@@ -405,20 +405,20 @@
                   <!-- 加入新组织 -->
                   <div class="section-block__add" style="margin-bottom: 16px;">
                     <el-form :inline="true" :model="addOrgForm" size="default" class="org-add-form">
-                      <el-form-item label="组织" style="margin-bottom: 12px;">
+                      <el-form-item label="组织">
                         <el-select v-model="addOrgForm.org_id" placeholder="选择组织" style="width: 180px;min-width: 180px;">
                           <el-option v-for="org in availableOrgs" :key="org.id" :label="org.name" :value="org.id" />
                         </el-select>
                       </el-form-item>
                       <div class="form-row-inline">
-                        <el-form-item label="工号" style="margin-bottom: 12px;">
+                        <el-form-item label="工号">
                           <el-input v-model="addOrgForm.emp_no" placeholder="工号" style="width: 100px;min-width: 100px;" />
                         </el-form-item>
-                        <el-form-item label="职位" style="margin-bottom: 12px;">
+                        <el-form-item label="职位">
                           <el-input v-model="addOrgForm.position" placeholder="职位" style="width: 100px;min-width: 100px;" />
                         </el-form-item>
                       </div>
-                      <el-form-item style="margin-bottom: 0;">
+                      <el-form-item>
                         <el-checkbox v-model="addOrgForm.set_primary" style="margin-right: 12px;">设为主组织</el-checkbox>
                         <el-button type="primary" @click="addToOrg" :disabled="!addOrgForm.org_id">加入</el-button>
                       </el-form-item>
