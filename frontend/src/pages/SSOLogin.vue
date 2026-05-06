@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-box sso-login-box" :class="`columns-${!isOAuth2Mode && isLoggedIn ? Math.min(Math.ceil(availableApps.length / 3), 4) : 1}`">
       <!-- SSO 头部 -->
-      <div class="login-header">
+      <div class="login-header" :class="{ 'has-logo': !!siteStore.systemLogo }">
         <div class="login-header-text">
           <h1>{{ siteStore.systemName }}</h1>
           <p v-if="isOAuth2Mode && appName">{{ appName }} 请求访问您的账户</p>
@@ -546,6 +546,10 @@ async function handlePortalLogin() {
   position: relative;
   display: block;
   text-align: center;
+  padding-right: 0;
+}
+
+.login-header.has-logo {
   padding-right: 44px;
 }
 

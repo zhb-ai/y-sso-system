@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <div class="login-header">
+      <div class="login-header" :class="{ 'has-logo': !!siteStore.systemLogo }">
         <div class="login-header-text">
           <h1>{{ siteStore.systemName }}</h1>
           <p>{{ siteStore.systemDesc }}</p>
@@ -446,6 +446,10 @@ onMounted(async () => {
   position: relative;
   display: block;
   text-align: center;
+  padding-right: 0;
+}
+
+.login-header.has-logo {
   padding-right: 44px;
 }
 

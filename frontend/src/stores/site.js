@@ -61,7 +61,7 @@ export const useSiteStore = defineStore('site', () => {
       if (res.data) {
         systemName.value = res.data.system_name || systemName.value || DEFAULT_SYSTEM_NAME
         systemDesc.value = res.data.system_desc || systemDesc.value || DEFAULT_SYSTEM_DESC
-        systemLogo.value = res.data.system_logo || systemLogo.value || ''
+        systemLogo.value = res.data.system_logo
         writeSiteCache({
           systemName: systemName.value,
           systemDesc: systemDesc.value,
