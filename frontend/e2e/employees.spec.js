@@ -68,7 +68,6 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
 
     const accountResultDialog = getAccountResultDialog(page);
     if (await accountResultDialog.isVisible().catch(() => false)) {
@@ -81,8 +80,6 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
   });
 
   test('3. 搜索员工 - 按姓名', async () => {
-    await page.waitForTimeout(2000);
-
     if (createdEmployee) {
       // 查找可编辑的搜索输入框（排除 readonly 的下拉框）
       const searchInput = page.locator('.filter-form input[type="text"]:not([readonly])').first();
@@ -91,10 +88,9 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
       if (hasSearchInput) {
         await searchInput.fill(createdEmployee.name);
         await page.locator('.filter-form button:has-text("搜索")').click();
-        await page.waitForTimeout(1000);
         await expect(page.locator('.el-table__body')).toContainText(createdEmployee.name);
         await page.locator('.filter-form button:has-text("重置")').click();
-        await page.waitForTimeout(1000);
+        await expect(page.locator('.el-table__body')).toContainText(createdEmployee.name);
       } else {
         // 如果没有搜索框，跳过此测试
         console.log('跳过搜索测试：未找到可编辑的搜索框');
@@ -110,7 +106,9 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
       await createDrawer.locator('input[placeholder*="请输入姓名"]').fill(createdEmployee.name);
       await createDrawer.locator('input[placeholder*="邮箱"]').fill(createdEmployee.email);
       await createDrawer.locator('.el-drawer__footer button:has-text("确定")').click();
-      await page.waitForTimeout(2000);
+      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.el-message--success').first()).toContainText('成功');
+      await expect(createDrawer).not.toBeVisible();
       const accountResultDialog = getAccountResultDialog(page);
       if (await accountResultDialog.isVisible().catch(() => false)) {
         await accountResultDialog.locator('.el-dialog__footer button:has-text("知道了")').click();
@@ -152,7 +150,6 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
     await expect(editDrawer).not.toBeVisible();
 
     await expect(page.locator('.el-table__body')).toContainText(updatedEmployeeName);
@@ -168,7 +165,9 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
       await createDrawer.locator('input[placeholder*="姓名"]').fill(createdEmployee.name);
       await createDrawer.locator('input[placeholder*="邮箱"]').fill(createdEmployee.email);
       await createDrawer.locator('.el-drawer__footer button:has-text("确定")').click();
-      await page.waitForTimeout(2000);
+      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.el-message--success').first()).toContainText('成功');
+      await expect(createDrawer).not.toBeVisible();
       const accountResultDialog = getAccountResultDialog(page);
       if (await accountResultDialog.isVisible().catch(() => false)) {
         await accountResultDialog.locator('.el-dialog__footer button:has-text("知道了")').click();
@@ -204,8 +203,8 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(2000);
 
-    // 注：删除后表格可能需要刷新才能更新，这里只验证操作成功
+    // 删除后：表格中不应再包含目标员工名称
+    await expect(page.locator('.el-table__body')).not.toContainText(nameToDelete);
   });
 });

@@ -90,3 +90,29 @@ test.describe.serial('单点登录页面 - 元素存在性验证', () => {
     await context.close();
   });
 });
+
+test.describe.serial('单点登录页面 - 登录失败断言', () => {
+  test('登录失败时展示错误提示并保持在 SSO 登录页', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: undefined });
+    const page = await context.newPage();
+
+    await page.goto(getFullUrl(ROUTES.SSO_LOGIN));
+
+    await page.locator('.login-form input[placeholder*="用户名"]').first().fill('admin');
+    await page.locator('.login-form input[type="password"]').first().fill('wrong_password');
+
+    const loginBtn = page.locator('.login-form button:has-text("登录")').first();
+    await expect(loginBtn).toBeVisible({ timeout: 5000 });
+    await loginBtn.click();
+
+    const errorMsg = page.locator('.el-message--error, .el-form-item__error').first();
+    await expect(errorMsg).toBeVisible({ timeout: 5000 });
+
+    const text = (await errorMsg.innerText()).trim();
+    expect(text).toMatch(/登录失败|用户名或密码错误/);
+
+    await expect(page).toHaveURL(/\/sso\/login/);
+
+    await context.close();
+  });
+});

@@ -42,4 +42,15 @@ test.describe.serial('系统设置页面 - 元素存在性验证', () => {
     // 验证保存按钮
     await expect(page.getByRole('button', { name: '保存' })).toBeVisible();
   });
+
+  test('保存配置后展示成功提示', async () => {
+    const saveBtn = page.locator('button:has-text("保存配置")').first();
+    await expect(saveBtn).toBeVisible({ timeout: 10000 });
+
+    await saveBtn.click();
+
+    const successMsg = page.locator('.el-message--success').first();
+    await expect(successMsg).toBeVisible({ timeout: 10000 });
+    await expect(successMsg).toContainText('站点信息保存成功');
+  });
 });

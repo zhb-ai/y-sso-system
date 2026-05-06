@@ -46,4 +46,27 @@ test.describe.serial('缓存管理页面 - 元素存在性验证', () => {
     // 验证缓存表格
     await expect(page.locator('.el-table')).toBeVisible();
   });
+
+  test('打开缓存条目抽屉并展示内容', async () => {
+    const functionRow = page.locator('.data-card .el-table__row').first();
+    await expect(functionRow).toBeVisible({ timeout: 10000 });
+
+    // 打开“条目”抽屉
+    await functionRow.locator('button:has-text("条目")').first().click();
+
+    const drawerHeader = page.locator('.el-drawer__header');
+    await expect(drawerHeader).toBeVisible({ timeout: 10000 });
+    await expect(drawerHeader).toContainText('缓存条目');
+
+    const emptyState = page.getByText('请选择缓存条目');
+    const entryRows = page.locator('.drawer-content .el-table__row');
+
+    // 等待“条目列表”或“空状态”二选一出现，证明抽屉确实加载完成
+    const result = await Promise.race([
+      entryRows.first().waitFor({ state: 'visible', timeout: 10000 }).then(() => 'rows').catch(() => null),
+      emptyState.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'empty').catch(() => null),
+    ]);
+
+    expect(result).not.toBeNull();
+  });
 });

@@ -29,10 +29,5 @@ app.use(ElementPlus, {
 const authStore = useAuthStore()
 authStore.restoreAuthState()
 
-// 预加载站点信息（系统名称、描述等）
-import { useSiteStore } from './stores/site'
-const siteStore = useSiteStore()
-siteStore.load()
-
 // 挂载应用
 app.mount('#app')

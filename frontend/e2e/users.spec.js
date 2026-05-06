@@ -57,41 +57,32 @@ test.describe.serial('用户管理页面 - 完整测试流程', () => {
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
     await expect(page.locator('.el-dialog')).not.toBeVisible();
 
     await expect(page.locator('.el-table__body')).toContainText(createdUser.username);
   });
 
   test('3. 搜索用户 - 按用户名', async () => {
-    await page.waitForTimeout(2000);
-
     if (createdUser) {
       const searchInput = page.locator('.filter-form input[type="text"]').first();
       await searchInput.fill(createdUser.username);
       await page.locator('.filter-form button:has-text("搜索")').click();
-      await page.waitForTimeout(1000);
 
       await expect(page.locator('.el-table__body')).toContainText(createdUser.username);
 
       await page.locator('.filter-form button:has-text("重置")').click();
-      await page.waitForTimeout(1000);
     }
   });
 
   test('4. 搜索用户 - 按邮箱', async () => {
-    await page.waitForTimeout(2000);
-
     if (createdUser) {
       const searchInput = page.locator('.filter-form input[type="text"]').first();
       await searchInput.fill(createdUser.email);
       await page.locator('.filter-form button:has-text("搜索")').click();
-      await page.waitForTimeout(1000);
 
       await expect(page.locator('.el-table__body')).toContainText(createdUser.email);
 
       await page.locator('.filter-form button:has-text("重置")').click();
-      await page.waitForTimeout(1000);
     }
   });
 
@@ -104,7 +95,10 @@ test.describe.serial('用户管理页面 - 完整测试流程', () => {
       await dialog.locator('input[placeholder*="姓名"]').fill(createdUser.displayName);
       await dialog.locator('input[placeholder*="邮箱"]').fill(createdUser.email);
       await page.locator('.el-dialog__footer button:has-text("确定")').click();
-      await page.waitForTimeout(2000);
+      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.el-message--success').first()).toContainText('成功');
+      await expect(page.locator('.el-dialog')).not.toBeVisible();
+      await expect(page.locator('.el-table__body')).toContainText(createdUser.username);
     }
 
     await page.waitForSelector('.el-table__row', { timeout: 10000 });
@@ -142,14 +136,11 @@ test.describe.serial('用户管理页面 - 完整测试流程', () => {
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
 
     await expect(page.locator('.el-table__body')).toContainText(updatedUserName);
   });
 
   test('6. 角色分配功能', async () => {
-    await page.waitForTimeout(2000);
-
     await page.waitForSelector('.el-table__row', { timeout: 10000 });
     const rows = page.locator('.el-table__row');
     let targetRow = null;
@@ -163,20 +154,39 @@ test.describe.serial('用户管理页面 - 完整测试流程', () => {
       }
     }
 
-    if (!targetRow) {
-      targetRow = rows.first();
-    }
-
+    expect(createdUser).not.toBeNull();
     expect(targetRow).not.toBeNull();
 
     await targetRow.locator('button:has-text("角色")').click();
     await expect(page.locator('.el-dialog')).toBeVisible();
     await expect(page.locator('.el-dialog__title')).toContainText('分配角色');
+    const roleDialog = page.locator('.el-dialog').first();
 
-    await page.waitForTimeout(1000);
+    const checkbox = roleDialog.locator('.el-checkbox').first();
+    await checkbox.waitFor({ state: 'visible', timeout: 10000 });
 
-    await page.locator('.el-dialog__footer button:has-text("取消")').click();
-    await page.waitForTimeout(500);
+    const roleName = await checkbox.locator('.role-name').first().innerText();
+    const inner = checkbox.locator('.el-checkbox__inner').first();
+    const wasChecked = await inner.evaluate((el) => el.classList.contains('is-checked')).catch(() => false);
+
+    // 切换一个角色勾选状态，确保保存时产生增量/差异
+    await checkbox.click();
+
+    await roleDialog.locator('.el-dialog__footer button:has-text("保存")').first().click();
+    await expect(page.locator('.el-message--success').first()).toContainText('角色分配已更新');
+
+    // 对话框销毁后不应仍可见
+    await expect(roleDialog).not.toBeVisible();
+
+    // 刷新后的用户行应反映角色变更（勾选->出现在角色列表；反之->消失）
+    const userRowAfter = page.locator('.el-table__row').filter({ hasText: createdUser.username }).first();
+    await expect(userRowAfter).toBeVisible({ timeout: 10000 });
+
+    if (wasChecked) {
+      await expect(userRowAfter).not.toContainText(roleName);
+    } else {
+      await expect(userRowAfter).toContainText(roleName);
+    }
   });
 
   test('7. 禁用/启用用户', async () => {
@@ -209,8 +219,6 @@ test.describe.serial('用户管理页面 - 完整测试流程', () => {
     await expect(page.locator('.el-message-box__message')).toContainText(isActive ? '禁用' : '启用');
 
     await page.locator('.el-message-box__btns button:has-text("确定")').click();
-
-    await page.waitForTimeout(1000);
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
   });

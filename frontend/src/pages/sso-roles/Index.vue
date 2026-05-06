@@ -105,7 +105,7 @@
         :icon="Collection"
         title="暂无 SSO 角色"
         :description="searchKeyword || filterStatus ? '没有找到符合条件的角色，请调整搜索条件' : '还没有创建任何 SSO 角色，点击下方按钮创建第一个角色'"
-        :action-text="searchKeyword || filterStatus ? '重置筛选' : '新建角色'"
+        :action-text="searchKeyword || filterStatus ? '重置筛选' : '新建SSO角色'"
         :action-icon="searchKeyword || filterStatus ? RefreshRight : Plus"
         @action="searchKeyword || filterStatus ? handleReset() : handleCreate()"
       />

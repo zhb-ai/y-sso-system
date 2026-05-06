@@ -2,8 +2,13 @@
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <h1>{{ siteStore.systemName }}</h1>
-        <p>{{ siteStore.systemDesc }}</p>
+        <div class="login-header-text">
+          <h1>{{ siteStore.systemName }}</h1>
+          <p>{{ siteStore.systemDesc }}</p>
+        </div>
+        <div v-if="siteStore.systemLogo" class="login-logo" aria-hidden="true">
+          <img :src="siteStore.systemLogo" alt="" />
+        </div>
       </div>
 
       <el-form
@@ -143,10 +148,9 @@
 
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { User, Lock } from "@element-plus/icons-vue";
 import { wechatWorkApi } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteStore } from "@/stores/site";
@@ -433,6 +437,37 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.login-box {
+  position: relative;
+  overflow: hidden;
+}
+
+.login-header {
+  position: relative;
+  display: block;
+  text-align: center;
+  padding-right: 44px;
+}
+
+.login-header-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.login-logo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: clamp(22px, 6vw, 40px);
+  height: clamp(22px, 6vw, 40px);
+}
+
+.login-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.6;
+}
 
 
 .login-form {

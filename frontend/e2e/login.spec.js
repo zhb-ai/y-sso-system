@@ -82,3 +82,45 @@ test.describe.serial('登录页面 - 元素存在性验证', () => {
     await context.close();
   });
 });
+
+test.describe.serial('登录页面 - 登录成功/失败断言', () => {
+  test('登录成功后进入 SSO 登录页并展示用户信息', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: undefined });
+    const page = await context.newPage();
+
+    await page.goto(getFullUrl(ROUTES.LOGIN));
+
+    await page.locator('.login-form input[placeholder="用户名"]').fill('admin');
+    await page.locator('.login-form input[type="password"]').fill('admin123');
+    await page.locator('.login-form button:has-text("登录")').click();
+
+    // 登录页成功后会跳转到 SSO 门户页（router.push("/sso/login")）
+    await expect(page).toHaveURL(/\/sso\/login/);
+
+    const ssoUserInfo = page.locator('.sso-username, .sso-user-info, .sso-user-detail').first();
+    await expect(ssoUserInfo).toBeVisible({ timeout: 10000 });
+
+    await context.close();
+  });
+
+  test('登录失败时展示错误提示并保持在登录页', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: undefined });
+    const page = await context.newPage();
+
+    await page.goto(getFullUrl(ROUTES.LOGIN));
+
+    await page.locator('.login-form input[placeholder="用户名"]').fill('admin');
+    await page.locator('.login-form input[type="password"]').fill('wrong_password');
+    await page.locator('.login-form button:has-text("登录")').click();
+
+    const errorMsg = page.locator('.el-message--error, .el-form-item__error').first();
+    await expect(errorMsg).toBeVisible({ timeout: 5000 });
+
+    const text = (await errorMsg.innerText()).trim();
+    expect(text).toMatch(/用户名或密码错误|登录失败/);
+
+    await expect(page).toHaveURL(/\/login/);
+
+    await context.close();
+  });
+});
