@@ -87,7 +87,6 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
     // 验证创建成功
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
     await expect(page.locator('.el-dialog')).not.toBeVisible();
 
     // 验证角色出现在表格中
@@ -95,40 +94,32 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
   });
 
   test('3. 搜索功能 - 按名称搜索', async () => {
-    await page.waitForTimeout(2000);
-
     // 使用创建的角色名称搜索
     if (createdRole) {
       const searchInput = page.locator('input[placeholder="搜索角色名称或编码"]');
       await searchInput.fill(createdRole.name);
       await page.locator('button:has-text("搜索")').click();
-      await page.waitForTimeout(1000);
 
       // 验证搜索结果
       await expect(page.locator('.el-table__body')).toContainText(createdRole.name);
 
       // 重置搜索
       await page.locator('button:has-text("重置")').click();
-      await page.waitForTimeout(1000);
     }
   });
 
   test('4. 搜索功能 - 按编码搜索', async () => {
-    await page.waitForTimeout(2000);
-
     // 使用创建的角色编码搜索
     if (createdRole) {
       const searchInput = page.locator('input[placeholder="搜索角色名称或编码"]');
       await searchInput.fill(createdRole.code);
       await page.locator('button:has-text("搜索")').click();
-      await page.waitForTimeout(1000);
 
       // 验证搜索结果
       await expect(page.locator('.el-table__body')).toContainText(createdRole.code);
 
       // 重置搜索
       await page.locator('button:has-text("重置")').click();
-      await page.waitForTimeout(1000);
     }
   });
 
@@ -140,7 +131,9 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
       await page.locator('input[placeholder="如 finance_admin, hr_viewer"]').fill(createdRole.code);
       await page.locator('input[placeholder="如 财务管理员"]').fill(createdRole.name);
       await page.locator('.el-dialog__footer button:has-text("确定")').click();
-      await page.waitForTimeout(2000);
+      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.el-message--success').first()).toContainText('成功');
+      await expect(page.locator('.el-dialog')).not.toBeVisible();
     }
 
     // 在表格中找到角色
@@ -181,7 +174,6 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
     const switchElement = page.locator('.el-switch');
     if (await switchElement.count() > 0) {
       await switchElement.click();
-      await page.waitForTimeout(300);
     }
 
     // 提交
@@ -190,7 +182,6 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
     // 验证更新成功
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
 
     // 验证更新后的名称出现在表格中
     await expect(page.locator('.el-table__body')).toContainText(updatedRoleName);
@@ -202,20 +193,20 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
     // 点击状态下拉框
     const statusSelect = page.locator('.el-select').first();
     await statusSelect.click();
-    await page.waitForTimeout(500);
 
     // 选择"启用"状态
     const activeOption = page.locator('.el-select-dropdown__item:has-text("启用")');
     if (await activeOption.count() > 0) {
       await activeOption.click();
-      await page.waitForTimeout(1000);
       await page.locator('button:has-text("搜索")').click();
-      await page.waitForTimeout(1000);
+
+      // 断言搜索结果与筛选条件一致
+      await expect(page.locator('.el-table__body')).toContainText('启用');
+      await expect(page.locator('.el-table__body')).not.toContainText('禁用');
     }
 
     // 重置筛选
     await page.locator('button:has-text("重置")').click();
-    await page.waitForTimeout(1000);
   });
 
   test('7. 删除SSO角色', async () => {
@@ -229,7 +220,9 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
       await page.locator('input[placeholder="如 finance_admin, hr_viewer"]').fill(createdRole.code);
       await page.locator('input[placeholder="如 财务管理员"]').fill(createdRole.name);
       await page.locator('.el-dialog__footer button:has-text("确定")').click();
-      await page.waitForTimeout(2000);
+      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.el-message--success').first()).toContainText('成功');
+      await expect(page.locator('.el-dialog')).not.toBeVisible();
     }
 
     const nameToDelete = roleNameToDelete || createdRole.name;
@@ -266,10 +259,8 @@ test.describe.serial('SSO角色管理页面 - 完整测试流程', () => {
     // 验证删除成功
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
 
-    // 验证角色已被删除
-    const tableContent = await page.locator('.el-table__body').textContent();
-    expect(tableContent).not.toContain(nameToDelete);
+    // 验证角色已被删除（等待表格刷新完成）
+    await expect(page.locator('.el-table__body')).not.toContainText(nameToDelete);
   });
 });

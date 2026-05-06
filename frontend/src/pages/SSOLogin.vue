@@ -2,10 +2,15 @@
   <div class="login-container">
     <div class="login-box sso-login-box" :class="`columns-${!isOAuth2Mode && isLoggedIn ? Math.min(Math.ceil(availableApps.length / 3), 4) : 1}`">
       <!-- SSO 头部 -->
-      <div class="login-header">
-        <h1>{{ siteStore.systemName }}</h1>
-        <p v-if="isOAuth2Mode && appName">{{ appName }} 请求访问您的账户</p>
-        <p v-else>{{ siteStore.systemDesc }}</p>
+      <div class="login-header" :class="{ 'has-logo': !!siteStore.systemLogo }">
+        <div class="login-header-text">
+          <h1>{{ siteStore.systemName }}</h1>
+          <p v-if="isOAuth2Mode && appName">{{ appName }} 请求访问您的账户</p>
+          <p v-else>{{ siteStore.systemDesc }}</p>
+        </div>
+        <div v-if="siteStore.systemLogo" class="login-logo" aria-hidden="true">
+          <img :src="siteStore.systemLogo" alt="" />
+        </div>
       </div>
 
       <!-- ==================== OAuth2 模式：外部应用发起的授权 ==================== -->
@@ -301,6 +306,17 @@ watch(
   { immediate: true }
 )
 
+// 登录后刷新站点信息，避免未登录阶段请求失败后一直使用默认值
+watch(
+  () => isLoggedIn.value,
+  async (loggedIn) => {
+    if (loggedIn) {
+      await siteStore.refresh()
+    }
+  },
+  { immediate: true }
+)
+
 // 点击应用卡片 → 授权并跳转
 async function handleAppClick(app) {
   const uris = app.redirect_uris
@@ -469,6 +485,7 @@ async function handleLogin() {
         changePasswordVisible.value = true
         ElMessage.warning('首次登录，请先修改默认密码')
       } else {
+        await siteStore.load()
         ElMessage.success('登录成功，正在授权...')
         await doAuthorize()
       }
@@ -505,6 +522,7 @@ async function handlePortalLogin() {
         changePasswordVisible.value = true
         ElMessage.warning('首次登录，请先修改默认密码')
       } else {
+        await siteStore.load()
         ElMessage.success('登录成功')
         // watch 会自动检测 isLoggedIn 变化并加载应用列表
       }
@@ -523,6 +541,37 @@ async function handlePortalLogin() {
 </script>
 
 <style scoped>
+
+.login-header {
+  position: relative;
+  display: block;
+  text-align: center;
+  padding-right: 0;
+}
+
+.login-header.has-logo {
+  padding-right: 44px;
+}
+
+.login-header-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.login-logo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: clamp(22px, 6vw, 40px);
+  height: clamp(22px, 6vw, 40px);
+}
+
+.login-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.6;
+}
 
 .login-form {
   margin-bottom: var(--spacing-medium);

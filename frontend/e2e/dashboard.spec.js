@@ -44,6 +44,36 @@ test.describe.serial('仪表盘页面 - 元素存在性验证', () => {
     await expect(page.locator('.filter-form')).toBeVisible();
   });
 
+  test('搜索后展示空态或结果，并可重置', async () => {
+    const searchInput = page.locator('.filter-form input[placeholder="请输入用户名"]').first();
+    await searchInput.waitFor({ state: 'visible', timeout: 10000 });
+
+    // 使用一个几乎不可能命中的随机用户名，验证搜索结果链路
+    const keyword = `e2e_no_user_${Math.random().toString(36).slice(2, 10)}`;
+    await searchInput.fill(keyword);
+    await page.locator('.filter-form button:has-text("搜索")').click();
+
+    const emptyTitle = page.getByText('暂无登录记录');
+    const rows = page.locator('.login-record-card .el-table__row');
+    await expect.poll(async () => {
+      const emptyVisible = await emptyTitle.isVisible().catch(() => false);
+      const rowCount = await rows.count();
+      return emptyVisible || rowCount > 0;
+    }).toBe(true);
+
+    await page.locator('.filter-form button:has-text("重置")').click();
+    await expect(searchInput).toHaveValue('');
+
+    // 重置后至少应能看到空态或表格行
+    const resetEmpty = page.getByText('暂无登录记录');
+    const resetRows = page.locator('.login-record-card .el-table__row');
+    await expect.poll(async () => {
+      const emptyVisible = await resetEmpty.isVisible().catch(() => false);
+      const rowCount = await resetRows.count();
+      return emptyVisible || rowCount > 0;
+    }).toBe(true);
+  });
+
   test('登录记录表格和分页存在', async () => {
     // 验证表格和分页
     await expect(page.locator('.el-table')).toBeVisible();

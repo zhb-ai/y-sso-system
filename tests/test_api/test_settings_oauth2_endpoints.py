@@ -4,11 +4,13 @@ from pathlib import Path
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
+from app.api.v1 import config as config_api
 from app.api.v1.config import create_config_router
 from app.config import settings
+from app.domain.config.entities import SystemConfig
 
 
 def _override_oidc_issuer(value: str):
@@ -24,6 +26,11 @@ def _override_oidc_issuer(value: str):
             object.__delattr__(settings, "oidc_issuer")
 
     return _restore
+
+
+def _reject_unauthenticated():
+    """模拟未登录状态下的认证失败依赖"""
+    raise HTTPException(status_code=401, detail="AUTHENTICATION_FAILED")
 
 
 class TestSettingsOAuth2Endpoints:
@@ -109,3 +116,36 @@ class TestSettingsOAuth2Endpoints:
 
         assert data["jwks_uri"] == f"{issuer}/jwks"
         assert data["token_signing_algorithm"] == "RS256"
+
+
+class TestSettingsSitePublicAccess:
+    """站点设置公开访问测试"""
+
+    def test_get_site_settings_is_public_while_update_remains_protected(self, monkeypatch):
+        """未登录应能读取站点信息，但不能更新站点信息"""
+        assert hasattr(config_api, "create_public_config_router"), (
+            "系统设置需要提供仅包含公开端点的路由工厂"
+        )
+        monkeypatch.setattr(SystemConfig, "get_value", lambda key, default=None: dict(default or {}))
+
+        app = FastAPI()
+        app.include_router(config_api.create_public_config_router(), prefix="/api/v1")
+        app.include_router(
+            create_config_router(include_public_site=False),
+            prefix="/api/v1",
+            dependencies=[Depends(_reject_unauthenticated)],
+        )
+        client = TestClient(app)
+
+        response = client.get("/api/v1/settings/site")
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["status"] == "success"
+        assert payload["data"]["system_name"] == "单点登录系统"
+
+        protected_response = client.post(
+            "/api/v1/settings/site",
+            json={"system_name": "新系统名称"},
+        )
+        assert protected_response.status_code == 401

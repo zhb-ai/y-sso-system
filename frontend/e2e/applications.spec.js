@@ -65,7 +65,6 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
 
     const formDrawer = getApplicationFormDrawer(page);
     await expect(formDrawer).toBeVisible();
@@ -77,32 +76,24 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
   });
 
   test('3. 搜索应用 - 按名称', async () => {
-    await page.waitForTimeout(2000);
-
     if (createdApp) {
       await page.locator('.filter-form input[placeholder*="搜索应用"]').fill(createdApp.name);
       await page.locator('.filter-form button:has-text("搜索")').click();
-      await page.waitForTimeout(1000);
 
       await expect(page.locator('.el-table__body')).toContainText(createdApp.name);
 
       await page.locator('.filter-form button:has-text("重置")').click();
-      await page.waitForTimeout(1000);
     }
   });
 
   test('4. 搜索应用 - 按编码', async () => {
-    await page.waitForTimeout(2000);
-
     if (createdApp) {
       await page.locator('.filter-form input[placeholder*="搜索应用"]').fill(createdApp.code);
       await page.locator('.filter-form button:has-text("搜索")').click();
-      await page.waitForTimeout(1000);
 
       await expect(page.locator('.el-table__body')).toContainText(createdApp.code);
 
       await page.locator('.filter-form button:has-text("重置")').click();
-      await page.waitForTimeout(1000);
     }
   });
 
@@ -114,7 +105,9 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
       await createDrawer.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
       await createDrawer.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
       await createDrawer.locator('.el-drawer__footer button:has-text("创建并生成配置")').click();
-      await page.waitForTimeout(2000);
+      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.el-message--success').first()).toContainText('成功');
+      await expect(createDrawer).toBeVisible();
       await createDrawer.locator('.el-drawer__footer button:has-text("取消")').click();
     }
 
@@ -134,7 +127,6 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
     expect(targetRow).not.toBeNull();
 
     await targetRow.locator('button:has-text("编辑")').click();
-    await page.waitForTimeout(500);
 
     const editDrawer = getDrawerByTitle(page, '编辑应用');
     await expect(editDrawer).toBeVisible();
@@ -150,7 +142,6 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(1000);
     await expect(editDrawer).not.toBeVisible();
 
     await expect(page.locator('.el-table__body')).toContainText(updatedAppName);
@@ -166,7 +157,8 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
       await createDrawer.locator('input[placeholder*="请输入应用名称"]').fill(createdApp.name);
       await createDrawer.locator('input[placeholder*="字母、数字、下划线"]').fill(createdApp.code);
       await createDrawer.locator('.el-drawer__footer button:has-text("创建并生成配置")').click();
-      await page.waitForTimeout(2000);
+      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.el-message--success').first()).toContainText('成功');
       await createDrawer.locator('.el-drawer__footer button:has-text("取消")').click();
     }
 
@@ -199,7 +191,6 @@ test.describe.serial('应用管理页面 - 完整测试流程', () => {
 
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-    await page.waitForTimeout(2000);
 
     // 注：删除后表格可能需要刷新才能更新，这里只验证操作成功
   });

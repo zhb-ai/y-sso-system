@@ -52,11 +52,49 @@ def _mask_secret(value: str) -> str:
     return value[:4] + "****" + value[-4:]
 
 
+def _get_site_settings_data() -> dict:
+    """获取站点基本信息数据"""
+    defaults = {
+        "system_name": "单点登录系统",
+        "system_desc": "统一身份认证平台",
+        "system_logo": "",
+    }
+    site = SystemConfig.get_value("site_settings", default=defaults)
+    for key, default_val in defaults.items():
+        if key not in site:
+            site[key] = default_val
+    return site
+
+
+def _register_site_settings_read_route(router: APIRouter) -> None:
+    """注册站点基本信息读取接口"""
+
+    @router.get(
+        "/site",
+        response_model=OkResponse,
+        summary="获取站点基本信息",
+        description="获取系统名称、描述、Logo 等基本信息",
+    )
+    def get_site_settings():
+        """获取站点基本信息"""
+        return Resp.OK(data=_get_site_settings_data())
+
+
 # ==================== 路由工厂 ====================
 
 
-def create_config_router() -> APIRouter:
+def create_public_config_router() -> APIRouter:
+    """创建公开系统设置路由"""
+    router = APIRouter(prefix="/settings", tags=["系统设置"])
+    _register_site_settings_read_route(router)
+    return router
+
+
+def create_config_router(include_public_site: bool = True) -> APIRouter:
     """创建系统设置路由
+
+    Args:
+        include_public_site: 是否包含公开读取站点信息接口
 
     Returns:
         APIRouter 实例
@@ -117,24 +155,8 @@ def create_config_router() -> APIRouter:
 
     # ==================== 站点基本信息 ====================
 
-    @router.get(
-        "/site",
-        response_model=OkResponse,
-        summary="获取站点基本信息",
-        description="获取系统名称、描述、Logo 等基本信息",
-    )
-    def get_site_settings():
-        """获取站点基本信息"""
-        defaults = {
-            "system_name": "单点登录系统",
-            "system_desc": "统一身份认证平台",
-            "system_logo": "",
-        }
-        site = SystemConfig.get_value("site_settings", default=defaults)
-        for key, default_val in defaults.items():
-            if key not in site:
-                site[key] = default_val
-        return Resp.OK(data=site)
+    if include_public_site:
+        _register_site_settings_read_route(router)
 
     @router.post(
         "/site",

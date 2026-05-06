@@ -93,9 +93,6 @@ test.describe.serial('个人资料页面 - 完整测试流程', () => {
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
 
-    // 等待跳转到登录页
-    await page.waitForTimeout(3000);
-
     // 验证已跳转到登录页
     await expect(page).toHaveURL(/.*login.*/);
     await expect(page.locator('.login-form')).toBeVisible();
@@ -173,9 +170,6 @@ test.describe.serial('个人资料页面 - 完整测试流程', () => {
     // 验证提示消息
     await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.el-message--success').first()).toContainText('成功');
-
-    // 等待跳转到登录页
-    await page.waitForTimeout(3000);
 
     // 验证已跳转到登录页
     await expect(page).toHaveURL(/.*login.*/);
