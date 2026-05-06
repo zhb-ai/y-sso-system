@@ -268,9 +268,16 @@ def register_all_routes(app):
     # ------------------------------------------------------------------
     # 13. 系统设置
     # ------------------------------------------------------------------
-    from app.api.v1.config import create_config_router
+    from app.api.v1.config import create_config_router, create_public_config_router
 
-    config_router = create_config_router()
+    public_config_router = create_public_config_router()
+    app.include_router(
+        public_config_router,
+        prefix="/api/v1",
+        tags=["系统设置"],
+    )
+
+    config_router = create_config_router(include_public_site=False)
     app.include_router(
         config_router,
         prefix="/api/v1",
