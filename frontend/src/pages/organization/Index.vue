@@ -57,9 +57,9 @@
             </el-button>
           </el-tooltip>
           <template v-if="wechatBound">
-            <span class="bind-status-text" style="margin-right: 8px"
-              >已绑定企业微信</span
-            >
+            <el-tag type="success" effect="light" style="margin-right: 12px;font-size: 12px;" size="small" class="org-code-tag">
+            已绑定企业微信
+          </el-tag>
             <el-button class="btn-modern" @click="showWechatConfigDialog">
               查看配置
             </el-button>
