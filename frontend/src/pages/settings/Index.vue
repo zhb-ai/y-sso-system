@@ -18,7 +18,13 @@
             </div>
           </div>
           
-          <el-form :model="siteSettings" ref="siteFormRef" label-position="top" class="compact-form">
+          <el-form
+            :model="siteSettings"
+            :rules="siteRules"
+            ref="siteFormRef"
+            label-position="top"
+            class="compact-form"
+          >
             <div class="form-row">
               <el-form-item label="系统名称" prop="system_name" class="form-item-half">
                 <el-input
@@ -127,6 +133,19 @@ const siteSettings = reactive({
   system_logo: '',
 })
 
+const siteRules = {
+  system_name: [
+    { required: true, message: '请输入系统名称', trigger: ['blur', 'change'] },
+    {
+      validator: (_rule, value, callback) => {
+        if (typeof value === 'string' && value.trim().length > 0) return callback()
+        callback(new Error('系统名称不能为空'))
+      },
+      trigger: 'blur',
+    },
+  ],
+}
+
 const loadSiteSettings = async () => {
   try {
     const res = await api.get('/v1/settings/site')
@@ -137,6 +156,9 @@ const loadSiteSettings = async () => {
 }
 
 const handleSaveSite = async () => {
+  const isValid = await siteFormRef.value?.validate?.().catch(() => false)
+  if (!isValid) return
+
   saveLoading.value = true
   try {
     await api.post('/v1/settings/site', siteSettings)

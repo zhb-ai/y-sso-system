@@ -419,11 +419,6 @@ async function handleChangePassword() {
 onMounted(async () => {
   authStore.restoreAuthState()
 
-  // 未登录时拉取站点展示信息（已登录时由 isLoggedIn 的 watch 内 refresh 处理）
-  if (!isLoggedIn.value) {
-    void siteStore.load()
-  }
-
   // 初始化企业微信登录
   await initWechatWorkLogin()
 

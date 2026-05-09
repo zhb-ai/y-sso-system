@@ -422,9 +422,6 @@ const autoLoginInWechatWork = async () => {
 
 // 页面加载时的初始化
 onMounted(async () => {
-  // 拉取站点名称 / Logo（与 /v1/settings/site 同步，未登录也可访问）
-  void siteStore.load();
-
   // 1. 检查 URL 是否携带企微回调的 auth_code
   const handled = await handleWechatCallback();
   if (handled) return;
