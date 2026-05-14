@@ -1689,8 +1689,10 @@ onUnmounted(() => {
 
 .dept-card-block--org {
   flex-shrink: 0;
-  padding: 6px 10px 8px;
-  margin: -2px -2px 8px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 10px 10px;
+  margin: 0 0 8px;
   border-radius: var(--app-border-radius, 8px);
   background: var(--el-fill-color-light);
   border: 1px solid var(--el-border-color-lighter);
@@ -1757,6 +1759,8 @@ onUnmounted(() => {
 .dept-card-block--departments {
   flex: 1;
   min-height: 0;
+  box-sizing: border-box;
+  width: 100%;
   border: 1px solid var(--el-border-color-extra-light);
   border-radius: var(--app-border-radius, 8px);
   padding: 8px 10px 10px;
