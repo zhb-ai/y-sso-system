@@ -49,6 +49,7 @@
     
     <!-- 员工列表 -->
     <el-card class="data-card" shadow="hover">
+   
       <el-table v-if="employees.length > 0" v-loading="loading" :data="employees" style="width: 100%" tooltip-effect="dark">
         <el-table-column prop="name" label="姓名" min-width="160">
           <template #default="{ row }">
