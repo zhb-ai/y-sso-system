@@ -39,7 +39,7 @@
                 <el-button size="small" :disabled="!wechatBound" @click="handleWechatSync" :loading="wechatSyncLoading">同步通讯录</el-button>
               </el-tooltip>
               <template v-if="wechatBound">
-                <el-tag type="success" effect="light" size="small">已绑定企业微信</el-tag>
+                <el-tag style="height: 24px;" type="success" effect="light" size="small">已绑定企业微信</el-tag>
                 <el-button size="small" @click="showWechatConfigDialog">查看配置</el-button>
                 <el-tooltip content="解除组织与企业微信的绑定，不再接收通讯录变更通知，已同步的数据会保留">
                   <el-button size="small" plain @click="handleWechatUnbind">解绑</el-button>
@@ -1744,9 +1744,9 @@ onUnmounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px 8px;
-  margin-top: 6px;
+  justify-content: flex-start;
+  gap: 6px 9px;
+  margin-top: 2px;
 }
 .dept-card-org-actions .el-button {
   margin-left: 0;
