@@ -12,6 +12,7 @@
       </div>
     </div>
 
+
     <!-- 组织选择 -->
     <el-card class="filter-card" shadow="hover">
       <el-form :inline="true" class="filter-form">
@@ -57,9 +58,9 @@
             </el-button>
           </el-tooltip>
           <template v-if="wechatBound">
-            <span class="bind-status-text" style="margin-right: 8px"
-              >已绑定企业微信</span
-            >
+            <el-tag type="success" effect="light" style="margin-right: 12px;font-size: 12px;" size="small" class="org-code-tag">
+            已绑定企业微信
+          </el-tag>
             <el-button class="btn-modern" @click="showWechatConfigDialog">
               查看配置
             </el-button>
@@ -77,333 +78,206 @@
             </el-button>
           </template>
         </el-form-item>
+
+         <el-form-item label="雇佣状态">
+                <el-select v-model="empStatusFilter" placeholder="全部" clearable @change="loadDeptEmployees" style="width: 110px">
+                  <el-option label="在职" :value="3" />
+                  <el-option label="试用期" :value="2" />
+                  <el-option label="待入职" :value="1" />
+                  <el-option label="停职" :value="0" />
+                  <el-option label="离职" :value="-1" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="账号状态">
+                <el-select v-model="accountStatusFilter" placeholder="全部" clearable @change="loadDeptEmployees" style="width: 110px">
+                  <el-option label="已激活" :value="1" />
+                  <el-option label="未激活" :value="0" />
+                  <el-option label="已禁用" :value="-1" />
+                </el-select>
+              </el-form-item>
       </el-form>
     </el-card>
 
     <!-- 空状态：没有组织 -->
-    <el-card
-      v-if="!currentOrgId && organizations.length === 0"
-      class="empty-org-card"
-      shadow="hover"
-    >
-      <EmptyState
-        type="data"
-        :icon="OfficeBuilding"
-        title="暂无组织"
-        description="还没有创建任何组织，点击下方按钮创建第一个组织"
-        action-text="新建组织"
-        :action-icon="Plus"
-        @action="handleCreateOrg"
-      />
+    <el-card v-if="!currentOrgId && organizations.length === 0" class="empty-org-card" shadow="hover">
+      <EmptyState type="data" :icon="OfficeBuilding" title="暂无组织" description="还没有创建任何组织，点击下方按钮创建第一个组织" action-text="新建组织" :action-icon="Plus" @action="handleCreateOrg" />
     </el-card>
 
     <!-- 主内容区：左右布局 -->
-    <div class="main-content-row" v-if="currentOrgId">
+    <div v-else class="main-content-row">
       <!-- 左侧：部门树 -->
-      <el-card
-        class="department-card"
-        shadow="hover"
-        :style="{ '--card-max-height': cardMaxHeight + 'px' }"
-      >
-        <div class="dept-card-header">
-          <h3>部门结构</h3>
-          <el-button
-            type="primary"
-            size="small"
-            @click="handleCreateDept(null)"
-          >
-            <el-icon><Plus /></el-icon> 添加部门
-          </el-button>
-        </div>
-
-        <el-tree
-          v-if="departmentTree.length > 0"
-          ref="deptTreeRef"
-          v-loading="deptLoading"
-          :data="departmentTree"
-          node-key="id"
-          default-expand-all
-          highlight-current
-          :props="{ label: 'name', children: 'children' }"
-          @node-click="handleDeptClick"
-        >
-          <template #default="{ node, data }">
-            <div class="tree-node-content">
-              <el-icon class="dept-icon"><Folder /></el-icon>
-              <span class="dept-name">{{ node.label }}</span>
-              <span class="dept-count">{{ data.employee_count || 0 }}</span>
-              <span class="dept-actions">
-                <el-tooltip content="添加子部门">
-                  <el-button
-                    size="small"
-                    link
-                    @click.stop="handleCreateDept(data)"
-                  >
-                    <el-icon><Plus /></el-icon>
-                  </el-button>
-                </el-tooltip>
-                <el-tooltip content="编辑部门">
-                  <el-button
-                    size="small"
-                    link
-                    @click.stop="handleEditDept(data)"
-                  >
-                    <el-icon><Edit /></el-icon>
-                  </el-button>
-                </el-tooltip>
-                <el-tooltip content="删除部门">
-                  <el-button
-                    size="small"
-                    link
-                    class="btn-delete"
-                    @click.stop="handleDeleteDept(data)"
-                  >
-                    <el-icon><Delete /></el-icon>
-                  </el-button>
-                </el-tooltip>
-              </span>
+      <el-card class="department-card" shadow="hover" :style="{ '--card-max-height': cardMaxHeight + 'px' }">
+        <div class="dept-card-stack">
+         
+            <div class="dept-card-header dept-card-header--departments">
+              <div class="dept-card-header-title-wrap">
+                <h3>部门结构</h3>
+              </div>
+              <el-button type="primary" size="small" @click="handleCreateDept(null)">
+                <el-icon><Plus /></el-icon> 添加部门
+              </el-button>
             </div>
-          </template>
-        </el-tree>
 
-        <EmptyState
-          v-else-if="!deptLoading"
-          type="data"
-          :icon="Folder"
-          title="暂无部门"
-          description="当前组织下还没有创建任何部门"
-          compact
-        />
+            <el-tree v-if="departmentTree.length > 0" ref="deptTreeRef" class="dept-tree-scroll" v-loading="deptLoading" :data="departmentTree" node-key="id" default-expand-all highlight-current :expand-on-click-node="false" :props="{ label: 'name', children: 'children' }" @node-click="handleDeptClick">
+              <template #default="{ node, data }">
+                <div class="tree-node-content">
+                  <el-icon class="dept-icon"><Folder /></el-icon>
+                  <span class="dept-name">{{ node.label }}</span>
+                  <span class="dept-count">{{ data.employee_count || 0 }}</span>
+                  <span class="dept-actions">
+                    <el-tooltip content="添加子部门">
+                      <el-button size="small" link @click.stop="handleCreateDept(data)">
+                        <el-icon><Plus /></el-icon>
+                      </el-button>
+                    </el-tooltip>
+                    <el-tooltip content="编辑部门">
+                      <el-button size="small" link @click.stop="handleEditDept(data)">
+                        <el-icon><Edit /></el-icon>
+                      </el-button>
+                    </el-tooltip>
+                    <el-tooltip content="删除部门">
+                      <el-button size="small" link class="btn-delete" @click.stop="handleDeleteDept(data)">
+                        <el-icon><Delete /></el-icon>
+                      </el-button>
+                    </el-tooltip>
+                  </span>
+                </div>
+              </template>
+            </el-tree>
+
+            <EmptyState v-else-if="!deptLoading" type="data" :icon="Folder" title="暂无部门" description="当前组织下还没有创建任何部门" compact class="dept-tree-empty" />
+        </div>
       </el-card>
 
       <!-- 右侧：员工列表 -->
-      <el-card
-        class="data-card employee-list-card"
-        shadow="hover"
-        :style="{ '--card-max-height': cardMaxHeight + 'px' }"
-      >
+      <el-card class="data-card employee-list-card" shadow="hover" :style="{ '--card-max-height': cardMaxHeight + 'px' }">
         <div class="list-header">
-          <h4>
-            <template v-if="selectedDept"
-              >{{ selectedDept.name }} - 员工</template
+          <div class="list-header__title-row">
+            <h4>
+              <template v-if="selectedDept">{{ selectedDept.name }} - 员工</template>
+              <template v-else-if="currentOrg">{{ currentOrg.name }} - 全部员工</template>
+              <template v-else>请选择组织</template>
+            </h4>
+            <el-button
+              v-if="selectedDept"
+              type="primary"
+              link
+              size="small"
+              class="list-header__back-all"
+              @click="clearDeptSelection"
             >
-            <template v-else>请选择部门查看员工</template>
-          </h4>
-          <el-button
-            type="primary"
-            size="small"
-            @click="handleAddEmployeeToDept"
-            :disabled="!selectedDept"
-          >
+              查看本组织全部员工
+            </el-button>
+          </div>
+          <el-button type="primary" size="small" @click="handleAddEmployeeToDept" :disabled="!selectedDept">
             <el-icon><UserFilled /></el-icon> 添加员工到部门
           </el-button>
         </div>
 
-        <!-- 筛选条件 -->
-        <div v-if="selectedDept" class="list-filter">
-          <el-form :inline="true" class="filter-form">
-            <el-form-item label="雇佣状态">
-              <el-select
-                v-model="empStatusFilter"
-                placeholder="全部"
-                clearable
-                @change="loadDeptEmployees"
-                style="width: 110px"
-              >
-                <el-option label="在职" :value="3" />
-                <el-option label="试用期" :value="2" />
-                <el-option label="待入职" :value="1" />
-                <el-option label="停职" :value="0" />
-                <el-option label="离职" :value="-1" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="账号状态">
-              <el-select
-                v-model="accountStatusFilter"
-                placeholder="全部"
-                clearable
-                @change="loadDeptEmployees"
-                style="width: 110px"
-              >
-                <el-option label="已激活" :value="1" />
-                <el-option label="未激活" :value="0" />
-                <el-option label="已禁用" :value="-1" />
-              </el-select>
-            </el-form-item>
-          </el-form>
-        </div>
+        <div class="employee-list-main">
+          <!-- 筛选条件 -->
+         
 
-        <el-table
-          v-if="selectedDept"
-          v-loading="employeeLoading"
-          :data="deptEmployees"
-          style="width: 100%"
-          row-key="id"
-          tooltip-effect="dark"
-        >
-          <el-table-column prop="name" show-overflow-tooltip label="姓名" width="120">
-            <template #default="{ row }">
-                <el-avatar :size="32" class="avatar">{{
-                  row.name?.charAt(0)
-                }}</el-avatar>
+          <el-table v-if="currentOrgId && deptEmployees.length>0" v-loading="employeeLoading" :data="deptEmployees" style="width: 100%" row-key="id" tooltip-effect="dark">
+            <el-table-column prop="name" show-overflow-tooltip label="姓名" width="120">
+              <template #default="{ row }">
+                <el-avatar :size="32" class="avatar">{{ row.name?.charAt(0) }}</el-avatar>
                 <span style="margin-left: 8px">{{ row.name }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="code" label="员工编码" width="120">
-            <template #default="{ row }">
-              {{ row.code || "未设置" }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="emp_no" label="工号" width="100" />
-          <el-table-column prop="position" label="职位" />
-          <el-table-column prop="mobile" label="手机" width="120" align="center" />
-          <el-table-column
-            label="雇佣状态"
-            width="120"
-            align="left"
-          >
-            <template #default="{ row }">
-              <el-dropdown
-                trigger="click"
-                @command="(cmd) => handleChangeEmpStatus(row, cmd)"
-              >
-                <span
-                  class="status-text-wrapper"
-                  style="cursor: pointer"
-                  :class="{ 'status-danger': row.status === 0 }"
-                >
-                  {{ empStatusLabel(row.status) }}
-                  <el-icon class="status-arrow"><ArrowDown /></el-icon>
-                </span>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item :command="3" :disabled="row.status === 3"
-                      >在职</el-dropdown-item
-                    >
-                    <el-dropdown-item :command="2" :disabled="row.status === 2"
-                      >试用期</el-dropdown-item
-                    >
-                    <el-dropdown-item :command="1" :disabled="row.status === 1"
-                      >待入职</el-dropdown-item
-                    >
-                    <el-dropdown-item
-                      :command="0"
-                      :disabled="row.status === 0"
-                      divided
-                      >停职</el-dropdown-item
-                    >
-                    <el-dropdown-item
-                      :command="-1"
-                      :disabled="row.status === -1"
-                      >离职</el-dropdown-item
-                    >
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="账号"
-            width="120"
-            align="center"
-            class-name="table-cell-flex-center-offset"
-          >
-            <template #default="{ row }">
-              <template v-if="row.user_id">
+              </template>
+            </el-table-column>
+            <el-table-column prop="code" label="员工编码" width="120">
+              <template #default="{ row }">
+                {{ row.code || "未设置" }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="emp_no" label="工号" width="100" />
+            <el-table-column prop="position" label="职位" />
+            <el-table-column prop="mobile" label="手机" width="120" align="center" />
+            <el-table-column label="雇佣状态" width="120" align="left">
+              <template #default="{ row }">
                 <el-dropdown
                   trigger="click"
-                  @command="(cmd) => handleChangeAccountStatus(row, cmd)"
+                  @command="(cmd) => handleChangeEmpStatus(row, cmd)"
                 >
-                  <span class="status-text-wrapper" style="cursor: pointer">
-                    <span
-                      v-if="row.account_status === 1"
-                      >{{ accountStatusLabel(row.account_status) }}</span
-                    >
-                    <span
-                      v-else-if="row.account_status === -1"
-                      class="status-danger"
-                      >{{ accountStatusLabel(row.account_status) }}</span
-                    >
-                    <span v-else>{{
-                      accountStatusLabel(row.account_status)
-                    }}</span>
+                  <span class="status-text-wrapper" style="cursor: pointer" :class="{ 'status-danger': (row.status ?? row.emp_status) === 0 }">
+                    {{ empStatusLabel(row.status ?? row.emp_status) }}
                     <el-icon class="status-arrow"><ArrowDown /></el-icon>
                   </span>
                   <template #dropdown>
                     <el-dropdown-menu>
-                      <el-dropdown-item
-                        :command="1"
-                        :disabled="row.account_status === 1"
-                        >已激活</el-dropdown-item
-                      >
-                      <el-dropdown-item
-                        :command="-1"
-                        :disabled="row.account_status === -1"
-                        >已禁用</el-dropdown-item
-                      >
+                      <el-dropdown-item :command="3" :disabled="(row.status ?? row.emp_status) === 3">在职</el-dropdown-item>
+                      <el-dropdown-item :command="2" :disabled="(row.status ?? row.emp_status) === 2">试用期</el-dropdown-item>
+                      <el-dropdown-item :command="1" :disabled="(row.status ?? row.emp_status) === 1">待入职</el-dropdown-item>
+                      <el-dropdown-item :command="0" :disabled="(row.status ?? row.emp_status) === 0" divided>停职</el-dropdown-item>
+                      <el-dropdown-item :command="-1" :disabled="(row.status ?? row.emp_status) === -1">离职</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
               </template>
-              <span v-else>无账号</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            width="140"
-            align="right"
-            fixed="right"
-          >
-            <template #default="{ row }">
-              <el-button size="small" link @click="handleEditEmployee(row)">
-                <el-icon><Edit /></el-icon> 编辑
-              </el-button>
-              <el-button
-                size="small"
-                link
-                class="btn-delete"
-                @click="handleRemoveFromDept(row)"
-              >
-                <el-icon><Remove /></el-icon> 移出
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+            </el-table-column>
+            <el-table-column label="账号" width="120" align="center" class-name="table-cell-flex-center-offset">
+              <template #default="{ row }">
+                <template v-if="row.user_id">
+                  <el-dropdown
+                    trigger="click"
+                    @command="(cmd) => handleChangeAccountStatus(row, cmd)"
+                  >
+                    <span class="status-text-wrapper" style="cursor: pointer">
+                      <span v-if="row.account_status === 1">{{
+                        accountStatusLabel(row.account_status)
+                      }}</span>
+                      <span
+                        v-else-if="row.account_status === -1"
+                        class="status-danger"
+                        >{{ accountStatusLabel(row.account_status) }}</span
+                      >
+                      <span v-else>{{
+                        accountStatusLabel(row.account_status)
+                      }}</span>
+                      <el-icon class="status-arrow"><ArrowDown /></el-icon>
+                    </span>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item :command="1" :disabled="row.account_status === 1">已激活</el-dropdown-item>
+                        <el-dropdown-item :command="-1" :disabled="row.account_status === -1">已禁用</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </template>
+                <span v-else>无账号</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="140" align="right" fixed="right">
+              <template #default="{ row }">
+                <el-button size="small" link @click="handleEditEmployee(row)">
+                  <el-icon><Edit /></el-icon> 编辑
+                </el-button>
+                <el-button v-if="selectedDept" size="small" link class="btn-delete" @click="handleRemoveFromDept(row)">
+                  <el-icon><Remove /></el-icon> 移出
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
 
-        <EmptyState
-          v-else
-          type="data"
-          :icon="Collection"
-          title="请选择部门"
-          description="点击左侧部门树中的部门，查看该部门下的员工列表"
-          compact
-        />
-
-        <div
-          class="pagination-container"
-          v-if="selectedDept && employeePagination.total > 0"
-        >
-          <el-pagination
-            v-model:current-page="employeePagination.page"
-            v-model:page-size="employeePagination.pageSize"
-            :total="employeePagination.total"
-            :page-sizes="[10, 20, 50]"
-            layout="total, sizes, prev, pager, next"
-            @current-change="loadDeptEmployees"
-            @size-change="loadDeptEmployees"
+          <EmptyState
+            v-if="currentOrgId && !employeeLoading && deptEmployees.length === 0"
+            type="data"
+            :icon="Collection"
+            title="暂无员工"
+            :description="selectedDept ? '当前部门下暂无员工' : '当前组织下暂无员工'"
+            compact
+            class="employee-list-empty"
           />
+        </div>
+
+        <div class="pagination-container" v-if="currentOrgId && employeePagination.total > 0">
+          <el-pagination v-model:current-page="employeePagination.page" v-model:page-size="employeePagination.pageSize" :total="employeePagination.total" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @current-change="loadDeptEmployees" @size-change="loadDeptEmployees" />
         </div>
       </el-card>
     </div>
 
     <!-- 组织编辑对话框 -->
-    <el-dialog
-      v-model="orgDialogVisible"
-      :title="orgForm.id ? '编辑组织' : '新建组织'"
-      width="500px"
-      align-center
-      destroy-on-close
-    >
+    <el-dialog v-model="orgDialogVisible" :title="orgForm.id ? '编辑组织' : '新建组织'" width="500px" align-center destroy-on-close>
       <div class="section-blocks" style="gap: 0">
         <div class="section-block">
           <div class="section-block__header">
@@ -415,27 +289,13 @@
           <div class="section-block__content">
             <el-form :model="orgForm" :rules="orgRules" ref="orgFormRef" label-width="80px">
               <el-form-item label="名称" prop="name">
-                <el-input
-                  v-model="orgForm.name"
-                  placeholder="请输入组织名称"
-                  autocomplete="off"
-                />
+                <el-input v-model="orgForm.name" placeholder="请输入组织名称" autocomplete="off" />
               </el-form-item>
               <el-form-item label="编码" prop="code">
-                <el-input
-                  v-model="orgForm.code"
-                  placeholder="请输入组织编码"
-                  autocomplete="off"
-                />
+                <el-input v-model="orgForm.code" placeholder="请输入组织编码" autocomplete="off" />
               </el-form-item>
               <el-form-item label="备注">
-                <el-input
-                  v-model="orgForm.note"
-                  type="textarea"
-                  :rows="3"
-                  placeholder="请输入备注"
-                  autocomplete="off"
-                />
+                <el-input v-model="orgForm.note" type="textarea" :rows="3" placeholder="请输入备注" autocomplete="off" />
               </el-form-item>
             </el-form>
           </div>
@@ -443,23 +303,12 @@
       </div>
       <template #footer>
         <el-button @click="orgDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          @click="submitOrgForm"
-          :loading="submitLoading"
-          >确定</el-button
-        >
+        <el-button type="primary" @click="submitOrgForm" :loading="submitLoading">确定</el-button>
       </template>
     </el-dialog>
 
     <!-- 部门编辑对话框 -->
-    <el-dialog
-      v-model="deptDialogVisible"
-      :title="deptForm.id ? '编辑部门' : '新建部门'"
-      width="500px"
-      align-center
-      destroy-on-close
-    >
+    <el-dialog v-model="deptDialogVisible" :title="deptForm.id ? '编辑部门' : '新建部门'" width="500px" align-center destroy-on-close>
       <div class="section-blocks" style="gap: 0">
         <div class="section-block">
           <div class="section-block__header">
@@ -471,29 +320,13 @@
           <div class="section-block__content">
             <el-form :model="deptForm" :rules="deptRules" ref="deptFormRef" label-width="80px">
               <el-form-item label="名称" prop="name">
-                <el-input
-                  v-model="deptForm.name"
-                  placeholder="请输入部门名称"
-                  autocomplete="off"
-                />
+                <el-input v-model="deptForm.name" placeholder="请输入部门名称" autocomplete="off" />
               </el-form-item>
               <el-form-item label="父部门">
-                <el-tree-select
-                  v-model="deptForm.parent_id"
-                  :data="departmentTree"
-                  :props="{ label: 'name', value: 'id', children: 'children' }"
-                  placeholder="选择父部门（留空为根部门）"
-                  clearable
-                  check-strictly
-                  style="width: 100%"
-                />
+                <el-tree-select v-model="deptForm.parent_id" :data="departmentTree" :props="{ label: 'name', value: 'id', children: 'children' }" placeholder="选择父部门（留空为根部门）" clearable check-strictly style="width: 100%" />
               </el-form-item>
               <el-form-item label="排序">
-                <el-input-number
-                  v-model="deptForm.sort_order"
-                  :min="0"
-                  style="width: 120px"
-                />
+                <el-input-number v-model="deptForm.sort_order" :min="0" style="width: 120px" />
               </el-form-item>
             </el-form>
           </div>
@@ -501,22 +334,12 @@
       </div>
       <template #footer>
         <el-button @click="deptDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          @click="submitDeptForm"
-          :loading="submitLoading"
-          >确定</el-button
-        >
+        <el-button type="primary" @click="submitDeptForm" :loading="submitLoading">确定</el-button>
       </template>
     </el-dialog>
 
     <!-- 员工编辑抽屉 -->
-    <el-drawer
-      v-model="employeeDialogVisible"
-      :title="employeeForm.id ? '编辑员工' : '新建员工'"
-      size="820px"
-      destroy-on-close
-    >
+    <el-drawer v-model="employeeDialogVisible" :title="employeeForm.id ? '编辑员工' : '新建员工'" size="820px" destroy-on-close>
       <div v-loading="editDetailLoading" class="section-blocks" style="gap: 0">
         <div class="section-block" style="margin-bottom: 16px">
           <div class="section-block__header">
@@ -530,38 +353,24 @@
               <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="姓名" prop="name">
-                    <el-input
-                      v-model="employeeForm.name"
-                      placeholder="请输入姓名"
-                      autocomplete="off"
-                    />
+                    <el-input v-model="employeeForm.name" placeholder="请输入姓名" autocomplete="off" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="员工编号">
-                    <el-input
-                      v-model="employeeForm.code"
-                      placeholder="请输入员工编号"
-                    />
+                    <el-input v-model="employeeForm.code" placeholder="请输入员工编号" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="手机号">
-                    <el-input
-                      v-model="employeeForm.mobile"
-                      placeholder="请输入手机号"
-                    />
+                    <el-input v-model="employeeForm.mobile" placeholder="请输入手机号" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="邮箱">
-                    <el-input
-                      v-model="employeeForm.email"
-                      placeholder="请输入邮箱"
-                      autocomplete="off"
-                    />
+                    <el-input v-model="employeeForm.email" placeholder="请输入邮箱" autocomplete="off" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
@@ -591,47 +400,24 @@
                 <el-row :gutter="20">
                   <el-col :span="12">
                     <el-form-item label="组织">
-                      <el-input
-                        :model-value="currentOrg?.name || '-'"
-                        disabled
-                      />
+                      <el-input :model-value="currentOrg?.name || '-'" disabled />
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
                     <el-form-item label="工号">
-                      <el-input
-                        v-model="employeeForm.emp_no"
-                        placeholder="请输入工号"
-                        autocomplete="off"
-                      />
+                      <el-input v-model="employeeForm.emp_no" placeholder="请输入工号" autocomplete="off" />
                     </el-form-item>
                   </el-col>
                 </el-row>
                 <el-row :gutter="20">
                   <el-col :span="12">
                     <el-form-item label="职位">
-                      <el-input
-                        v-model="employeeForm.position"
-                        placeholder="请输入职位"
-                        autocomplete="off"
-                      />
+                      <el-input v-model="employeeForm.position" placeholder="请输入职位" autocomplete="off" />
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
                     <el-form-item label="部门">
-                      <el-tree-select
-                        v-model="employeeForm.dept_id"
-                        :data="departmentTree"
-                        :props="{
-                          label: 'name',
-                          value: 'id',
-                          children: 'children',
-                        }"
-                        placeholder="选择部门"
-                        clearable
-                        check-strictly
-                        style="width: 100%"
-                      />
+                      <el-tree-select v-model="employeeForm.dept_id" :data="departmentTree" :props="{ label: 'name', value: 'id', children: 'children' }" placeholder="选择部门" clearable check-strictly style="width: 100%" />
                     </el-form-item>
                   </el-col>
                 </el-row>
@@ -649,12 +435,8 @@
             <div class="section-block__content">
               <el-form :model="employeeForm" label-width="80px">
                 <el-form-item>
-                  <el-checkbox v-model="employeeForm.create_account"
-                    >同时创建用户账号</el-checkbox
-                  >
-                  <el-text type="info" size="small" style="margin-left: 8px">
-                    创建后将自动分配「内部员工」角色
-                  </el-text>
+                  <el-checkbox v-model="employeeForm.create_account">同时创建用户账号</el-checkbox>
+                  <el-text type="info" size="small" style="margin-left: 8px">创建后将自动分配「内部员工」角色</el-text>
                 </el-form-item>
               </el-form>
             </div>
@@ -678,14 +460,10 @@
                   </span>
                 </div>
                 <div class="status-options">
-                  <el-button
-                    v-for="option in empStatusOptions"
-                    :key="option.value"
-                    size="small"
+                  <el-button v-for="option in empStatusOptions" :key="option.value" size="small"
                     :type="currentEmployee?.emp_status === option.value ? (option.value === 0 ? 'danger' : 'primary') : 'default'"
                     :disabled="currentEmployee?.emp_status === option.value"
-                    @click="handleChangeEmpStatus(currentEmployee || {}, option.value)"
-                  >
+                    @click="handleChangeEmpStatus(currentEmployee || {}, option.value)">
                     {{ option.label }}
                   </el-button>
                 </div>
@@ -706,59 +484,27 @@
                   </template>
                   <template v-if="currentEmployee?.user_id">
                     <div class="inline-summary">
-                      <el-tag
-                        :type="
-                          accountStatusType(currentEmployee.account_status)
-                        "
-                      >
+                      <el-tag :type="accountStatusType(currentEmployee.account_status)">
                         {{ accountStatusLabel(currentEmployee.account_status) }}
                       </el-tag>
-                      <el-button
-                        size="small"
-                        :type="
-                          currentEmployee.account_status === 1
-                            ? 'success'
-                            : 'default'
-                        "
-                        :plain="currentEmployee.account_status !== 1"
-                        :disabled="currentEmployee.account_status === 1"
-                        @click="handleChangeAccountStatus(currentEmployee, 1)"
-                        >激活</el-button
-                      >
-                      <el-button
-                        size="small"
-                        :type="
-                          currentEmployee.account_status === -1
-                            ? 'danger'
-                            : 'default'
-                        "
-                        :plain="currentEmployee.account_status !== -1"
-                        :disabled="currentEmployee.account_status === -1"
-                        @click="handleChangeAccountStatus(currentEmployee, -1)"
-                        >禁用</el-button
-                      >
-                      <el-text type="info"
-                        >已在弹窗内支持直接切换账号状态。</el-text
-                      >
+                      <el-button size="small" :type="currentEmployee.account_status === 1 ? 'success' : 'default'"
+                        :plain="currentEmployee.account_status !== 1" :disabled="currentEmployee.account_status === 1"
+                        @click="handleChangeAccountStatus(currentEmployee, 1)">激活</el-button>
+                      <el-button size="small" :type="currentEmployee.account_status === -1 ? 'danger' : 'default'"
+                        :plain="currentEmployee.account_status !== -1" :disabled="currentEmployee.account_status === -1"
+                        @click="handleChangeAccountStatus(currentEmployee, -1)">禁用</el-button>
+                      <el-text type="info">已在弹窗内支持直接切换账号状态。</el-text>
                     </div>
                   </template>
                   <template v-else>
                     <div class="inline-summary">
-                      <el-button
-                        type="primary"
-                        @click="
-                          handleCreateAccount(currentEmployee || employeeForm)
-                        "
-                        :disabled="!canCreateAccountInDialog"
-                        >创建账号</el-button
-                      >
-                      <el-text type="info">
-                        {{
-                          canCreateAccountInDialog
-                            ? "创建后将自动分配「内部员工」角色。"
-                            : "当前员工未处于可创建账号的在职状态。"
-                        }}
-                      </el-text>
+                      <el-button type="primary" @click="handleCreateAccount(currentEmployee || employeeForm)"
+                        :disabled="!canCreateAccountInDialog">创建账号</el-button>
+                      <el-text type="info">{{
+                        canCreateAccountInDialog
+                          ? "创建后将自动分配「内部员工」角色。"
+                          : "当前员工未处于可创建账号的在职状态。"
+                      }}</el-text>
                     </div>
                   </template>
                 </el-tab-pane>
@@ -776,41 +522,18 @@
                       size="small"
                       max-height="260"
                     >
-                      <el-table-column
-                        prop="org_name"
-                        label="组织"
-                        min-width="140"
-                      />
+                      <el-table-column prop="org_name" label="组织" min-width="140" />
                       <el-table-column prop="emp_no" label="工号" width="120" />
-                      <el-table-column
-                        prop="position"
-                        label="职位"
-                        width="120"
-                      />
-                      <el-table-column
-                        label="主组织"
-                        width="120"
-                        align="center"
-                      >
+                      <el-table-column prop="position" label="职位" width="120" />
+                      <el-table-column label="主组织" width="120" align="center">
                         <template #default="{ row }">
-                          <el-tag
-                            v-if="row.is_primary"
-                            type="success"
-                            size="small"
-                            >是</el-tag
-                          >
+                          <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
                           <span v-else class="text-gray">—</span>
                         </template>
                       </el-table-column>
                     </el-table>
-                    <div
-                      v-if="!currentEmployee?.organizations?.length"
-                      class="section-block__empty"
-                    >
-                      <el-empty
-                        description="暂未加入任何组织"
-                        :image-size="60"
-                      />
+                    <div v-if="!currentEmployee?.organizations?.length" class="section-block__empty">
+                      <el-empty description="暂未加入任何组织" :image-size="60" />
                     </div>
                   </div>
                 </el-tab-pane>
@@ -823,40 +546,17 @@
                     </span>
                   </template>
                   <div class="section-block__table">
-                    <el-table
-                      :data="currentEmployee?.departments || []"
-                      size="small"
-                      max-height="260"
-                    >
-                      <el-table-column
-                        prop="dept_name"
-                        label="部门"
-                        min-width="180"
-                      />
-                      <el-table-column
-                        label="主部门"
-                        width="120"
-                        align="center"
-                      >
+                    <el-table :data="currentEmployee?.departments || []" size="small" max-height="260">
+                      <el-table-column prop="dept_name" label="部门" min-width="180" />
+                      <el-table-column label="主部门" width="120" align="center">
                         <template #default="{ row }">
-                          <el-tag
-                            v-if="row.is_primary"
-                            type="success"
-                            size="small"
-                            >是</el-tag
-                          >
+                          <el-tag v-if="row.is_primary" type="success" size="small">是</el-tag>
                           <span v-else class="text-gray">—</span>
                         </template>
                       </el-table-column>
                     </el-table>
-                    <div
-                      v-if="!currentEmployee?.departments?.length"
-                      class="section-block__empty"
-                    >
-                      <el-empty
-                        description="暂未加入任何部门"
-                        :image-size="60"
-                      />
+                    <div v-if="!currentEmployee?.departments?.length" class="section-block__empty">
+                      <el-empty description="暂未加入任何部门" :image-size="60" />
                     </div>
                   </div>
                 </el-tab-pane>
@@ -867,78 +567,33 @@
       </div>
       <template #footer>
         <el-button @click="employeeDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          @click="submitEmployeeForm"
-          :loading="submitLoading"
-          >确定</el-button
-        >
+        <el-button type="primary" @click="submitEmployeeForm" :loading="submitLoading">确定</el-button>
       </template>
     </el-drawer>
 
-    <el-dialog
-      v-model="accountResultVisible"
-      title="用户账号已创建"
-      width="480px"
-      align-center
-      :close-on-click-modal="false"
-    >
-      <el-alert
-        :title="
-          '账号已创建，默认密码 ' +
-          accountResult.raw_password +
-          '，首次登录时需强制修改密码'
-        "
-        type="success"
-        :closable="false"
-        show-icon
-        style="margin-bottom: 16px"
-      />
+    <el-dialog v-model="accountResultVisible" title="用户账号已创建" width="480px" align-center :close-on-click-modal="false">
+      <el-alert :title="'账号已创建，默认密码 ' + accountResult.raw_password + '，首次登录时需强制修改密码'" type="success" :closable="false" show-icon style="margin-bottom: 16px" />
       <el-descriptions :column="1" border>
-        <el-descriptions-item label="员工姓名">{{
-          accountResult.employee_name
-        }}</el-descriptions-item>
-        <el-descriptions-item label="用户名">
-          <code>{{ accountResult.username }}</code>
-        </el-descriptions-item>
-        <el-descriptions-item label="默认密码">
-          <code>{{ accountResult.raw_password }}</code>
-          <el-tag size="small" style="margin-left: 8px">首次登录需修改</el-tag>
-        </el-descriptions-item>
+        <el-descriptions-item label="员工姓名">{{ accountResult.employee_name }}</el-descriptions-item>
+        <el-descriptions-item label="用户名"><code>{{ accountResult.username }}</code></el-descriptions-item>
+        <el-descriptions-item label="默认密码"><code>{{ accountResult.raw_password }}</code><el-tag size="small" style="margin-left: 8px">首次登录需修改</el-tag></el-descriptions-item>
       </el-descriptions>
       <template #footer>
-        <el-button type="primary" @click="accountResultVisible = false"
-          >知道了</el-button
-        >
+        <el-button type="primary" @click="accountResultVisible = false">知道了</el-button>
       </template>
     </el-dialog>
 
     <!-- 添加员工到部门抽屉 -->
-    <el-drawer
-      v-model="addToDeptDialogVisible"
-      title="添加员工到部门"
-      size="800px"
-      destroy-on-close
-    >
+    <el-drawer v-model="addToDeptDialogVisible" title="添加员工到部门" size="800px" destroy-on-close>
       <div class="section-blocks" style="gap: 0">
         <!-- 部门信息 -->
         <div class="section-block" style="margin-bottom: 16px">
           <div class="section-block__content" style="padding: 12px 16px">
             <div class="dept-tips">
-              <el-icon
-                style="
-                  color: var(--el-color-info);
-                  font-size: var(--el-font-size-md);
-                "
-                ><Info-Filled
-              /></el-icon>
+              <el-icon style="color: var(--el-color-info); font-size: var(--el-font-size-md);"><Info-Filled /></el-icon>
               <div class="dept-tips__content">
-                <div class="dept-tips__title">
-                  将员工添加到「{{ selectedDept?.name }}」部门
-                </div>
-                <div class="dept-tips__desc">
-                  搜索系统中的员工，如果员工尚未加入当前组织，将自动添加
-                </div>
+                <div class="dept-tips__title">将员工添加到「{{ selectedDept?.name }}」部门</div>
+                <div class="dept-tips__desc">搜索系统中的员工，如果员工尚未加入当前组织，将自动添加</div>
               </div>
             </div>
           </div>
@@ -952,11 +607,7 @@
               <span>搜索员工</span>
             </div>
             <div class="section-block__actions">
-              <el-button
-                type="primary"
-                size="small"
-                @click="handleCreateAndAddEmployee"
-              >
+              <el-button type="primary" size="small" @click="handleCreateAndAddEmployee">
                 <el-icon><Plus /></el-icon> 新建并添加
               </el-button>
             </div>
@@ -964,14 +615,7 @@
           <div class="section-block__content">
             <el-form :inline="true" class="section-block__add-form">
               <el-form-item label="关键词">
-                <el-input
-                  v-model="searchKeyword"
-                  placeholder="输入姓名或手机号"
-                  clearable
-                  autocomplete="off"
-                  @keyup.enter="searchEmployees"
-                  style="width: 200px"
-                />
+                <el-input v-model="searchKeyword" placeholder="输入姓名或手机号" clearable autocomplete="off" @keyup.enter="searchEmployees" style="width: 200px" />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" @click="searchEmployees">
@@ -991,46 +635,23 @@
             </div>
           </div>
           <div class="section-block__table">
-            <el-table
-              v-loading="searchLoading"
-              :data="searchResults"
-              size="small"
-            >
+            <el-table v-loading="searchLoading" :data="searchResults" size="small">
               <el-table-column prop="name" label="姓名" width="110" />
               <el-table-column prop="mobile" label="手机" width="130" align="center" />
-              <el-table-column
-                prop="email"
-                label="邮箱"
-                min-width="140"
-                show-overflow-tooltip
-              />
-              <el-table-column
-                label="当前部门"
-                min-width="100"
-                show-overflow-tooltip
-              >
+              <el-table-column prop="email" label="邮箱" min-width="140" show-overflow-tooltip />
+              <el-table-column label="当前部门" min-width="100" show-overflow-tooltip>
                 <template #default="{ row }">
                   <span>{{ row.primary_dept_name || "未分配" }}</span>
                 </template>
               </el-table-column>
               <el-table-column label="操作" width="130" align="right">
                 <template #default="{ row }">
-                  <el-button
-                    v-if="!isAlreadyInDept(row)"
-                    type="primary"
-                    size="small"
-                    @click="handleAddExistingToDept(row)"
-                  >
-                    添加
-                  </el-button>
+                  <el-button v-if="!isAlreadyInDept(row)" type="primary" size="small" @click="handleAddExistingToDept(row)">添加</el-button>
                   <el-tag v-else type="info" size="small">已在部门</el-tag>
                 </template>
               </el-table-column>
             </el-table>
-            <div
-              v-if="!searchLoading && searchResults.length === 0"
-              class="section-block__empty"
-            >
+            <div v-if="!searchLoading && searchResults.length === 0" class="section-block__empty">
               <el-empty description="暂无员工数据" :image-size="60" />
             </div>
           </div>
@@ -1042,48 +663,22 @@
     </el-drawer>
 
     <!-- 企业微信绑定抽屉 -->
-    <el-drawer
-      v-model="wechatBindDialogVisible"
-      :title="wechatBindMode === 'bind' ? '绑定企业微信' : '企业微信配置'"
-      size="560px"
-      destroy-on-close
-    >
+    <el-drawer v-model="wechatBindDialogVisible" :title="wechatBindMode === 'bind' ? '绑定企业微信' : '企业微信配置'" size="560px" destroy-on-close>
       <div class="section-blocks" style="gap: 0">
         <!-- 提示信息 -->
-        <div
-          v-if="wechatBindMode === 'bind'"
-          class="section-block"
-          style="margin-bottom: 16px"
-        >
+        <div v-if="wechatBindMode === 'bind'" class="section-block" style="margin-bottom: 16px">
           <div class="section-block__content" style="padding: 12px 16px">
             <div class="wechat-tips">
-              <el-icon
-                style="
-                  color: var(--el-color-info);
-                  font-size: var(--el-font-size-md);
-                "
-                ><Info-Filled
-              /></el-icon>
+              <el-icon style="color: var(--el-color-info); font-size: var(--el-font-size-md);"><Info-Filled /></el-icon>
               <div class="wechat-tips__content">
-                <div class="wechat-tips__title">
-                  请在企业微信管理后台获取以下配置信息
-                </div>
-                <div class="wechat-tips__desc">
-                  进入「管理工具 → 通讯录同步」获取
-                  Secret；设置「接收事件服务器」获取 Token 和 EncodingAESKey
-                </div>
+                <div class="wechat-tips__title">请在企业微信管理后台获取以下配置信息</div>
+                <div class="wechat-tips__desc">进入「管理工具 → 通讯录同步」获取 Secret；设置「接收事件服务器」获取 Token 和 EncodingAESKey</div>
               </div>
             </div>
           </div>
         </div>
 
-        <el-form
-          :model="wechatForm"
-          :rules="wechatRules"
-          ref="wechatFormRef"
-          label-width="160px"
-          :disabled="wechatBindMode === 'view'"
-        >
+        <el-form :model="wechatForm" :rules="wechatRules" ref="wechatFormRef" label-width="160px" :disabled="wechatBindMode === 'view'">
           <!-- 基础配置 -->
           <div class="section-block" style="margin-bottom: 16px">
             <div class="section-block__header">
@@ -1094,19 +689,10 @@
             </div>
             <div class="section-block__content">
               <el-form-item label="企业 ID (corp_id)" prop="corp_id">
-                <el-input
-                  v-model="wechatForm.corp_id"
-                  placeholder="如 wwxxxxxxxxxxxxxxxxxx"
-                  autocomplete="off"
-                />
+                <el-input v-model="wechatForm.corp_id" placeholder="如 wwxxxxxxxxxxxxxxxxxx" autocomplete="off" />
               </el-form-item>
               <el-form-item label="通讯录 Secret" prop="corp_secret">
-                <el-input
-                  v-model="wechatForm.corp_secret"
-                  placeholder="通讯录同步专用 Secret"
-                  show-password
-                  autocomplete="off"
-                />
+                <el-input v-model="wechatForm.corp_secret" placeholder="通讯录同步专用 Secret" show-password autocomplete="off" />
               </el-form-item>
             </div>
           </div>
@@ -1121,19 +707,10 @@
             </div>
             <div class="section-block__content">
               <el-form-item label="自建应用 AgentID">
-                <el-input
-                  v-model="wechatForm.login_agent_id"
-                  placeholder="应用管理 → 自建应用 → AgentID"
-                  autocomplete="off"
-                />
+                <el-input v-model="wechatForm.login_agent_id" placeholder="应用管理 → 自建应用 → AgentID" autocomplete="off" />
               </el-form-item>
               <el-form-item label="自建应用 Secret">
-                <el-input
-                  v-model="wechatForm.login_secret"
-                  placeholder="自建应用的 Secret"
-                  show-password
-                  autocomplete="off"
-                />
+                <el-input v-model="wechatForm.login_secret" placeholder="自建应用的 Secret" show-password autocomplete="off" />
               </el-form-item>
             </div>
           </div>
@@ -1182,17 +759,8 @@
         </el-form>
       </div>
       <template #footer>
-        <el-button @click="wechatBindDialogVisible = false">
-          {{ wechatBindMode === "view" ? "关闭" : "取消" }}
-        </el-button>
-        <el-button
-          v-if="wechatBindMode === 'bind'"
-          type="primary"
-          @click="submitWechatBind"
-          :loading="wechatSubmitLoading"
-        >
-          验证并绑定
-        </el-button>
+        <el-button @click="wechatBindDialogVisible = false">{{ wechatBindMode === "view" ? "关闭" : "取消" }}</el-button>
+        <el-button v-if="wechatBindMode === 'bind'" type="primary" @click="submitWechatBind" :loading="wechatSubmitLoading">验证并绑定</el-button>
       </template>
     </el-drawer>
   </div>
@@ -1258,8 +826,8 @@ const currentEmployee = ref(null);
 const orgFormRef = ref(null);
 const orgForm = reactive({ id: null, name: "", code: "", note: "" });
 const orgRules = {
-  name: [{ required: true, message: '请输入组织名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入组织编码', trigger: 'blur' }],
+  name: [{ required: true, message: "请输入组织名称", trigger: "blur" }],
+  code: [{ required: true, message: "请输入组织编码", trigger: "blur" }],
 };
 
 const deptFormRef = ref(null);
@@ -1270,7 +838,7 @@ const deptForm = reactive({
   sort_order: 0,
 });
 const deptRules = {
-  name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
+  name: [{ required: true, message: "请输入部门名称", trigger: "blur" }],
 };
 
 const employeeFormRef = ref(null);
@@ -1287,7 +855,7 @@ const employeeForm = reactive({
   create_account: false,
 });
 const employeeRules = {
-  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
 };
 
 const accountResultVisible = ref(false);
@@ -1323,8 +891,10 @@ const wechatForm = reactive({
   callback_aes_key: "",
 });
 const wechatRules = {
-  corp_id: [{ required: true, message: '请输入企业 ID', trigger: 'blur' }],
-  corp_secret: [{ required: true, message: '请输入通讯录 Secret', trigger: 'blur' }],
+  corp_id: [{ required: true, message: "请输入企业 ID", trigger: "blur" }],
+  corp_secret: [
+    { required: true, message: "请输入通讯录 Secret", trigger: "blur" },
+  ],
 };
 const wechatWebhookUrl = computed(() => {
   const baseUrl = window.location.origin;
@@ -1496,6 +1066,7 @@ const handleWechatSync = async () => {
     );
     // 刷新部门树和员工列表
     loadDeptTree();
+    loadDeptEmployees();
   } catch (e) {
     if (e !== "cancel") {
       ElMessage.error(e.message || "同步失败");
@@ -1525,6 +1096,7 @@ const loadOrganizations = async () => {
       currentOrgId.value = organizations.value[0].id;
       loadDeptTree();
       loadWechatConfig();
+      loadDeptEmployees();
     }
   } catch (e) {
     ElMessage.error("加载组织列表失败");
@@ -1545,9 +1117,9 @@ const loadDeptTree = async () => {
   }
 };
 
-// 加载部门员工
+// 加载右侧员工表：选中部门走部门接口；未选部门走员工列表接口（当前组织下全部员工，与员工管理页一致）
 const loadDeptEmployees = async () => {
-  if (!selectedDept.value) return;
+  if (!currentOrgId.value) return;
   employeeLoading.value = true;
   try {
     const params = {
@@ -1563,8 +1135,21 @@ const loadDeptEmployees = async () => {
     ) {
       params.account_status = accountStatusFilter.value;
     }
-    const res = await departmentApi.getEmployees(selectedDept.value.id, params);
-    deptEmployees.value = res.data?.rows || [];
+    let res;
+    if (selectedDept.value) {
+      res = await departmentApi.getEmployees(selectedDept.value.id, params);
+    } else {
+      res = await employeeApi.list({
+        ...params,
+        org_id: currentOrgId.value,
+        include: "primary_org_name,primary_dept_name",
+      });
+    }
+    const rows = res.data?.rows || [];
+    deptEmployees.value = rows.map((r) => ({
+      ...r,
+      status: r.status ?? r.emp_status ?? null,
+    }));
     employeePagination.total = res.data?.total_records || 0;
   } catch (e) {
     ElMessage.error("加载员工列表失败");
@@ -1573,12 +1158,26 @@ const loadDeptEmployees = async () => {
   }
 };
 
+const clearDeptSelection = () => {
+  selectedDept.value = null;
+  employeePagination.page = 1;
+  nextTick(() => {
+    deptTreeRef.value?.setCurrentKey?.(undefined);
+  });
+  loadDeptEmployees();
+};
+
 // 组织切换
 const handleOrgChange = () => {
   selectedDept.value = null;
   deptEmployees.value = [];
+  employeePagination.page = 1;
+  nextTick(() => {
+    deptTreeRef.value?.setCurrentKey?.(undefined);
+  });
   loadDeptTree();
   loadWechatConfig();
+  loadDeptEmployees();
 };
 
 // 部门点击
@@ -1605,11 +1204,11 @@ const handleEditOrg = () => {
 
 // 提交组织表单
 const submitOrgForm = async () => {
-  if (!orgFormRef.value) return
+  if (!orgFormRef.value) return;
 
   // 先进行表单校验，校验失败直接返回，不进入后续逻辑
-  const isValid = await orgFormRef.value.validate().catch(() => false)
-  if (!isValid) return
+  const isValid = await orgFormRef.value.validate().catch(() => false);
+  if (!isValid) return;
 
   submitLoading.value = true;
   try {
@@ -1658,8 +1257,12 @@ const handleDeleteDept = async (dept) => {
     if (selectedDept.value?.id === dept.id) {
       selectedDept.value = null;
       deptEmployees.value = [];
+      nextTick(() => {
+        deptTreeRef.value?.setCurrentKey?.(undefined);
+      });
     }
     loadDeptTree();
+    loadDeptEmployees();
   } catch (e) {
     if (e !== "cancel") ElMessage.error(e.message || "删除失败");
   }
@@ -1667,11 +1270,11 @@ const handleDeleteDept = async (dept) => {
 
 // 提交部门表单
 const submitDeptForm = async () => {
-  if (!deptFormRef.value) return
+  if (!deptFormRef.value) return;
 
   // 先进行表单校验，校验失败直接返回，不进入后续逻辑
-  const isValid = await deptFormRef.value.validate().catch(() => false)
-  if (!isValid) return
+  const isValid = await deptFormRef.value.validate().catch(() => false);
+  if (!isValid) return;
 
   submitLoading.value = true;
   try {
@@ -1813,9 +1416,7 @@ const submitEmployeeForm = async () => {
 
     employeeDialogVisible.value = false;
     loadDeptTree();
-    if (selectedDept.value) {
-      loadDeptEmployees();
-    }
+    loadDeptEmployees();
   } catch (e) {
     ElMessage.error(e.message || "操作失败");
   } finally {
@@ -1913,6 +1514,7 @@ const handleCreateAndAddEmployee = () => {
 
 // 从部门移除员工
 const handleRemoveFromDept = async (emp) => {
+  if (!selectedDept.value) return;
   try {
     await ElMessageBox.confirm(
       `确定将「${emp.name}」从部门移除吗？`,
@@ -1931,12 +1533,12 @@ const handleRemoveFromDept = async (emp) => {
 // ==================== 状态辅助函数 ====================
 
 const empStatusOptions = [
-  { value: 3, label: '在职' },
-  { value: 2, label: '试用期' },
-  { value: 1, label: '待入职' },
-  { value: 0, label: '停职' },
-  { value: -1, label: '离职' },
-]
+  { value: 3, label: "在职" },
+  { value: 2, label: "试用期" },
+  { value: 1, label: "待入职" },
+  { value: 0, label: "停职" },
+  { value: -1, label: "离职" },
+];
 
 const empStatusLabel = (status) => {
   const map = { "-1": "离职", 0: "停职", 1: "待入职", 2: "试用期", 3: "在职" };
@@ -2045,7 +1647,8 @@ const cardMaxHeight = ref(620);
 
 const updateCardHeight = () => {
   const viewportHeight = window.innerHeight;
-  cardMaxHeight.value = Math.max(500, viewportHeight - 300);
+  // 顶栏、面包屑、页内标题与内边距约 180–200px，尽量让主卡片贴近视窗剩余高度
+  cardMaxHeight.value = Math.max(520, viewportHeight - 268);
 };
 
 onMounted(() => {
@@ -2118,11 +1721,19 @@ onUnmounted(() => {
   height: 100%;
 }
 
+.page-container {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height:100%;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  flex-shrink: 0;
 }
 .header-actions {
   display: flex;
@@ -2131,10 +1742,15 @@ onUnmounted(() => {
 .main-content-row {
   display: flex;
   gap: 16px;
+  flex: 1;
+  align-items: stretch;
+  min-height: 0;
 }
 .department-card {
   flex: 0 0 360px;
-  min-height: 500px;
+  box-sizing: border-box;
+  height: var(--card-max-height, 620px);
+  min-height: var(--card-max-height, 620px);
   max-height: var(--card-max-height, 620px);
   display: flex;
   flex-direction: column;
@@ -2145,23 +1761,152 @@ onUnmounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
-.department-card :deep(.el-tree) {
+.dept-card-stack {
+  display: flex;
+  flex-direction: column;
   flex: 1;
-  overflow-y: auto;
-  max-height: calc(var(--card-max-height, 620px) - 60px);
+  min-height: 0;
+  gap: 0;
 }
+
+.dept-card-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.dept-card-block--org {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 10px 10px;
+  margin: 0 0 8px;
+  border-radius: var(--app-border-radius, 8px);
+  background: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.dept-card-section-label {
+  margin: 0 0 4px;
+  font-size: var(--el-font-size-extra-small);
+  font-weight: var(--el-font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--el-text-color-secondary);
+  line-height: 1.2;
+}
+
+.dept-card-section-label--inline {
+  margin: 0 0 1px;
+}
+
+.dept-card-header--org {
+  margin-bottom: 0;
+  align-items: center;
+}
+
+.dept-card-org-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.dept-card-header--org .dept-card-org-row h3 {
+  margin: 0;
+  flex: 0 0 auto;
+  font-size: var(--el-font-size-base);
+  font-weight: var(--el-font-weight-extra-bold);
+  line-height: 1.3;
+}
+
+.dept-card-org-select {
+  flex: 1 1 160px;
+  min-width: 120px;
+  max-width: 100%;
+}
+
+.dept-card-org-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px 9px;
+  margin-top: 2px;
+}
+.dept-card-org-actions .el-button {
+  margin-left: 0;
+}
+.dept-card-wechat-tag {
+  margin-right: 0;
+  font-size: 12px;
+}
+
+.dept-card-block--departments {
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--el-border-color-extra-light);
+  border-radius: var(--app-border-radius, 8px);
+  padding: 8px 10px 10px;
+  background: rgb(var(--white));
+}
+
+.dept-card-header--departments {
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+
+.dept-card-header-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.dept-card-header-title-wrap h3 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.dept-tree-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.dept-tree-empty {
+  flex: 1;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.department-card :deep(.dept-tree-scroll.el-tree) {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .data-card {
   flex: 1;
-  min-height: 500px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: var(--card-max-height, 620px);
+  min-height: var(--card-max-height, 620px);
   max-height: var(--card-max-height, 620px);
   display: flex;
   flex-direction: column;
 }
 .employee-list-card.data-card {
   flex: 1;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 /* 员工列表卡片内部样式 */
 .department-card :deep(.el-card__body),
@@ -2175,6 +1920,22 @@ onUnmounted(() => {
 
 .employee-list-card .list-header {
   flex-shrink: 0;
+}
+
+.employee-list-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.employee-list-empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .employee-list-card .list-filter {
@@ -2197,6 +1958,13 @@ onUnmounted(() => {
   align-items: center;
   margin-bottom: 12px;
   padding: 0 4px;
+}
+
+.list-header__title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
 }
 
 .list-header h4 {

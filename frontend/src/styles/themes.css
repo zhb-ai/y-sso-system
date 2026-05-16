@@ -552,7 +552,7 @@ input:-internal-autofill-selected {
 
 /* 标签样式优化 */
 .el-tag {
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius);
   font-weight: var(--el-font-weight-medium);
 }
 

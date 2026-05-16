@@ -59,8 +59,8 @@ export const useSiteStore = defineStore('site', () => {
     try {
       const res = await api.get('/v1/settings/site')
       if (res.data) {
-        systemName.value = res.data.system_name || systemName.value || DEFAULT_SYSTEM_NAME
-        systemDesc.value = res.data.system_desc || systemDesc.value || DEFAULT_SYSTEM_DESC
+        systemName.value = res.data.system_name || DEFAULT_SYSTEM_NAME
+        systemDesc.value = res.data.system_desc || DEFAULT_SYSTEM_DESC
         systemLogo.value = res.data.system_logo
         writeSiteCache({
           systemName: systemName.value,
