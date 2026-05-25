@@ -97,6 +97,8 @@ export function useWechatWorkLogin(options = {}) {
       return false
     }
     sessionStorage.removeItem('wechat_work_state')
+    // 登录流程结束，清除自动登录尝试标记
+    sessionStorage.removeItem('wechat_work_auto_login_attempted')
 
     wechatLoading.value = true
     try {
@@ -142,6 +144,10 @@ export function useWechatWorkLogin(options = {}) {
   const autoLoginInWechatWork = async () => {
     if (!isInWechatWork() || !wechatLoginEnabled.value) return
 
+    // 防止重复跳转：如果已经尝试过自动登录，不再跳转
+    const hasAttemptedAutoLogin = sessionStorage.getItem('wechat_work_auto_login_attempted')
+    if (hasAttemptedAutoLogin) return
+
     try {
       // 保存当前完整 URL（包含 OAuth2 参数），登录成功后用于刷新页面
       sessionStorage.setItem('wechat_work_original_url', window.location.href)
@@ -152,6 +158,8 @@ export function useWechatWorkLogin(options = {}) {
 
       const res = await wechatWorkApi.getOAuthUrl(redirectUri, state)
       if (res.data?.oauth_url) {
+        // 标记已尝试自动登录，防止无限循环
+        sessionStorage.setItem('wechat_work_auto_login_attempted', 'true')
         window.location.href = res.data.oauth_url
       }
     } catch {
