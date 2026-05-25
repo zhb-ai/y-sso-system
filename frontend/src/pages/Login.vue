@@ -456,7 +456,13 @@ onMounted(async () => {
   // 2. 加载企微登录配置
   await loadWechatLoginConfig();
 
-  // 3. 如果在企微内部，自动触发免登
+  // 3. 如果用户已登录，不需要再自动免登
+  if (authStore.isLoggedIn) {
+    console.log('[WechatWork] 用户已登录，跳过自动免登');
+    return;
+  }
+
+  // 4. 如果在企微内部且未登录，自动触发免登
   if (isInWechatWork()) {
     autoLoginInWechatWork();
   }
