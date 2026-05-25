@@ -97,8 +97,8 @@ export function useWechatWorkLogin(options = {}) {
       return false
     }
     sessionStorage.removeItem('wechat_work_state')
-    // 登录流程结束，清除自动登录尝试标记
-    sessionStorage.removeItem('wechat_work_auto_login_attempted')
+    // 登录流程结束，清除自动登录重试计数
+    sessionStorage.removeItem('wechat_work_auto_login_retry_count')
 
     wechatLoading.value = true
     try {
@@ -140,13 +140,29 @@ export function useWechatWorkLogin(options = {}) {
 
   /**
    * 企微内部自动免登
+   * 使用指数退避重试机制：首次延时 500ms，失败后指数递增，最多重试 5 次
    */
   const autoLoginInWechatWork = async () => {
     if (!isInWechatWork() || !wechatLoginEnabled.value) return
 
-    // 防止重复跳转：如果已经尝试过自动登录，不再跳转
-    const hasAttemptedAutoLogin = sessionStorage.getItem('wechat_work_auto_login_attempted')
-    if (hasAttemptedAutoLogin) return
+    // 获取当前重试次数
+    const retryCount = parseInt(sessionStorage.getItem('wechat_work_auto_login_retry_count') || '0')
+    const MAX_RETRIES = 5
+
+    // 超过最大重试次数，停止尝试
+    if (retryCount >= MAX_RETRIES) {
+      console.log(`[WechatWork] 自动登录已尝试 ${MAX_RETRIES} 次，停止重试`)
+      return
+    }
+
+    // 计算延时：500ms * 2^retryCount
+    // 第1次: 500ms, 第2次: 1000ms, 第3次: 2000ms, 第4次: 4000ms, 第5次: 8000ms
+    const delay = 500 * Math.pow(2, retryCount)
+
+    console.log(`[WechatWork] 第 ${retryCount + 1} 次自动登录尝试，延时 ${delay}ms`)
+
+    // 延时后执行
+    await new Promise(resolve => setTimeout(resolve, delay))
 
     try {
       // 保存当前完整 URL（包含 OAuth2 参数），登录成功后用于刷新页面
@@ -158,12 +174,14 @@ export function useWechatWorkLogin(options = {}) {
 
       const res = await wechatWorkApi.getOAuthUrl(redirectUri, state)
       if (res.data?.oauth_url) {
-        // 标记已尝试自动登录，防止无限循环
-        sessionStorage.setItem('wechat_work_auto_login_attempted', 'true')
+        // 增加重试计数
+        sessionStorage.setItem('wechat_work_auto_login_retry_count', String(retryCount + 1))
         window.location.href = res.data.oauth_url
       }
     } catch {
-      // 静默失败，用户可以手动登录
+      // 静默失败，增加重试计数，下次页面加载时会继续重试
+      sessionStorage.setItem('wechat_work_auto_login_retry_count', String(retryCount + 1))
+      console.log(`[WechatWork] 自动登录失败，已记录重试次数: ${retryCount + 1}`)
     }
   }
 
