@@ -54,8 +54,8 @@ def create_employee_account_router(employee_model: Type) -> APIRouter:
         summary="为员工创建用户账号",
         description=(
             "自动为员工创建内部用户账号并关联。\n"
-            "用户名生成优先级：指定 > 手机号 > 邮箱前缀 > emp_员工ID。\n"
-            "默认密码为 000000，首次登录时强制修改。\n"
+            "用户名：指定值优先，否则使用 employee.enterprise_wechat_user_id。\n"
+            "默认密码首次登录时强制修改。\n"
             "创建后自动分配「内部员工」角色。"
         ),
     )

@@ -1,0 +1,1580 @@
+{
+  "exported_at": "2026-08-11T11:12:33+08:00",
+  "source": "scripts\\output\\wechat_work_users.json",
+  "corp_id": "wwa45051e5c8780853",
+  "summary": {
+    "unique_user_count": 211,
+    "missing_mobile_count": 38,
+    "missing_id_card_count": 3,
+    "missing_both_count": 2,
+    "missing_any_count": 39
+  },
+  "missing_mobile": [
+    {
+      "userid": "HANXIANGHUAN",
+      "name": "结算中心-韩香焕",
+      "department": [
+        9
+      ],
+      "main_department": 9,
+      "telephone": "318",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "410922198710215867",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "财务专员",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "OUYANGSUQIAN",
+      "name": "结算中心-欧阳素倩",
+      "department": [
+        9
+      ],
+      "main_department": 9,
+      "telephone": "328",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "430223198410102926",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "zhaofengran",
+      "name": "结算中心-赵凤冉",
+      "department": [
+        9
+      ],
+      "main_department": 9,
+      "telephone": "330",
+      "alias": "洋帆-赵凤冉",
+      "english_name": "洋帆-赵凤冉",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130525199912281525",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "baixiaohua",
+      "name": "结算中心-白晓华",
+      "department": [
+        9
+      ],
+      "main_department": 9,
+      "telephone": "326",
+      "alias": "洋帆-白晓华",
+      "english_name": "洋帆-白晓华",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "131128199806153624",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "dys",
+      "name": "打印室",
+      "department": [
+        8
+      ],
+      "main_department": 8,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": null,
+      "has_mobile": false,
+      "has_id_card": false,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "ZhangYaNan",
+      "name": "张亚楠",
+      "department": [
+        8
+      ],
+      "main_department": 8,
+      "telephone": "265",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130525199901092323",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "人事行政岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "HANGHAIJUAN",
+      "name": "韩海娟",
+      "department": [
+        57
+      ],
+      "main_department": 57,
+      "telephone": "523",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "239004197705221267",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "zhangxinchao",
+      "name": "财务部-张新朝",
+      "department": [
+        56
+      ],
+      "main_department": 56,
+      "telephone": "872",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130224198012286227",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "财务岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "ll",
+      "name": "李龙[金腾元|南三|仁和]",
+      "department": [
+        56
+      ],
+      "main_department": 56,
+      "telephone": "874",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "412829199208126039",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "zhanghaiyang",
+      "name": "张海洋[ 耐力 | 正华元 | 一家弘 ]",
+      "department": [
+        56
+      ],
+      "main_department": 56,
+      "telephone": "868",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "110102199004273052",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "miaowenzhe",
+      "name": "缪文哲[新南科|祥华尊|时代]",
+      "department": [
+        56
+      ],
+      "main_department": 56,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "330324200307030037",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "财务助理",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "LiuYuHui",
+      "name": "刘宇辉",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "152630199001115819",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "企划信息岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "YINYUNSONG",
+      "name": "尹运松",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "174",
+      "alias": "润子",
+      "english_name": "润子",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130533198508143855",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "企划信息岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "AI",
+      "name": "洋帆AI",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "",
+      "alias": "洋帆AI",
+      "english_name": "洋帆AI",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": null,
+      "has_mobile": false,
+      "has_id_card": false,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "xiongsiyuan",
+      "name": "企划信息部-熊思远-数据仓库工程师",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "",
+      "alias": "洋帆-熊思远-数据仓库工程师",
+      "english_name": "洋帆-熊思远-数据仓库工程师",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "411527200307020016",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "数据仓库工程师",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "LIJINGWEI",
+      "name": "原装采购部-李晶伟-惠普黑鼓|惠普彩鼓|三星",
+      "department": [
+        52
+      ],
+      "main_department": 52,
+      "telephone": "010-62699898-553",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "220322198603056321",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "采购岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "zj",
+      "name": "原装采购部-张京-爱普生耗材丨惠普墨盒丨佳能",
+      "department": [
+        52
+      ],
+      "main_department": 52,
+      "telephone": "524",
+      "alias": "张京",
+      "english_name": "张京",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "120222199512050819",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "采购岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "renbinshuo",
+      "name": "原装采购部-任彬硕-京瓷|联想|东芝|兄弟|施乐|震旦|OKI|柯美",
+      "department": [
+        52
+      ],
+      "main_department": 52,
+      "telephone": "205",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130604199903071212",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "采购岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "lcb",
+      "name": "刘春波-网管|企业微信",
+      "department": [
+        49
+      ],
+      "main_department": 49,
+      "telephone": "313",
+      "alias": "刘春波",
+      "english_name": "刘春波",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "220122198802284051",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "企划信息岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "ZHANGHAIBIN",
+      "name": "张海彬",
+      "department": [
+        46
+      ],
+      "main_department": 46,
+      "telephone": "6903",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130684198501305474",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "企划信息岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "xingjinzheng",
+      "name": "平台业务部-邢今政-销售 助理",
+      "department": [
+        44
+      ],
+      "main_department": 44,
+      "telephone": "",
+      "alias": "洋帆-邢今政-销售助理",
+      "english_name": "洋帆-邢今政-销售助理",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "371324200011304033",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "销售岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "Liangjiaxiang",
+      "name": "线上营销部-梁佳祥-电商美工",
+      "department": [
+        29
+      ],
+      "main_department": 29,
+      "telephone": "",
+      "alias": "洋帆-梁佳祥-电商美工",
+      "english_name": "洋帆-梁佳祥-电商美工",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130432200510311713",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "电商美工",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "yupanghao",
+      "name": "俞庞皓",
+      "department": [
+        29
+      ],
+      "main_department": null,
+      "telephone": "",
+      "alias": "俞庞皓",
+      "english_name": "俞庞皓",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "320681200307211614",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "电商美工",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "baitianning",
+      "name": "白天宁-垂直项目",
+      "department": [
+        58
+      ],
+      "main_department": 58,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "13013320030413121X",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "产品部",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "guodongwei",
+      "name": "售后工程师-郭东伟（原装耗材DOA）",
+      "department": [
+        61
+      ],
+      "main_department": 61,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130423198812183378",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "售后维修岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "chenxun",
+      "name": "B2B业务部-陈迅-销售助理",
+      "department": [
+        81
+      ],
+      "main_department": 81,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "341422200211291916",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "销售岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "tianliyue",
+      "name": "京东自营-田力月（网络版）",
+      "department": [
+        88
+      ],
+      "main_department": 88,
+      "telephone": "602",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "13112819941213392X",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "运营岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "gxq",
+      "name": "北京仓-郭校千（商务）货运打印岗",
+      "department": [
+        111
+      ],
+      "main_department": 111,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "610323198905260511",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "lvxiang",
+      "name": "北京仓-吕想（商务）线上出库岗",
+      "department": [
+        111
+      ],
+      "main_department": 111,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "412822199911291170",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "suichunhang",
+      "name": "北京仓-睢春航-打包装箱",
+      "department": [
+        111
+      ],
+      "main_department": 111,
+      "telephone": "",
+      "alias": "洋帆-睢春航-打包装箱",
+      "english_name": "洋帆-睢春航-打包装箱",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "371525200507207234",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "nieluoluo",
+      "name": "北京仓-聂骆骆-物流商务专员",
+      "department": [
+        111
+      ],
+      "main_department": 111,
+      "telephone": "",
+      "alias": "洋帆-聂骆骆-物流商务专员",
+      "english_name": "洋帆-聂骆骆-物流商务专员",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "412825200007260514",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "xiaoxiao",
+      "name": "南京仓-肖骁（商务）货运打印岗",
+      "department": [
+        112
+      ],
+      "main_department": 112,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "341221199805083118",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "guojuqiang",
+      "name": "南京仓-郭聚强（装箱）",
+      "department": [
+        112
+      ],
+      "main_department": 112,
+      "telephone": "",
+      "alias": "洋帆-郭聚强",
+      "english_name": "洋帆-郭聚强",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "410482199408203332",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "wenwanlong",
+      "name": "线上营销部-温万龙-线上销售",
+      "department": [
+        125
+      ],
+      "main_department": null,
+      "telephone": "",
+      "alias": "洋帆-温万龙-1863871926",
+      "english_name": "洋帆-温万龙-1863871926",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "411525200101124212",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "客服",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "hlc",
+      "name": "何路超-华为电脑改配",
+      "department": [
+        127
+      ],
+      "main_department": 127,
+      "telephone": "010-62699898-196",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "342623199506127956",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "采购岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "wangfeixiang",
+      "name": "华为产品部-王飞翔-华为软件适配工程师",
+      "department": [
+        127
+      ],
+      "main_department": 127,
+      "telephone": "",
+      "alias": "王飞翔-华为软件适配工程师",
+      "english_name": "王飞翔-华为软件适配工程师",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "13042920020202655X",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "销售岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "lizhiwen",
+      "name": "华为商务-李智文",
+      "department": [
+        127
+      ],
+      "main_department": 127,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "340827200007264315",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "商务岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "chengweidong",
+      "name": "华为产品部-程韦东-销售助理",
+      "department": [
+        127
+      ],
+      "main_department": 127,
+      "telephone": "",
+      "alias": "华为产品部-程韦东-销售助理",
+      "english_name": "华为产品部-程韦东-销售助理",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130527199903121813",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "销售岗",
+      "status": 1,
+      "enable": 1
+    }
+  ],
+  "missing_id_card": [
+    {
+      "userid": "KONGYEPING",
+      "name": "孔叶萍",
+      "department": [
+        7,
+        8
+      ],
+      "main_department": 8,
+      "telephone": "13501137288",
+      "alias": "",
+      "english_name": "",
+      "mobile": "13501137288",
+      "mobile_source": "telephone",
+      "id_card": null,
+      "has_mobile": true,
+      "has_id_card": false,
+      "position": "总经理",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "dys",
+      "name": "打印室",
+      "department": [
+        8
+      ],
+      "main_department": 8,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": null,
+      "has_mobile": false,
+      "has_id_card": false,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "AI",
+      "name": "洋帆AI",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "",
+      "alias": "洋帆AI",
+      "english_name": "洋帆AI",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": null,
+      "has_mobile": false,
+      "has_id_card": false,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    }
+  ],
+  "missing_both": [
+    {
+      "userid": "dys",
+      "name": "打印室",
+      "department": [
+        8
+      ],
+      "main_department": 8,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": null,
+      "has_mobile": false,
+      "has_id_card": false,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "AI",
+      "name": "洋帆AI",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "",
+      "alias": "洋帆AI",
+      "english_name": "洋帆AI",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": null,
+      "has_mobile": false,
+      "has_id_card": false,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    }
+  ],
+  "missing_any": [
+    {
+      "userid": "HANXIANGHUAN",
+      "name": "结算中心-韩香焕",
+      "department": [
+        9
+      ],
+      "main_department": 9,
+      "telephone": "318",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "410922198710215867",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "财务专员",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "OUYANGSUQIAN",
+      "name": "结算中心-欧阳素倩",
+      "department": [
+        9
+      ],
+      "main_department": 9,
+      "telephone": "328",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "430223198410102926",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "zhaofengran",
+      "name": "结算中心-赵凤冉",
+      "department": [
+        9
+      ],
+      "main_department": 9,
+      "telephone": "330",
+      "alias": "洋帆-赵凤冉",
+      "english_name": "洋帆-赵凤冉",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130525199912281525",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "baixiaohua",
+      "name": "结算中心-白晓华",
+      "department": [
+        9
+      ],
+      "main_department": 9,
+      "telephone": "326",
+      "alias": "洋帆-白晓华",
+      "english_name": "洋帆-白晓华",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "131128199806153624",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "dys",
+      "name": "打印室",
+      "department": [
+        8
+      ],
+      "main_department": 8,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": null,
+      "has_mobile": false,
+      "has_id_card": false,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "ZhangYaNan",
+      "name": "张亚楠",
+      "department": [
+        8
+      ],
+      "main_department": 8,
+      "telephone": "265",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130525199901092323",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "人事行政岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "HANGHAIJUAN",
+      "name": "韩海娟",
+      "department": [
+        57
+      ],
+      "main_department": 57,
+      "telephone": "523",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "239004197705221267",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "zhangxinchao",
+      "name": "财务部-张新朝",
+      "department": [
+        56
+      ],
+      "main_department": 56,
+      "telephone": "872",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130224198012286227",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "财务岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "ll",
+      "name": "李龙[金腾元|南三|仁和]",
+      "department": [
+        56
+      ],
+      "main_department": 56,
+      "telephone": "874",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "412829199208126039",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "zhanghaiyang",
+      "name": "张海洋[ 耐力 | 正华元 | 一家弘 ]",
+      "department": [
+        56
+      ],
+      "main_department": 56,
+      "telephone": "868",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "110102199004273052",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "miaowenzhe",
+      "name": "缪文哲[新南科|祥华尊|时代]",
+      "department": [
+        56
+      ],
+      "main_department": 56,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "330324200307030037",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "财务助理",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "LiuYuHui",
+      "name": "刘宇辉",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "152630199001115819",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "企划信息岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "YINYUNSONG",
+      "name": "尹运松",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "174",
+      "alias": "润子",
+      "english_name": "润子",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130533198508143855",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "企划信息岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "AI",
+      "name": "洋帆AI",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "",
+      "alias": "洋帆AI",
+      "english_name": "洋帆AI",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": null,
+      "has_mobile": false,
+      "has_id_card": false,
+      "position": "",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "xiongsiyuan",
+      "name": "企划信息部-熊思远-数据仓库工程师",
+      "department": [
+        50
+      ],
+      "main_department": 50,
+      "telephone": "",
+      "alias": "洋帆-熊思远-数据仓库工程师",
+      "english_name": "洋帆-熊思远-数据仓库工程师",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "411527200307020016",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "数据仓库工程师",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "LIJINGWEI",
+      "name": "原装采购部-李晶伟-惠普黑鼓|惠普彩鼓|三星",
+      "department": [
+        52
+      ],
+      "main_department": 52,
+      "telephone": "010-62699898-553",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "220322198603056321",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "采购岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "zj",
+      "name": "原装采购部-张京-爱普生耗材丨惠普墨盒丨佳能",
+      "department": [
+        52
+      ],
+      "main_department": 52,
+      "telephone": "524",
+      "alias": "张京",
+      "english_name": "张京",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "120222199512050819",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "采购岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "renbinshuo",
+      "name": "原装采购部-任彬硕-京瓷|联想|东芝|兄弟|施乐|震旦|OKI|柯美",
+      "department": [
+        52
+      ],
+      "main_department": 52,
+      "telephone": "205",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130604199903071212",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "采购岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "lcb",
+      "name": "刘春波-网管|企业微信",
+      "department": [
+        49
+      ],
+      "main_department": 49,
+      "telephone": "313",
+      "alias": "刘春波",
+      "english_name": "刘春波",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "220122198802284051",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "企划信息岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "ZHANGHAIBIN",
+      "name": "张海彬",
+      "department": [
+        46
+      ],
+      "main_department": 46,
+      "telephone": "6903",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130684198501305474",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "企划信息岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "xingjinzheng",
+      "name": "平台业务部-邢今政-销售 助理",
+      "department": [
+        44
+      ],
+      "main_department": 44,
+      "telephone": "",
+      "alias": "洋帆-邢今政-销售助理",
+      "english_name": "洋帆-邢今政-销售助理",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "371324200011304033",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "销售岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "Liangjiaxiang",
+      "name": "线上营销部-梁佳祥-电商美工",
+      "department": [
+        29
+      ],
+      "main_department": 29,
+      "telephone": "",
+      "alias": "洋帆-梁佳祥-电商美工",
+      "english_name": "洋帆-梁佳祥-电商美工",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130432200510311713",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "电商美工",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "yupanghao",
+      "name": "俞庞皓",
+      "department": [
+        29
+      ],
+      "main_department": null,
+      "telephone": "",
+      "alias": "俞庞皓",
+      "english_name": "俞庞皓",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "320681200307211614",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "电商美工",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "baitianning",
+      "name": "白天宁-垂直项目",
+      "department": [
+        58
+      ],
+      "main_department": 58,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "13013320030413121X",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "产品部",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "guodongwei",
+      "name": "售后工程师-郭东伟（原装耗材DOA）",
+      "department": [
+        61
+      ],
+      "main_department": 61,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130423198812183378",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "售后维修岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "chenxun",
+      "name": "B2B业务部-陈迅-销售助理",
+      "department": [
+        81
+      ],
+      "main_department": 81,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "341422200211291916",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "销售岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "tianliyue",
+      "name": "京东自营-田力月（网络版）",
+      "department": [
+        88
+      ],
+      "main_department": 88,
+      "telephone": "602",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "13112819941213392X",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "运营岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "gxq",
+      "name": "北京仓-郭校千（商务）货运打印岗",
+      "department": [
+        111
+      ],
+      "main_department": 111,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "610323198905260511",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "lvxiang",
+      "name": "北京仓-吕想（商务）线上出库岗",
+      "department": [
+        111
+      ],
+      "main_department": 111,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "412822199911291170",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "suichunhang",
+      "name": "北京仓-睢春航-打包装箱",
+      "department": [
+        111
+      ],
+      "main_department": 111,
+      "telephone": "",
+      "alias": "洋帆-睢春航-打包装箱",
+      "english_name": "洋帆-睢春航-打包装箱",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "371525200507207234",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "nieluoluo",
+      "name": "北京仓-聂骆骆-物流商务专员",
+      "department": [
+        111
+      ],
+      "main_department": 111,
+      "telephone": "",
+      "alias": "洋帆-聂骆骆-物流商务专员",
+      "english_name": "洋帆-聂骆骆-物流商务专员",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "412825200007260514",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "xiaoxiao",
+      "name": "南京仓-肖骁（商务）货运打印岗",
+      "department": [
+        112
+      ],
+      "main_department": 112,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "341221199805083118",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "guojuqiang",
+      "name": "南京仓-郭聚强（装箱）",
+      "department": [
+        112
+      ],
+      "main_department": 112,
+      "telephone": "",
+      "alias": "洋帆-郭聚强",
+      "english_name": "洋帆-郭聚强",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "410482199408203332",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "物流岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "wenwanlong",
+      "name": "线上营销部-温万龙-线上销售",
+      "department": [
+        125
+      ],
+      "main_department": null,
+      "telephone": "",
+      "alias": "洋帆-温万龙-1863871926",
+      "english_name": "洋帆-温万龙-1863871926",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "411525200101124212",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "客服",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "hlc",
+      "name": "何路超-华为电脑改配",
+      "department": [
+        127
+      ],
+      "main_department": 127,
+      "telephone": "010-62699898-196",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "342623199506127956",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "采购岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "wangfeixiang",
+      "name": "华为产品部-王飞翔-华为软件适配工程师",
+      "department": [
+        127
+      ],
+      "main_department": 127,
+      "telephone": "",
+      "alias": "王飞翔-华为软件适配工程师",
+      "english_name": "王飞翔-华为软件适配工程师",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "13042920020202655X",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "销售岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "lizhiwen",
+      "name": "华为商务-李智文",
+      "department": [
+        127
+      ],
+      "main_department": 127,
+      "telephone": "",
+      "alias": "",
+      "english_name": "",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "340827200007264315",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "商务岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "chengweidong",
+      "name": "华为产品部-程韦东-销售助理",
+      "department": [
+        127
+      ],
+      "main_department": 127,
+      "telephone": "",
+      "alias": "华为产品部-程韦东-销售助理",
+      "english_name": "华为产品部-程韦东-销售助理",
+      "mobile": null,
+      "mobile_source": null,
+      "id_card": "130527199903121813",
+      "has_mobile": false,
+      "has_id_card": true,
+      "position": "销售岗",
+      "status": 1,
+      "enable": 1
+    },
+    {
+      "userid": "KONGYEPING",
+      "name": "孔叶萍",
+      "department": [
+        7,
+        8
+      ],
+      "main_department": 8,
+      "telephone": "13501137288",
+      "alias": "",
+      "english_name": "",
+      "mobile": "13501137288",
+      "mobile_source": "telephone",
+      "id_card": null,
+      "has_mobile": true,
+      "has_id_card": false,
+      "position": "总经理",
+      "status": 1,
+      "enable": 1
+    }
+  ]
+}

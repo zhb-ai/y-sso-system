@@ -31,6 +31,7 @@ logger = get_logger()
 
 def _build_login_response(user, access_token, refresh_token):
     """自定义登录响应：在默认响应基础上附带用户角色列表和 SSO 角色"""
+    from app.domain.application.services import OAuth2ProviderService
     from app.domain.sso_role.entities import UserSSORole
 
     return {
@@ -41,6 +42,7 @@ def _build_login_response(user, access_token, refresh_token):
             "id": user.id,
             "name": user.name,
             "username": user.username,
+            "enterprise_wechat_user_id": OAuth2ProviderService._resolve_oauth_username(user),
             "email": user.email,
             "phone": user.phone,
             "is_active": user.is_active,

@@ -23,16 +23,15 @@ if config.config_file_name is not None:
 # 通过 models_registry 一次性注册全部模型（静态 + 动态），
 # 与 init_db.py、main.py 共享同一份模型定义，避免遗漏或不一致。
 from yweb.orm import BaseModel
+from app.config import settings
 from app.models_registry import ensure_dynamic_models  # noqa: F401 — 导入即注册静态模型
 
 ensure_dynamic_models()  # 注册动态模型（Role、组织架构等）
 
 target_metadata = BaseModel.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+# 与应用共用 settings.yaml 中的数据库 URL，避免 alembic.ini 仍指向 sqlite
+config.set_main_option("sqlalchemy.url", settings.database.url)
 
 
 def run_migrations_offline() -> None:

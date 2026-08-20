@@ -21,7 +21,7 @@
           <div class="sso-user-info">
             <el-icon :size="48" class="sso-user-avatar"><UserFilled /></el-icon>
             <div class="sso-user-detail">
-              <span class="sso-username">{{ authStore.userInfo?.username }}</span>
+              <span class="sso-username">{{ authStore.userInfo?.enterprise_wechat_user_id || '' }}</span>
               <span class="sso-email">{{ authStore.userInfo?.email || '' }}</span>
             </div>
           </div>
@@ -93,7 +93,7 @@
                 <el-avatar :size="40" :icon="UserFilled" />
               </div>
               <div class="sso-user-detail">
-                <span class="sso-username">{{ authStore.userInfo?.username }}</span>
+                <span class="sso-username">{{ authStore.userInfo?.enterprise_wechat_user_id || '' }}</span>
                 <span class="sso-email">{{ authStore.userInfo?.email || '未设置邮箱' }}</span>
               </div>
             </div>

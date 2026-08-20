@@ -23,6 +23,7 @@ from typing import List, Dict, Any, Optional
 from yweb.organization import BaseSyncService, ExternalSource, EmployeeStatus, SyncResult
 from yweb.log import get_logger
 
+from .attrs import extract_id_card, normalize_mobile
 from .client import WechatWorkClient
 
 logger = get_logger()
@@ -212,7 +213,8 @@ class WechatWorkSyncService(BaseSyncService):
                     all_users[uid] = {
                         "external_user_id": uid,
                         "name": u.get("name", ""),
-                        "mobile": u.get("mobile"),
+                        "mobile": normalize_mobile(u),
+                        "id_card": extract_id_card(u),
                         "email": u.get("email"),
                         "avatar": u.get("avatar"),
                         "gender": u.get("gender", 0),
@@ -228,6 +230,11 @@ class WechatWorkSyncService(BaseSyncService):
                     existing = set(all_users[uid]["department_ids"])
                     existing.update(user_dept_ids)
                     all_users[uid]["department_ids"] = list(existing)
+                    # 补全首次未拿到的手机号/身份证号
+                    if not all_users[uid].get("mobile"):
+                        all_users[uid]["mobile"] = normalize_mobile(u)
+                    if not all_users[uid].get("id_card"):
+                        all_users[uid]["id_card"] = extract_id_card(u)
 
         logger.debug(f"获取企微员工: 共 {len(all_users)} 人（已去重）")
         return list(all_users.values())
@@ -367,7 +374,8 @@ class WechatWorkSyncService(BaseSyncService):
         data = {
             "external_user_id": user_id,
             "name": user_detail.get("name", name),
-            "mobile": user_detail.get("mobile"),
+            "mobile": normalize_mobile(user_detail),
+            "id_card": extract_id_card(user_detail),
             "email": user_detail.get("email"),
             "avatar": user_detail.get("avatar"),
             "gender": user_detail.get("gender", 0),
@@ -421,7 +429,8 @@ class WechatWorkSyncService(BaseSyncService):
         data = {
             "external_user_id": user_id,
             "name": user_detail.get("name", ""),
-            "mobile": user_detail.get("mobile"),
+            "mobile": normalize_mobile(user_detail),
+            "id_card": extract_id_card(user_detail),
             "email": user_detail.get("email"),
             "avatar": user_detail.get("avatar"),
             "gender": user_detail.get("gender", 0),
@@ -520,6 +529,7 @@ class WechatWorkSyncService(BaseSyncService):
         employee = self.employee_model(
             name=data.get('name', ''),
             mobile=data.get('mobile'),
+            id_card=data.get('id_card'),
             email=data.get('email'),
             avatar=data.get('avatar'),
             gender=data.get('gender', 0),
@@ -553,7 +563,11 @@ class WechatWorkSyncService(BaseSyncService):
     def _update_employee_from_external(self, employee, rel, data: Dict[str, Any]):
         """根据外部数据更新员工，添加 wechat_user_id 和 wechat_openid 字段处理"""
         employee.name = data.get('name', employee.name)
-        employee.mobile = data.get('mobile', employee.mobile)
+        # 企微未返回敏感字段时保留本地已有值，避免被空值覆盖
+        if data.get('mobile'):
+            employee.mobile = data['mobile']
+        if data.get('id_card'):
+            employee.id_card = data['id_card']
         employee.email = data.get('email', employee.email)
         employee.avatar = data.get('avatar', employee.avatar)
         employee.gender = data.get('gender', employee.gender)

@@ -437,12 +437,165 @@ class OAuth2ProviderService:
             return []
         return [r.code if hasattr(r, "code") else str(r) for r in user.roles]
 
+    @staticmethod
+    def _normalize_optional_str(value) -> Optional[str]:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
+
+    @staticmethod
+    def _empty_employee_userinfo_claims() -> dict:
+        return {
+            "enterprise_wechat_user_id": None,
+            "emp_status": None,
+            "primary_external_dept_id": None,
+            "external_dept_ids": [],
+            "post_name": None,
+        }
+
+    @staticmethod
+    def _pick_employee_org_rel(employee, rels):
+        """优先主组织，其次带企微 userid 的关联。"""
+        if not rels:
+            return None
+        primary_org_id = getattr(employee, "primary_org_id", None)
+        if primary_org_id is not None:
+            for rel in rels:
+                if getattr(rel, "org_id", None) == primary_org_id:
+                    return rel
+        for rel in rels:
+            if OAuth2ProviderService._normalize_optional_str(
+                getattr(rel, "external_user_id", None)
+            ):
+                return rel
+        return rels[0]
+
+    @staticmethod
+    def _get_employee_for_user(user_id: int):
+        """按 user_id 查找关联员工；组织模型未就绪时返回 None"""
+        try:
+            from app.models_registry import get_app_org_models
+
+            org_models = get_app_org_models()
+            if org_models is None:
+                return None
+            employee_cls = org_models.Employee
+            return employee_cls.query.filter(employee_cls.user_id == user_id).first()
+        except Exception as e:
+            logger.debug("_get_employee_for_user: 解析员工跳过, %s", e)
+            return None
+
+    @classmethod
+    def _build_employee_userinfo_claims(cls, employee) -> dict:
+        """从员工组织关系构造第三方 userinfo 扩展字段。"""
+        claims = cls._empty_employee_userinfo_claims()
+        if employee is None:
+            return claims
+
+        claims["enterprise_wechat_user_id"] = cls._normalize_optional_str(
+            getattr(employee, "enterprise_wechat_user_id", None)
+        )
+
+        try:
+            from app.models_registry import get_app_org_models
+
+            org_models = get_app_org_models()
+            if org_models is None:
+                return claims
+
+            rel_model = getattr(org_models, "EmployeeOrgRel", None)
+            dept_model = getattr(org_models, "Department", None)
+            dept_rel_model = getattr(org_models, "EmployeeDeptRel", None)
+
+            org_rel = None
+            if rel_model is not None:
+                rels = rel_model.query.filter(
+                    rel_model.employee_id == employee.id
+                ).all()
+                org_rel = cls._pick_employee_org_rel(employee, rels)
+
+            if org_rel is not None:
+                wechat_user_id = cls._normalize_optional_str(
+                    getattr(org_rel, "external_user_id", None)
+                )
+                if wechat_user_id:
+                    claims["enterprise_wechat_user_id"] = wechat_user_id
+                if getattr(org_rel, "status", None) is not None:
+                    claims["emp_status"] = int(org_rel.status)
+                claims["post_name"] = cls._normalize_optional_str(
+                    getattr(org_rel, "position", None)
+                )
+
+            dept_rels = []
+            if dept_rel_model is not None:
+                dept_rels = dept_rel_model.query.filter(
+                    dept_rel_model.employee_id == employee.id
+                ).all()
+
+            chosen_org_id = getattr(org_rel, "org_id", None) if org_rel else None
+            seen = set()
+            external_dept_ids = []
+
+            def _get_dept(dept_id):
+                if dept_model is None or dept_id is None or not hasattr(dept_model, "get"):
+                    return None
+                return dept_model.get(dept_id)
+
+            def _dept_in_chosen_org(dept) -> bool:
+                if dept is None or chosen_org_id is None:
+                    return True
+                org_id = getattr(dept, "org_id", None)
+                return org_id in (None, chosen_org_id)
+
+            def _add_external_dept_id(raw_id):
+                ext_id = cls._normalize_optional_str(raw_id)
+                if not ext_id or ext_id in seen:
+                    return
+                seen.add(ext_id)
+                external_dept_ids.append(ext_id)
+
+            primary_dept = _get_dept(getattr(employee, "primary_dept_id", None))
+            if not _dept_in_chosen_org(primary_dept):
+                primary_dept = None
+            primary_external_dept_id = cls._normalize_optional_str(
+                getattr(primary_dept, "external_dept_id", None) if primary_dept else None
+            )
+            claims["primary_external_dept_id"] = primary_external_dept_id
+            _add_external_dept_id(primary_external_dept_id)
+
+            for rel in dept_rels:
+                dept = _get_dept(getattr(rel, "dept_id", None))
+                if not _dept_in_chosen_org(dept):
+                    continue
+                ext_id = getattr(dept, "external_dept_id", None) if dept else None
+                if not ext_id:
+                    ext_id = getattr(rel, "external_dept_id", None)
+                _add_external_dept_id(ext_id)
+
+            claims["external_dept_ids"] = external_dept_ids
+            return claims
+        except Exception as e:
+            logger.debug("_build_employee_userinfo_claims: 解析组织信息跳过, %s", e)
+            return claims
+
+    @classmethod
+    def _resolve_oauth_username(cls, user) -> Optional[str]:
+        """OAuth username / preferred_username：取企微 userid；无员工或为空则返回 None"""
+        employee = cls._get_employee_for_user(user.id)
+        wechat_user_id = (
+            getattr(employee, "enterprise_wechat_user_id", None) if employee else None
+        )
+        if isinstance(wechat_user_id, str):
+            wechat_user_id = wechat_user_id.strip() or None
+        return wechat_user_id or None
+
     def _build_token_payload(self, user, client_id: str) -> TokenPayload:
         """构造 access/refresh token 共用载荷"""
         return TokenPayload(
             sub=str(user.id),
             user_id=user.id,
-            username=user.username,
+            username=self._resolve_oauth_username(user),
             email=getattr(user, "email", None),
             roles=self._extract_roles(user),
             extra={
@@ -462,7 +615,7 @@ class OAuth2ProviderService:
             "exp": now + timedelta(minutes=self.jwt_manager.access_token_expire_minutes),
             "name": getattr(user, "name", None) or user.username,
             "email": getattr(user, "email", None),
-            "preferred_username": user.username,
+            "preferred_username": self._resolve_oauth_username(user),
         }
         if nonce:
             claims["nonce"] = nonce
@@ -764,6 +917,12 @@ class OAuth2ProviderService:
     def get_userinfo(self, access_token: str, source_ip: Optional[str] = None) -> dict:
         """通过 access_token 获取用户信息
 
+        除 OIDC 标准字段外，固定包含组织扩展字段：
+        - enterprise_wechat_user_id: EmployeeOrgRel.external_user_id
+        - emp_status: EmployeeOrgRel.status（-1/0/1/2/3）
+        - primary_external_dept_id / external_dept_ids: Department.external_dept_id
+        - post_name: EmployeeOrgRel.position
+
         Args:
             access_token: JWT access_token
 
@@ -801,10 +960,13 @@ class OAuth2ProviderService:
         if not user:
             raise ValueError("用户不存在或已禁用")
 
+        employee = self._get_employee_for_user(user.id)
+        org_claims = self._build_employee_userinfo_claims(employee)
+
         # 构造符合 OIDC 标准的 userinfo 响应
         userinfo = {
             "sub": str(user.id),
-            "preferred_username": user.username,
+            "preferred_username": org_claims.get("enterprise_wechat_user_id"),
             "name": getattr(user, 'display_name', user.username),
             "email": getattr(user, 'email', None),
             "phone_number": getattr(user, 'phone', None),
@@ -822,15 +984,8 @@ class OAuth2ProviderService:
         userinfo["sso_roles"] = UserSSORole.get_user_sso_role_codes(user.id)
 
         # 关联员工编码（供 SSO 下游如 Superset 等使用）
-        try:
-            from app.models_registry import get_app_org_models
-            org_models = get_app_org_models()
-            if org_models is not None:
-                employee_cls = org_models.Employee
-                employee = employee_cls.query.filter(employee_cls.user_id == user.id).first()
-                if employee is not None and getattr(employee, "code", None) is not None:
-                    userinfo["user_code"] = getattr(employee, "code", None)
-        except Exception as e:
-            logger.debug("get_userinfo: 解析员工编码跳过, %s", e)
+        if employee is not None and getattr(employee, "code", None) is not None:
+            userinfo["user_code"] = getattr(employee, "code", None)
 
+        userinfo.update(org_claims)
         return userinfo
