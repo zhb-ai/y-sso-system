@@ -6,9 +6,14 @@ Create Date: 2026-04-15 00:00:00.000000
 
 """
 from typing import Sequence, Union
+import sys
+from pathlib import Path
 
 from alembic import op
 import sqlalchemy as sa
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from helpers import column_exists  # noqa: E402
 
 
 # revision identifiers, used by Alembic.
@@ -19,6 +24,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    if column_exists("authorization_code", "nonce"):
+        return
     with op.batch_alter_table("authorization_code", schema=None) as batch_op:
         batch_op.add_column(
             sa.Column("nonce", sa.String(length=255), nullable=True, comment="OIDC nonce 参数")
