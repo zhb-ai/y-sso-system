@@ -26,6 +26,15 @@ function isPrimaryLoginRoute(url = '') {
   }
 }
 
+function isSSOLoginRoute(url = '') {
+  try {
+    const pathname = new URL(url).pathname;
+    return pathname === ROUTES.SSO_LOGIN;
+  } catch {
+    return url.includes(ROUTES.SSO_LOGIN);
+  }
+}
+
 const SELECTORS = {
   loginForm: '.login-form',
   loginUsername: '.login-form input[placeholder="用户名"]',
@@ -79,7 +88,20 @@ async function hasValidToken(page) {
 }
 
 async function waitForLoginScreen(page) {
-  await page.waitForURL((url) => isPrimaryLoginRoute(url.toString()), { timeout: TIMEOUTS.AUTH }).catch(() => {});
+  // /login 在已登录态会被前端路由守卫重定向到 /sso/login
+  // 这里必须同时允许两种 URL，否则会误等主登录表单导致超时。
+  await page
+    .waitForURL((url) => {
+      const asString = url.toString();
+      return isPrimaryLoginRoute(asString) || isSSOLoginRoute(asString);
+    }, { timeout: TIMEOUTS.AUTH })
+    .catch(() => {});
+
+  const currentUrl = page.url();
+  if (isSSOLoginRoute(currentUrl)) {
+    return;
+  }
+
   await page.locator(SELECTORS.loginForm).waitFor({ timeout: TIMEOUTS.AUTH });
 }
 
@@ -175,8 +197,10 @@ export async function openAdminDashboard(page) {
 
   const adminLink = page.locator(SELECTORS.adminLink);
   await adminLink.waitFor({ timeout: TIMEOUTS.AUTH });
-  await adminLink.click();
-  await page.waitForURL('**/dashboard', { timeout: TIMEOUTS.AUTH });
+  await Promise.all([
+    page.waitForURL('**/dashboard*', { timeout: TIMEOUTS.AUTH }),
+    adminLink.click()
+  ]);
   await page.locator(SELECTORS.appShell).first().waitFor({ timeout: TIMEOUTS.AUTH });
 }
 
@@ -229,6 +253,9 @@ export async function login(page, force = false) {
 
       await page.goto(getFullUrl(ROUTES.LOGIN));
 
+      // 路由守卫可能会把 /login 重定向到 /sso/login（已登录态）
+      // 先等页面稳定，再判断是否已具备有效认证态。
+      await waitForPostLoginState(page).catch(() => {});
       if (await isAuthenticated(page)) {
         await ensureAuthenticatedPortal(page);
         console.log('用户已具备有效登录态，跳过登录表单');
