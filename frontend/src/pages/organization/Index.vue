@@ -190,6 +190,11 @@
                 {{ row.code || "未设置" }}
               </template>
             </el-table-column>
+            <el-table-column prop="enterprise_wechat_user_id" label="用户Id" width="160" show-overflow-tooltip>
+              <template #default="{ row }">
+                {{ row.enterprise_wechat_user_id || "未设置" }}
+              </template>
+            </el-table-column>
             <el-table-column prop="emp_no" label="工号" width="100" />
             <el-table-column prop="position" label="职位" />
             <el-table-column prop="mobile" label="手机" width="120" align="center" />
@@ -583,6 +588,40 @@
       </template>
     </el-dialog>
 
+    <el-dialog
+      v-model="syncResultVisible"
+      :title="syncResult.hasErrors ? '同步完成，但有失败' : '同步完成'"
+      width="680px"
+      align-center
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        :title="syncResult.message"
+        :type="syncResult.hasErrors ? 'warning' : 'success'"
+        :closable="false"
+        show-icon
+        class="sync-result-alert"
+      />
+      <el-descriptions :column="2" border class="sync-result-stats">
+        <el-descriptions-item label="新建">{{ syncResult.createdCount }}</el-descriptions-item>
+        <el-descriptions-item label="更新">{{ syncResult.updatedCount }}</el-descriptions-item>
+        <el-descriptions-item label="删除">{{ syncResult.deletedCount }}</el-descriptions-item>
+        <el-descriptions-item label="耗时">{{ syncResult.durationText }}</el-descriptions-item>
+      </el-descriptions>
+      <div v-if="syncResult.errors.length" class="sync-error-list">
+        <div class="sync-error-list__title">错误详情（可复制给开发人员定位）</div>
+        <div
+          v-for="(error, index) in syncResult.errors"
+          :key="index"
+          class="sync-error-item"
+        >{{ error }}</div>
+      </div>
+      <template #footer>
+        <el-button v-if="syncResult.errors.length" @click="copySyncErrors">复制错误信息</el-button>
+        <el-button type="primary" @click="syncResultVisible = false">知道了</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 添加员工到部门抽屉 -->
     <el-drawer v-model="addToDeptDialogVisible" title="添加员工到部门" size="800px" destroy-on-close>
       <div class="section-blocks" style="gap: 0">
@@ -881,6 +920,16 @@ const wechatBindDialogVisible = ref(false);
 const wechatBindMode = ref("bind"); // 'bind' | 'view'
 const wechatSubmitLoading = ref(false);
 const wechatSyncLoading = ref(false);
+const syncResultVisible = ref(false);
+const syncResult = reactive({
+  message: "",
+  hasErrors: false,
+  createdCount: 0,
+  updatedCount: 0,
+  deletedCount: 0,
+  durationText: "0.0s",
+  errors: [],
+});
 const wechatFormRef = ref(null);
 const wechatForm = reactive({
   corp_id: "",
@@ -1059,20 +1108,77 @@ const handleWechatSync = async () => {
     );
     wechatSyncLoading.value = true;
     const res = await wechatWorkApi.manualSync({ org_id: currentOrgId.value });
-    const result = res.data || {};
-    ElMessage.success(
-      `同步完成：新建 ${result.created_count || 0}，更新 ${result.updated_count || 0}，` +
-        `删除 ${result.deleted_count || 0}，耗时 ${(result.duration_seconds || 0).toFixed(1)}s`,
-    );
-    // 刷新部门树和员工列表
+    showSyncResultFromResponse(res);
     loadDeptTree();
     loadDeptEmployees();
   } catch (e) {
     if (e !== "cancel") {
-      ElMessage.error(e.message || "同步失败");
+      showSyncFailure(e.message || "同步失败");
     }
   } finally {
     wechatSyncLoading.value = false;
+  }
+};
+
+const collectSyncErrors = (res = {}) => {
+  const details = Array.isArray(res.msg_details) ? res.msg_details : [];
+  const dataErrors = Array.isArray(res.data?.errors) ? res.data.errors : [];
+  const errors = [];
+  for (const item of [...details, ...dataErrors]) {
+    if (item && !errors.includes(item)) {
+      errors.push(item);
+    }
+  }
+  return errors;
+};
+
+const showSyncResultFromResponse = (res = {}) => {
+  const result = res.data || {};
+  const errors = collectSyncErrors(res);
+  const createdCount = result.created_count || 0;
+  const updatedCount = result.updated_count || 0;
+  const deletedCount = result.deleted_count || 0;
+  const durationText = `${(result.duration_seconds || 0).toFixed(1)}s`;
+  const summary = `新建 ${createdCount}，更新 ${updatedCount}，删除 ${deletedCount}，耗时 ${durationText}`;
+
+  Object.assign(syncResult, {
+    message: errors.length
+      ? (res.message || "同步完成，但有失败")
+      : (res.message || "同步完成"),
+    hasErrors: errors.length > 0,
+    createdCount,
+    updatedCount,
+    deletedCount,
+    durationText,
+    errors,
+  });
+
+  if (errors.length) {
+    syncResultVisible.value = true;
+  } else {
+    ElMessage.success(`同步完成：${summary}`);
+  }
+};
+
+const showSyncFailure = (message) => {
+  Object.assign(syncResult, {
+    message,
+    hasErrors: true,
+    createdCount: 0,
+    updatedCount: 0,
+    deletedCount: 0,
+    durationText: "-",
+    errors: [message],
+  });
+  syncResultVisible.value = true;
+};
+
+const copySyncErrors = async () => {
+  try {
+    await navigator.clipboard.writeText(syncResult.errors.join("\n\n"));
+    ElMessage.success("已复制错误信息");
+  } catch {
+    ElMessage.warning("复制失败，请手动复制");
   }
 };
 
@@ -2207,5 +2313,43 @@ onUnmounted(() => {
   margin: 0;
   font-size: var(--el-font-size-small);
   color: var(--el-text-color-secondary);
+}
+
+.sync-result-alert {
+  margin-bottom: 16px;
+}
+
+.sync-result-stats {
+  margin-bottom: 12px;
+}
+
+.sync-error-list {
+  max-height: 320px;
+  overflow: auto;
+  padding: 12px;
+  background: var(--el-fill-color-light);
+  border-radius: 8px;
+}
+
+.sync-error-list__title {
+  margin-bottom: 8px;
+  font-size: var(--el-font-size-sm);
+  color: var(--el-text-color-regular);
+}
+
+.sync-error-item {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--el-font-size-xs);
+  color: var(--el-color-danger);
+  line-height: var(--c-line-height-sm);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.sync-error-item + .sync-error-item {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 </style>

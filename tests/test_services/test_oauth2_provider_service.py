@@ -205,8 +205,8 @@ class TestOAuth2ProviderService:
         assert result["refresh_token"] == "refresh-token"
         assert jwt_manager.access_payload.sub == "7"
         assert jwt_manager.refresh_payload.sub == "7"
-        assert jwt_manager.access_payload.username == "WeiXinZhang001"
-        assert jwt_manager.refresh_payload.username == "WeiXinZhang001"
+        assert jwt_manager.access_payload.username == "zhanghaibin"
+        assert jwt_manager.refresh_payload.username == "zhanghaibin"
 
     def test_exchange_code_for_public_client_accepts_pkce_without_client_secret(self, monkeypatch):
         """公开客户端应允许通过 PKCE 换 token，而无需 client_secret"""
@@ -401,7 +401,7 @@ class TestOAuth2ProviderService:
             assert claims["sub"] == "7"
             assert claims["nonce"] == "nonce-123"
             assert claims["email"] == "zhang@example.com"
-            assert claims["preferred_username"] == "WeiXinZhang001"
+            assert claims["preferred_username"] == "zhanghaibin"
             assert headers["kid"] == settings.jwt_key_id
         finally:
             restore()
@@ -520,7 +520,7 @@ class TestOAuth2ProviderService:
             userinfo = service.get_userinfo(access_token)
 
             assert userinfo["sub"] == "7"
-            assert userinfo["preferred_username"] == "WeiXinZhang001"
+            assert userinfo["preferred_username"] == "zhanghaibin"
             assert userinfo["email"] == "zhang@example.com"
             assert userinfo["roles"] == ["admin"]
             assert userinfo["sso_roles"] == ["s001"]
@@ -533,8 +533,8 @@ class TestOAuth2ProviderService:
         finally:
             restore()
 
-    def test_get_userinfo_returns_null_preferred_username_without_wechat_id(self, monkeypatch):
-        """无企微 userid 时 preferred_username 返回空"""
+    def test_get_userinfo_uses_user_username_as_preferred_username(self, monkeypatch):
+        """preferred_username 直接使用 User.username，不依赖员工企微字段"""
         jwt_manager = JWTManager(**build_runtime_jwt_settings())
         service = OAuth2ProviderService(jwt_manager=jwt_manager, user_getter=lambda _: None)
         oidc_issuer = "https://sso.example.com/api/v1/oauth2"
@@ -581,7 +581,7 @@ class TestOAuth2ProviderService:
 
         try:
             userinfo = service.get_userinfo(access_token)
-            assert userinfo["preferred_username"] is None
+            assert userinfo["preferred_username"] == "zhanghaibin"
             assert userinfo["user_code"] == "E001"
             assert userinfo["enterprise_wechat_user_id"] is None
             assert userinfo["emp_status"] is None
@@ -683,7 +683,7 @@ class TestOAuth2ProviderService:
         try:
             userinfo = service.get_userinfo(access_token)
             assert userinfo["enterprise_wechat_user_id"] == "WeiXinZhang001"
-            assert userinfo["preferred_username"] == "WeiXinZhang001"
+            assert userinfo["preferred_username"] == "zhanghaibin"
             assert userinfo["emp_status"] == 3
             assert userinfo["primary_external_dept_id"] == "12"
             assert userinfo["external_dept_ids"] == ["12", "34"]
@@ -730,6 +730,7 @@ class TestOAuth2ProviderService:
         try:
             userinfo = service.get_userinfo(access_token)
             assert "user_code" not in userinfo
+            assert userinfo["preferred_username"] == "zhanghaibin"
             assert userinfo["enterprise_wechat_user_id"] is None
             assert userinfo["emp_status"] is None
             assert userinfo["primary_external_dept_id"] is None

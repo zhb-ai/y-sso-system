@@ -256,6 +256,7 @@ export const departmentApi = {
 // 员工 API
 export const employeeApi = {
   list: (params) => api.get('/v1/org/employee/list', { params }),
+  listDesc: (params) => api.get('/v1/org/employees', { params }),
   get: (employeeId) => api.get('/v1/org/employee/get', { params: { employee_id: employeeId } }),
   create: (data) => api.post('/v1/org/employee/create', data),
   update: (employeeId, data) => api.post('/v1/org/employee/update', data, { params: { employee_id: employeeId } }),

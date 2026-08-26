@@ -168,6 +168,15 @@ def register_all_routes(app):
         dependencies=[Depends(require_permission('organization:manage'))],
     )
 
+    from app.api.v1.org_employee_query import create_org_employee_query_router
+
+    app.include_router(
+        create_org_employee_query_router(org),
+        prefix="/api/v1",
+        tags=["组织架构"],
+        dependencies=[Depends(require_permission('organization:manage'))],
+    )
+
     # ------------------------------------------------------------------
     # 8. 企业微信同步（依赖 org，webhook 端点公开）
     # ------------------------------------------------------------------
