@@ -109,6 +109,22 @@ def create_wechat_work_router(org_models, management_deps: list = None):
         client = WechatWorkClient.from_organization(org)
         return WechatWorkSyncService(client, org_models)
 
+    def _sync_http_response(result, success_message: str):
+        """将同步结果转成前端可展示的 HTTP 响应
+
+        部分失败时使用 Warning，把错误明细放到 msg_details，
+        避免页面只看到“同步完成”而丢失定位信息。
+        """
+        payload = result.to_dict()
+        errors = payload.get("errors") or []
+        if errors:
+            return Resp.Warning(
+                message="同步完成，但有失败",
+                data=payload,
+                msg_details=errors,
+            )
+        return Resp.OK(data=payload, message=success_message)
+
     def _build_webhook_handler(org):
         """构建回调处理器实例"""
         from app.domain.wechat_work.client import WechatWorkClient
@@ -193,7 +209,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
             org = _get_wechat_org(data.org_id)
             sync_service = _build_sync_service(org)
             result = sync_service.sync_from_external(org.id)
-            return Resp.OK(data=result.to_dict(), message="全量同步完成")
+            return _sync_http_response(result, "全量同步完成")
         except ValueError as e:
             return Resp.BadRequest(message=str(e))
 
@@ -210,7 +226,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
             org = _get_wechat_org(data.org_id)
             sync_service = _build_sync_service(org)
             result = sync_service.sync_from_external(org.id)
-            return Resp.OK(data=result.to_dict(), message="手动同步完成")
+            return _sync_http_response(result, "手动同步完成")
         except ValueError as e:
             return Resp.BadRequest(message=str(e))
 

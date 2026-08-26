@@ -581,14 +581,11 @@ class OAuth2ProviderService:
 
     @classmethod
     def _resolve_oauth_username(cls, user) -> Optional[str]:
-        """OAuth username / preferred_username：取企微 userid；无员工或为空则返回 None"""
-        employee = cls._get_employee_for_user(user.id)
-        wechat_user_id = (
-            getattr(employee, "enterprise_wechat_user_id", None) if employee else None
-        )
-        if isinstance(wechat_user_id, str):
-            wechat_user_id = wechat_user_id.strip() or None
-        return wechat_user_id or None
+        """OAuth username / preferred_username：直接使用 User.username（即企微 userid）"""
+        username = getattr(user, "username", None)
+        if isinstance(username, str):
+            username = username.strip() or None
+        return username
 
     def _build_token_payload(self, user, client_id: str) -> TokenPayload:
         """构造 access/refresh token 共用载荷"""
@@ -966,7 +963,7 @@ class OAuth2ProviderService:
         # 构造符合 OIDC 标准的 userinfo 响应
         userinfo = {
             "sub": str(user.id),
-            "preferred_username": org_claims.get("enterprise_wechat_user_id"),
+            "preferred_username": self._resolve_oauth_username(user),
             "name": getattr(user, 'display_name', user.username),
             "email": getattr(user, 'email', None),
             "phone_number": getattr(user, 'phone', None),

@@ -33,6 +33,10 @@ test.describe.serial('组织架构页面 - 完整测试流程', () => {
     await expect(page.locator('.el-tree')).toBeVisible();
     await expect(page.locator('.el-tree-node').first()).toBeVisible();
     await expect(page.locator('button:has-text("新建")').first()).toBeVisible();
+    const employeeTable = page.locator('.employee-list-card .el-table');
+    if (await employeeTable.isVisible()) {
+      await expect(employeeTable.locator('.el-table__header').getByText('用户Id')).toBeVisible();
+    }
   });
 
   test('2. 可以收起/展开部门树节点', async () => {
@@ -188,5 +192,64 @@ test.describe.serial('组织架构页面 - 完整测试流程', () => {
         await expect(deletedDeptNodes).toHaveCount(0, { timeout: 10000 });
       }
     }
+  });
+});
+
+test.describe('组织架构页面 - 同步通讯录错误展示', () => {
+  test('同步部分失败时应弹出可复制的错误详情', async ({ browser }) => {
+    const context = await browser.newContext({
+      storageState: 'playwright/.auth/user.json'
+    });
+    const page = await context.newPage();
+    const errorText = "同步员工失败: (pymysql.err.DataError) (1406, \"Data too long for column 'id_card' at row 1\")";
+
+    await page.route('**/api/v1/wechat-work/config/get**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'success',
+          message: 'ok',
+          msg_details: [],
+          data: { is_bound: true, corp_id: 'ww-test' }
+        })
+      });
+    });
+
+    await page.route('**/api/v1/wechat-work/sync/manual', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'warning',
+          message: '同步完成，但有失败',
+          msg_details: [errorText],
+          data: {
+            success: false,
+            created_count: 0,
+            updated_count: 0,
+            deleted_count: 0,
+            errors: [errorText],
+            duration_seconds: 1.2
+          }
+        })
+      });
+    });
+
+    await navigateTo(page, ROUTES.ORGANIZATION);
+
+    const syncButton = page.locator('button:has-text("同步通讯录")');
+    await expect(syncButton).toBeEnabled({ timeout: 10000 });
+    await syncButton.click();
+
+    await expect(page.locator('.el-message-box')).toBeVisible();
+    await page.locator('.el-message-box__btns button:has-text("确定")').click();
+
+    const dialog = page.locator('.el-dialog').filter({ hasText: '同步完成，但有失败' });
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+    await expect(dialog.locator('.sync-error-item')).toContainText('id_card');
+    await expect(dialog.locator('button:has-text("复制错误信息")')).toBeVisible();
+
+    await context.close();
   });
 });
