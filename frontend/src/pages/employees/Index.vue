@@ -64,6 +64,11 @@
             {{ row.code || '未设置' }}
           </template>
         </el-table-column>
+        <el-table-column prop="enterprise_wechat_user_id" label="用户Id" min-width="160" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ row.enterprise_wechat_user_id || '未设置' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="mobile" label="手机号" min-width="130" align="center" show-overflow-tooltip />
         <el-table-column prop="email" label="邮箱" min-width="180" show-overflow-tooltip />
         <el-table-column label="性别" width="70">

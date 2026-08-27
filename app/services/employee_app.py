@@ -4,10 +4,8 @@
 处理员工自动创建用户账号的业务逻辑。
 """
 
-import re
 from typing import Type
 
-from pypinyin import lazy_pinyin, Style
 from yweb.auth import PasswordHelper
 from yweb.log import get_logger
 
@@ -18,70 +16,17 @@ logger = get_logger()
 
 # 员工账号默认密码（首次登录需强制修改）
 DEFAULT_PASSWORD = "000000"
-
-
-def _name_to_pinyin(name: str) -> str:
-    """将中文姓名转为拼音用户名
-
-    规则：
-    - 中文姓名 → 全拼小写无空格（张三 → zhangsan）
-    - 已是纯 ASCII → 直接小写（John → john）
-    - 混合内容 → 去除非字母数字字符后拼接
-
-    Returns:
-        拼音字符串，如果转换失败返回空字符串
-    """
-    if not name or not name.strip():
-        return ""
-
-    name = name.strip()
-
-    # 纯 ASCII 名（英文名等），直接小写 + 去空格
-    if all(ord(c) < 128 for c in name):
-        result = re.sub(r'[^a-zA-Z0-9]', '', name).lower()
-        return result if len(result) >= 2 else ""
-
-    # 含中文：转拼音
-    py_list = lazy_pinyin(name, style=Style.NORMAL)
-    result = ''.join(py_list).lower()
-    # 去除非字母数字
-    result = re.sub(r'[^a-z0-9]', '', result)
-    return result if len(result) >= 2 else ""
-
-
-def _generate_unique_username(base: str, max_attempts: int = 100) -> str:
-    """基于 base 生成唯一用户名，冲突时追加数字后缀
-
-    Args:
-        base: 基础用户名
-        max_attempts: 最大尝试次数
-
-    Returns:
-        可用的唯一用户名
-
-    Raises:
-        ValueError: 无法生成唯一用户名
-    """
-    # 先试原名
-    if not User.get_by_username(base):
-        return base
-
-    # 追加数字后缀
-    for i in range(1, max_attempts + 1):
-        candidate = f"{base}{i}"
-        if not User.get_by_username(candidate):
-            return candidate
-
-    raise ValueError(f"无法生成唯一用户名（基于 {base}）")
+# AbstractUser.username 列长 50
+USERNAME_MAX_LEN = 50
 
 
 class EmployeeAccountService:
     """员工账号服务
 
     为员工自动创建/关联内部用户账号：
-    - 自动生成用户名（姓名拼音，如张三 → zhangsan，同名冲突 → zhangsan1）
-    - 默认密码 000000，首次登录强制修改
-    - 分配"内部员工"角色
+    - 用户名使用员工的企业微信 userid（enterprise_wechat_user_id）
+    - 默认密码首次登录强制修改
+    - 分配「内部员工」角色
     - 关联 employee.user_id
     """
 
@@ -126,7 +71,9 @@ class EmployeeAccountService:
                 status_name = status_names.get(first_status, "非活跃")
                 raise ValueError(f"该员工当前为「{status_name}」状态，不允许创建账号")
 
-        # 3. 生成用户名
+        # 3. 用户名：指定值优先，否则用企微 userid
+        if username:
+            username = username.strip()
         if not username:
             username = self._resolve_username(employee)
 
@@ -171,17 +118,14 @@ class EmployeeAccountService:
         }
 
     def _resolve_username(self, employee) -> str:
-        """根据员工信息自动推导用户名
-
-        优先级：姓名拼音 > emp_员工ID
-        示例：张三 → zhangsan，同名冲突 → zhangsan1
-        """
-        # 优先使用姓名拼音
-        name = getattr(employee, 'name', None)
-        if name:
-            pinyin_name = _name_to_pinyin(name)
-            if pinyin_name:
-                return _generate_unique_username(pinyin_name)
-
-        # 兜底：emp_员工ID
-        return _generate_unique_username(f"emp_{employee.id}")
+        """使用员工的企业微信 userid 作为登录名。"""
+        wechat_user_id = getattr(employee, "enterprise_wechat_user_id", None)
+        if wechat_user_id is not None:
+            wechat_user_id = str(wechat_user_id).strip() or None
+        if not wechat_user_id:
+            raise ValueError("该员工没有企业微信 userid，请先同步通讯录后再创建账号")
+        if len(wechat_user_id) > USERNAME_MAX_LEN:
+            raise ValueError(
+                f"企业微信 userid 超过 {USERNAME_MAX_LEN} 个字符，无法作为用户名: {wechat_user_id}"
+            )
+        return wechat_user_id

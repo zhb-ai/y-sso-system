@@ -134,20 +134,20 @@ class WechatWorkClient:
     # ==================== 成员 API ====================
 
     def get_department_users(self, dept_id: int) -> List[Dict[str, Any]]:
-        """获取部门成员详情列表
+        """获取部门成员详情列表（cgi-bin/user/list）
 
         Args:
             dept_id: 部门 ID
 
         Returns:
-            成员详情列表
+            成员详情列表（含手机号、扩展属性等）
         """
         try:
             result = self.client.department.get_users(
-                dept_id, fetch_child=0
+                dept_id, fetch_child=0, simple=False
             )
             logger.debug(
-                f"获取部门成员成功: dept_id={dept_id}, 共 {len(result)} 人"
+                f"获取部门成员详情成功: dept_id={dept_id}, 共 {len(result)} 人"
             )
             return result
         except Exception as e:

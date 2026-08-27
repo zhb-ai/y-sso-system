@@ -42,8 +42,61 @@ class QueryStub:
     def filter_by(self, **kwargs):
         return self
 
+    def filter(self, *args, **kwargs):
+        return self
+
     def first(self):
         return self.result
+
+    def all(self):
+        return [self.result] if self.result is not None else []
+
+
+class ListQueryStub:
+    """返回固定列表的查询桩"""
+
+    def __init__(self, items):
+        self.items = list(items)
+
+    def filter(self, *args, **kwargs):
+        return self
+
+    def filter_by(self, **kwargs):
+        return self
+
+    def first(self):
+        return self.items[0] if self.items else None
+
+    def all(self):
+        return list(self.items)
+
+
+def _stub_employee(monkeypatch, employee, org_rels=None, dept_rels=None, departments=None):
+    """为 OAuth username / userinfo 组织字段打桩员工查询"""
+    from app import models_registry
+
+    dept_by_id = {dept.id: dept for dept in (departments or [])}
+
+    class DepartmentModel:
+        query = ListQueryStub(departments or [])
+
+        @staticmethod
+        def get(dept_id):
+            return dept_by_id.get(dept_id)
+
+    org_models = SimpleNamespace(
+        Employee=SimpleNamespace(query=QueryStub(employee), user_id=object()),
+        EmployeeOrgRel=SimpleNamespace(
+            query=ListQueryStub(org_rels or []),
+            employee_id=object(),
+        ),
+        EmployeeDeptRel=SimpleNamespace(
+            query=ListQueryStub(dept_rels or []),
+            employee_id=object(),
+        ),
+        Department=DepartmentModel,
+    )
+    monkeypatch.setattr(models_registry, "get_app_org_models", lambda: org_models)
 
 
 class FakeJWTManager:
@@ -132,6 +185,14 @@ class TestOAuth2ProviderService:
 
         monkeypatch.setattr(AuthorizationCode, "query", QueryStub(auth_code), raising=False)
         monkeypatch.setattr(User, "query", QueryStub(user), raising=False)
+        _stub_employee(
+            monkeypatch,
+            SimpleNamespace(
+                id=1,
+                code="E001",
+                enterprise_wechat_user_id="WeiXinZhang001",
+            ),
+        )
 
         result = service.exchange_code_for_token(
             code="test-code",
@@ -144,6 +205,8 @@ class TestOAuth2ProviderService:
         assert result["refresh_token"] == "refresh-token"
         assert jwt_manager.access_payload.sub == "7"
         assert jwt_manager.refresh_payload.sub == "7"
+        assert jwt_manager.access_payload.username == "zhanghaibin"
+        assert jwt_manager.refresh_payload.username == "zhanghaibin"
 
     def test_exchange_code_for_public_client_accepts_pkce_without_client_secret(self, monkeypatch):
         """公开客户端应允许通过 PKCE 换 token，而无需 client_secret"""
@@ -309,6 +372,14 @@ class TestOAuth2ProviderService:
 
         monkeypatch.setattr(AuthorizationCode, "query", QueryStub(auth_code), raising=False)
         monkeypatch.setattr(User, "query", QueryStub(user), raising=False)
+        _stub_employee(
+            monkeypatch,
+            SimpleNamespace(
+                id=1,
+                code="E001",
+                enterprise_wechat_user_id="WeiXinZhang001",
+            ),
+        )
 
         try:
             result = service.exchange_code_for_token(
@@ -330,6 +401,7 @@ class TestOAuth2ProviderService:
             assert claims["sub"] == "7"
             assert claims["nonce"] == "nonce-123"
             assert claims["email"] == "zhang@example.com"
+            assert claims["preferred_username"] == "zhanghaibin"
             assert headers["kid"] == settings.jwt_key_id
         finally:
             restore()
@@ -423,12 +495,20 @@ class TestOAuth2ProviderService:
             "get_user_sso_role_codes",
             staticmethod(lambda user_id: ["s001"] if user_id == 7 else []),
         )
+        _stub_employee(
+            monkeypatch,
+            SimpleNamespace(
+                id=1,
+                code="E001",
+                enterprise_wechat_user_id="WeiXinZhang001",
+            ),
+        )
 
         access_token = jwt_manager.create_access_token(
             {
                 "sub": "7",
                 "user_id": 7,
-                "username": "zhanghaibin",
+                "username": "WeiXinZhang001",
                 "email": "zhang@example.com",
                 "roles": ["admin"],
                 "iss": oidc_issuer,
@@ -444,6 +524,218 @@ class TestOAuth2ProviderService:
             assert userinfo["email"] == "zhang@example.com"
             assert userinfo["roles"] == ["admin"]
             assert userinfo["sso_roles"] == ["s001"]
+            assert userinfo["user_code"] == "E001"
+            assert userinfo["enterprise_wechat_user_id"] == "WeiXinZhang001"
+            assert userinfo["emp_status"] is None
+            assert userinfo["primary_external_dept_id"] is None
+            assert userinfo["external_dept_ids"] == []
+            assert userinfo["post_name"] is None
+        finally:
+            restore()
+
+    def test_get_userinfo_uses_user_username_as_preferred_username(self, monkeypatch):
+        """preferred_username 直接使用 User.username，不依赖员工企微字段"""
+        jwt_manager = JWTManager(**build_runtime_jwt_settings())
+        service = OAuth2ProviderService(jwt_manager=jwt_manager, user_getter=lambda _: None)
+        oidc_issuer = "https://sso.example.com/api/v1/oauth2"
+        restore = _override_oidc_issuer(oidc_issuer)
+        app_obj = SimpleNamespace(
+            id=100,
+            name="Data Formulator",
+            validate_is_active=Mock(),
+            validate_source_ip=Mock(),
+        )
+        service.app_service.get_application_by_client_id = Mock(return_value=app_obj)
+
+        user = SimpleNamespace(
+            id=7,
+            username="zhanghaibin",
+            email="zhang@example.com",
+            phone="13800138000",
+            is_active=True,
+            roles=[SimpleNamespace(code="admin")],
+        )
+
+        monkeypatch.setattr(User, "query", QueryStub(user), raising=False)
+
+        from app.domain.sso_role.entities import UserSSORole
+        monkeypatch.setattr(
+            UserSSORole,
+            "get_user_sso_role_codes",
+            staticmethod(lambda user_id: []),
+        )
+        _stub_employee(
+            monkeypatch,
+            SimpleNamespace(id=1, code="E001", enterprise_wechat_user_id=None),
+        )
+
+        access_token = jwt_manager.create_access_token(
+            {
+                "sub": "7",
+                "user_id": 7,
+                "username": None,
+                "iss": oidc_issuer,
+                "aud": "client-id",
+            }
+        )
+
+        try:
+            userinfo = service.get_userinfo(access_token)
+            assert userinfo["preferred_username"] == "zhanghaibin"
+            assert userinfo["user_code"] == "E001"
+            assert userinfo["enterprise_wechat_user_id"] is None
+            assert userinfo["emp_status"] is None
+            assert userinfo["external_dept_ids"] == []
+        finally:
+            restore()
+
+    def _prepare_userinfo_request(
+        self,
+        monkeypatch,
+        *,
+        employee,
+        org_rels=None,
+        dept_rels=None,
+        departments=None,
+    ):
+        """构造可调用 get_userinfo 的服务与 access_token"""
+        jwt_manager = JWTManager(**build_runtime_jwt_settings())
+        service = OAuth2ProviderService(jwt_manager=jwt_manager, user_getter=lambda _: None)
+        oidc_issuer = "https://sso.example.com/api/v1/oauth2"
+        restore = _override_oidc_issuer(oidc_issuer)
+        app_obj = SimpleNamespace(
+            id=100,
+            name="Data Formulator",
+            validate_is_active=Mock(),
+            validate_source_ip=Mock(),
+        )
+        service.app_service.get_application_by_client_id = Mock(return_value=app_obj)
+
+        user = SimpleNamespace(
+            id=7,
+            username="zhanghaibin",
+            email="zhang@example.com",
+            phone="13800138000",
+            is_active=True,
+            roles=[SimpleNamespace(code="admin")],
+        )
+        monkeypatch.setattr(User, "query", QueryStub(user), raising=False)
+
+        from app.domain.sso_role.entities import UserSSORole
+        monkeypatch.setattr(
+            UserSSORole,
+            "get_user_sso_role_codes",
+            staticmethod(lambda user_id: []),
+        )
+        _stub_employee(
+            monkeypatch,
+            employee,
+            org_rels=org_rels,
+            dept_rels=dept_rels,
+            departments=departments,
+        )
+
+        access_token = jwt_manager.create_access_token(
+            {
+                "sub": "7",
+                "user_id": 7,
+                "username": "WeiXinZhang001",
+                "iss": oidc_issuer,
+                "aud": "client-id",
+            }
+        )
+        return service, access_token, restore
+
+    def test_get_userinfo_includes_org_profile_from_employee_relations(self, monkeypatch):
+        """userinfo 应下发企微 userid、雇佣状态、主部门与全部任职部门 id"""
+        employee = SimpleNamespace(
+            id=21,
+            code="E001",
+            enterprise_wechat_user_id="EmployeeTableId",
+            primary_org_id=10,
+            primary_dept_id=2,
+        )
+        org_rel = SimpleNamespace(
+            employee_id=21,
+            org_id=10,
+            external_user_id="WeiXinZhang001",
+            status=3,
+            position="数据仓库工程师",
+        )
+        departments = [
+            SimpleNamespace(id=2, org_id=10, external_dept_id="12"),
+            SimpleNamespace(id=3, org_id=10, external_dept_id="34"),
+            SimpleNamespace(id=4, org_id=10, external_dept_id=None),
+        ]
+        dept_rels = [
+            SimpleNamespace(employee_id=21, dept_id=2, external_dept_id="12"),
+            SimpleNamespace(employee_id=21, dept_id=3, external_dept_id="34"),
+            SimpleNamespace(employee_id=21, dept_id=4, external_dept_id=None),
+        ]
+        service, access_token, restore = self._prepare_userinfo_request(
+            monkeypatch,
+            employee=employee,
+            org_rels=[org_rel],
+            dept_rels=dept_rels,
+            departments=departments,
+        )
+
+        try:
+            userinfo = service.get_userinfo(access_token)
+            assert userinfo["enterprise_wechat_user_id"] == "WeiXinZhang001"
+            assert userinfo["preferred_username"] == "zhanghaibin"
+            assert userinfo["emp_status"] == 3
+            assert userinfo["primary_external_dept_id"] == "12"
+            assert userinfo["external_dept_ids"] == ["12", "34"]
+            assert userinfo["post_name"] == "数据仓库工程师"
+        finally:
+            restore()
+
+    def test_get_userinfo_keeps_zero_emp_status_and_null_fields_without_employee(self, monkeypatch):
+        """停职状态 0 应原样返回；无员工时组织字段仍在且为空"""
+        employee = SimpleNamespace(
+            id=21,
+            code="E002",
+            enterprise_wechat_user_id=None,
+            primary_org_id=10,
+            primary_dept_id=None,
+        )
+        org_rel = SimpleNamespace(
+            employee_id=21,
+            org_id=10,
+            external_user_id="WeiXinLi002",
+            status=0,
+            position="  ",
+        )
+        service, access_token, restore = self._prepare_userinfo_request(
+            monkeypatch,
+            employee=employee,
+            org_rels=[org_rel],
+        )
+
+        try:
+            userinfo = service.get_userinfo(access_token)
+            assert userinfo["enterprise_wechat_user_id"] == "WeiXinLi002"
+            assert userinfo["emp_status"] == 0
+            assert userinfo["post_name"] is None
+            assert userinfo["primary_external_dept_id"] is None
+            assert userinfo["external_dept_ids"] == []
+        finally:
+            restore()
+
+        service, access_token, restore = self._prepare_userinfo_request(
+            monkeypatch,
+            employee=None,
+        )
+        try:
+            userinfo = service.get_userinfo(access_token)
+            assert "user_code" not in userinfo
+            assert userinfo["preferred_username"] == "zhanghaibin"
+            assert userinfo["enterprise_wechat_user_id"] is None
+            assert userinfo["emp_status"] is None
+            assert userinfo["primary_external_dept_id"] is None
+            assert userinfo["external_dept_ids"] == []
+            assert userinfo["post_name"] is None
         finally:
             restore()
 

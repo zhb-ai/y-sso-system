@@ -78,16 +78,16 @@
         </div>
 
         <div class="header-right">
-          <!-- 应用授权按钮 -->
+          <!-- 单点登录前台按钮 -->
           <el-button
             site="small"
             plain
             class="header-action app-auth-btn"
             @click="handleAppAuthorization"
-            title="应用授权"
+            title="单点登录前台"
           >
             <el-icon><Key /></el-icon>
-            <span>应用授权</span>
+            <span>单点登录前台</span>
           </el-button>
 
           <!-- 用户信息 -->

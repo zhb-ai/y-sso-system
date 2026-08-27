@@ -44,6 +44,7 @@ test.describe.serial('员工管理页面 - 完整测试流程', () => {
     await expect(page.locator('button:has-text("编辑")').first()).toBeVisible();
     await expect(page.locator('button:has-text("删除")').first()).toBeVisible();
     await expect(page.locator('button:has-text("新建")').first()).toBeVisible();
+    await expect(page.locator('.el-table__header').getByText('用户Id')).toBeVisible();
   });
 
   test('2. 新建员工', async () => {

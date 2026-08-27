@@ -42,6 +42,7 @@ class EmployeeUserMixin:
     
     enterprise_wechat_user_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment="企业微信用户ID")
     enterprise_wechat_openid: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment="企业微信OpenID")
+    id_card: Mapped[Optional[str]] = mapped_column(String(18), nullable=True, comment="身份证号")
 
 
 class EmployeeOrgRelMixin:

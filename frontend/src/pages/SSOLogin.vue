@@ -21,7 +21,7 @@
           <div class="sso-user-info">
             <el-icon :size="48" class="sso-user-avatar"><UserFilled /></el-icon>
             <div class="sso-user-detail">
-              <span class="sso-username">{{ authStore.userInfo?.username }}</span>
+              <span class="sso-username">{{ authStore.userInfo?.enterprise_wechat_user_id || '' }}</span>
               <span class="sso-email">{{ authStore.userInfo?.email || '' }}</span>
             </div>
           </div>
@@ -93,7 +93,7 @@
                 <el-avatar :size="40" :icon="UserFilled" />
               </div>
               <div class="sso-user-detail">
-                <span class="sso-username">{{ authStore.userInfo?.username }}</span>
+                <span class="sso-username">{{ authStore.userInfo?.enterprise_wechat_user_id || '' }}</span>
                 <span class="sso-email">{{ authStore.userInfo?.email || '未设置邮箱' }}</span>
               </div>
             </div>
@@ -137,9 +137,9 @@
               :key="app.id"
               class="sso-app-card"
               :class="{ 'is-jumping': jumpingAppId === app.id }"
-              :style="app.logo_url ? { '--app-logo': `url(${app.logo_url})` } : {}"
               @click="handleAppClick(app)"
             >
+              <img v-if="app.logo_url" :src="app.logo_url" alt="" class="sso-app-logo" />
               <div class="sso-app-content">
                 <div class="sso-app-icon">
                   <el-icon :size="28" class="sso-app-icon-default"><Monitor /></el-icon>
@@ -779,22 +779,18 @@ async function handlePortalLogin() {
   overflow: hidden;
 }
 
-/* 有logo时添加背景图 */
-.sso-app-card[style*="--app-logo"]::before {
-  content: '';
-  position: absolute;
-  right: 40px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 60px;
-  height: 60px;
-  background-image: var(--app-logo);
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.08;
-  pointer-events: none;
-  z-index: 0;
+/* 有logo时显示水印图（img 渲染，兼容 favicon 等 ico 格式） */
+.sso-app-logo {
+     position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    height: 38px;
+    object-fit: contain;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .sso-app-card:hover {

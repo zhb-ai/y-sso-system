@@ -5,16 +5,27 @@
 import { test, expect, login, openAdminDashboard, smartNavigate } from './fixtures/smart-test-base.js';
 import { generateDisplayName, generateEmail, generatePhone } from './fixtures/test-data.js';
 import { ROUTES, getFullUrl } from './fixtures/test-config.js';
+import { acquireE2ELock } from './fixtures/e2e-lock.js';
 
 test.describe.serial('个人资料页面 - 完整测试流程', () => {
+  // 该 suite 会等待跨进程锁，必须放宽超时，否则并行项目下 beforeAll 可能超时。
+  test.setTimeout(240000);
+
   // 存储测试过程中使用的数据
   let updatedName = null;
   let updatedEmail = null;
   let updatedPhone = null;
   let page;
   let context;
+  let releaseLock;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    testInfo.setTimeout(240000);
+
+    // 个人资料用例会写入同一个后端账号资料。
+    // 多项目（chromium/firefox/webkit）并行跑时会互相覆盖，必须跨进程串行化。
+    releaseLock = await acquireE2ELock('profile-admin', { timeoutMs: 180000 });
+
     // 创建新的浏览器上下文
     context = await browser.newContext();
     page = await context.newPage();
@@ -29,6 +40,9 @@ test.describe.serial('个人资料页面 - 完整测试流程', () => {
     // 清理：关闭上下文
     if (context) {
       await context.close();
+    }
+    if (releaseLock) {
+      await releaseLock();
     }
   });
 
