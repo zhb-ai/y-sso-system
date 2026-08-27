@@ -169,9 +169,16 @@ def register_all_routes(app):
     )
 
     from app.api.v1.org_employee_query import create_org_employee_query_router
+    from app.api.v1.org_sync import create_org_sync_router
 
     app.include_router(
         create_org_employee_query_router(org),
+        prefix="/api/v1",
+        tags=["组织架构"],
+        dependencies=[Depends(require_permission('organization:manage'))],
+    )
+    app.include_router(
+        create_org_sync_router(org),
         prefix="/api/v1",
         tags=["组织架构"],
         dependencies=[Depends(require_permission('organization:manage'))],
