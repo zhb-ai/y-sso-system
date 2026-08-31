@@ -13,7 +13,7 @@
     >
       <div class="sidebar-header">
         <div class="logo">
-          <el-icon class="logo-icon"><Connection /></el-icon>
+          <img src="/favicon.svg" class="logo-icon" alt="SSO系统" />
           <span v-if="!isCollapse" class="logo-text">SSO系统</span>
         </div>
         <el-button circle class="collapse-btn" @click="toggleCollapse">
