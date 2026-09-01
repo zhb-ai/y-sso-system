@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="SSO 安全认证">
   <defs>
     <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1d3a6e"/>
-      <stop offset="1" stop-color="#0a1933"/>
+      <stop offset="0" stop-color="#2ba4bf"/>
+      <stop offset="1" stop-color="#2ba4bf"/>
     </linearGradient>
     <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ffffff"/>
