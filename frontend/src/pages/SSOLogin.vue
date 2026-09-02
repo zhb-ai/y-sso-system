@@ -781,16 +781,16 @@ async function handlePortalLogin() {
 
 /* 有logo时显示水印图（img 渲染，兼容 favicon 等 ico 格式） */
 .sso-app-logo {
-        object-fit: contain;
-    opacity: 0.7;
-    pointer-events: none;
-    z-index: 0;
-    width: auto;
-    height: 38px;
-    position: absolute;
-    top: 50%;
-    right: 34px;
-    transform: translateY(-50%);
+  object-fit: contain;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  width: auto;
+  height: 30px;
+  position: absolute;
+  top: 50%;
+  right: 34px;
+  transform: translateY(-50%);
 }
 
 .sso-app-card:hover {
