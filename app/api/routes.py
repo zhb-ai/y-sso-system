@@ -325,6 +325,7 @@ def register_all_routes(app):
 
     sso_portal_router = create_sso_portal_router(
         application_model=Application,
+        get_current_user=auth.get_current_user,
     )
     app.include_router(
         sso_portal_router,

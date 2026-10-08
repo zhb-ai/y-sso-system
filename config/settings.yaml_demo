@@ -79,3 +79,13 @@ base_url: "http://localhost:8000"
 
 # OIDC Issuer
 oidc_issuer: "http://localhost:8000/api/v1/oauth2"
+
+# BIP 第三方单点登录。门户仅在应用编码为 bip 时使用。
+# 服务地址和登录后页面取该应用的第一条重定向 URI，例如 http://bip-host/nccloud。
+bip:
+  client_id: ""
+  client_secret: ""
+  dsname: ""
+  busi_center_code: ""
+  lang_code: "simpchn"
+  auth_type: "default"
