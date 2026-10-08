@@ -5,7 +5,7 @@
 """
 
 import os
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 # ==================== 路径常量（放在最前面，供其他模块导入） ====================
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,6 +13,19 @@ CONFIG_PATH = "config/settings.yaml"
 CONFIG_BASE_DIR = PROJECT_ROOT
 
 from yweb.config import AppSettings, load_yaml_config, ConfigLoader
+
+
+class BipSettings(BaseModel):
+    """BIP 第三方单点登录连接信息，仅服务端使用。
+
+    服务地址和登录后页面来自应用编码 bip 的第一条重定向 URI。
+    """
+    client_id: str = Field(default="", description="BIP 第三方编码")
+    client_secret: str = Field(default="", description="BIP 第三方加密串")
+    dsname: str = Field(default="", description="BIP 数据源编码")
+    busi_center_code: str = Field(default="", description="BIP 账套编码")
+    lang_code: str = Field(default="simpchn", description="BIP 语种")
+    auth_type: str = Field(default="default", description="BIP 认证器 id")
 
 
 class Settings(AppSettings):
@@ -23,6 +36,7 @@ class Settings(AppSettings):
     jwt_private_key_path: str | None = Field(default=None, description="RS256 私钥文件路径")
     jwt_public_key_path: str | None = Field(default=None, description="RS256 公钥文件路径")
     jwt_key_id: str = Field(default="sso-rs256-key-1", description="JWKS Key ID")
+    bip: BipSettings = Field(default_factory=BipSettings, description="BIP 单点登录配置")
 
 
 def load_settings() -> Settings:

@@ -317,8 +317,37 @@ watch(
   { immediate: true }
 )
 
+// 应用编码 bip：向服务端换 BIP 一次性令牌后再打开，不走 OAuth
+async function launchBip(app) {
+  jumpingAppId.value = app.id
+  try {
+    const response = await api.post('/v1/sso/bip/launch')
+    const loginUrl = response.data?.login_url
+    if (loginUrl) {
+      // BIP 会按 Referer 拦截来自 SSO 的跳转，noreferrer 让登录页先能打开
+      const link = document.createElement('a')
+      link.href = loginUrl
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } else {
+      ElMessage.error('未能获取 BIP 登录地址')
+    }
+  } catch (error) {
+    handleApiError(error, '进入 BIP 失败')
+  } finally {
+    jumpingAppId.value = null
+  }
+}
+
 // 点击应用卡片 → 授权并跳转
 async function handleAppClick(app) {
+  if (app.code === 'bip') {
+    await launchBip(app)
+    return
+  }
   const uris = app.redirect_uris
   if (!uris || uris.length === 0) {
     ElMessage.warning('该应用未配置重定向地址')
