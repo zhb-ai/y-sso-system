@@ -25,6 +25,13 @@ from yweb.log import get_logger
 
 from .attrs import extract_id_card, normalize_mobile
 from .client import WechatWorkClient
+from .hr_roster import (
+    apply_staff_rosters,
+    fetch_staff_field_infos,
+    get_access_token,
+    get_field_groups,
+    now_shanghai_iso,
+)
 
 logger = get_logger()
 
@@ -112,6 +119,14 @@ class WechatWorkSyncService(BaseSyncService):
 
             logger.info(f"开始全量同步: org_id={org_id}")
             result = super().sync_from_external(org_id)
+            try:
+                roster_errors = self.sync_hr_roster(org_id)
+            except Exception as exc:
+                logger.exception(f"花名册同步失败: org_id={org_id}")
+                roster_errors = [f"花名册同步失败: {exc}"]
+            for error in roster_errors:
+                result.add_error(error)
+            result.end_time = datetime.now()
             if result.success:
                 logger.info(
                     f"全量同步完成: org_id={org_id}, "
@@ -131,6 +146,59 @@ class WechatWorkSyncService(BaseSyncService):
             self._cached_departments = None
             self._cached_employees = None
             lock.release()
+
+    def sync_hr_roster(self, org_id: int) -> List[str]:
+        """拉取本组织全部企微成员的花名册并写入 employee.hr_roster。
+
+        通讯录同步已经结束。这里的失败只返回错误信息，不回滚通讯录数据。
+        """
+        org = self.org_model.get(org_id) if self.org_model else None
+        if org is None:
+            return [f"花名册同步失败: 组织不存在: id={org_id}"]
+
+        config = org.get_external_config_dict()
+        secret = (config.get("wechat_work") or {}).get("corp_secret")
+        if not org.external_corp_id or not secret:
+            return ["花名册同步失败: 未配置企业微信"]
+
+        token = get_access_token(org.external_corp_id, secret)
+        group_list = get_field_groups(token)
+        employees = self._employees_with_wecom_userid(org_id)
+        if not employees:
+            return []
+
+        fetched = fetch_staff_field_infos(
+            token, [userid for _, userid in employees]
+        )
+        errors = apply_staff_rosters(
+            employees, group_list, fetched, now_shanghai_iso()
+        )
+        logger.info(
+            f"花名册同步完成: org_id={org_id}, "
+            f"成功={len(employees) - len(errors)}, 失败={len(errors)}"
+        )
+        return errors
+
+    def _employees_with_wecom_userid(self, org_id: int) -> List[tuple]:
+        """返回 (employee, userid)，同一员工只出现一次。"""
+        if self.emp_org_rel_model is None or self.employee_model is None:
+            return []
+        relations = self.emp_org_rel_model.query.filter(
+            self.emp_org_rel_model.org_id == org_id
+        ).all()
+        employees = []
+        seen = set()
+        for relation in relations:
+            if relation.employee_id in seen:
+                continue
+            seen.add(relation.employee_id)
+            employee = self.employee_model.get(relation.employee_id)
+            if employee is None:
+                continue
+            userid = str(getattr(employee, "enterprise_wechat_user_id", "") or "").strip()
+            if userid:
+                employees.append((employee, userid))
+        return employees
 
     # ==================== 抽象方法实现 ====================
 

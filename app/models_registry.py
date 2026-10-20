@@ -31,9 +31,9 @@ from app.domain.config.entities import SystemConfig                             
 # ======================== 2. 共享配置（各入口复用） ========================
 
 from yweb.orm import fields
-from sqlalchemy import String
+from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
-from typing import Optional
+from typing import Any, Optional
 
 
 class EmployeeUserMixin:
@@ -43,6 +43,9 @@ class EmployeeUserMixin:
     enterprise_wechat_user_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment="企业微信用户ID")
     enterprise_wechat_openid: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment="企业微信OpenID")
     id_card: Mapped[Optional[str]] = mapped_column(String(18), nullable=True, comment="身份证号")
+    hr_roster: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        JSON, nullable=True, comment="人事助手花名册快照（JSON）"
+    )
 
 
 class EmployeeOrgRelMixin:

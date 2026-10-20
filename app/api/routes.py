@@ -157,12 +157,19 @@ def register_all_routes(app):
     # 7. 员工账号管理（依赖 org）
     # ------------------------------------------------------------------
     from app.api.v1.employee_account import create_employee_account_router
+    from app.api.v1.hr_roster import create_hr_roster_router
 
     employee_account_router = create_employee_account_router(
         employee_model=org.Employee,
     )
     app.include_router(
         employee_account_router,
+        prefix="/api/v1",
+        tags=["组织架构"],
+        dependencies=[Depends(require_permission('organization:manage'))],
+    )
+    app.include_router(
+        create_hr_roster_router(org.Employee),
         prefix="/api/v1",
         tags=["组织架构"],
         dependencies=[Depends(require_permission('organization:manage'))],
