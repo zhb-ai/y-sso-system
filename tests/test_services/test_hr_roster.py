@@ -1,4 +1,4 @@
-"""花名册快照的合成、失败隔离，以及同步编排。"""
+"""花名册快照的合成与失败隔离。通讯录同步不拉花名册。"""
 
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -152,10 +152,10 @@ def _sync_service():
     return WechatWorkSyncService(client=MagicMock(), org_models=models)
 
 
-class TestSyncFromExternalKeepsContactResult:
-    """花名册失败不能丢掉已经完成的通讯录同步结果，也不能占住同步锁。"""
+class TestSyncFromExternalDoesNotFetchRoster:
+    """通讯录同步不拉花名册。"""
 
-    def test_roster_error_is_appended_after_contact_sync(self, monkeypatch):
+    def test_contact_sync_does_not_call_hr_roster(self, monkeypatch):
         service = _sync_service()
         contact = SyncResult()
         contact.created_count = 3
@@ -165,35 +165,16 @@ class TestSyncFromExternalKeepsContactResult:
             "sync_from_external",
             lambda self, org_id: contact,
         )
+        called = []
         monkeypatch.setattr(
             service,
             "sync_hr_roster",
-            lambda org_id: ["花名册同步失败: userid=a: not found"],
+            lambda org_id: called.append(org_id) or [],
         )
 
         result = service.sync_from_external(1)
 
+        assert called == []
         assert result.created_count == 3
-        assert result.success is False
-        assert result.errors == ["花名册同步失败: userid=a: not found"]
-
-    def test_roster_exception_releases_lock(self, monkeypatch):
-        service = _sync_service()
-        contact = SyncResult()
-        contact.finish("通讯录完成")
-        monkeypatch.setattr(
-            BaseSyncService,
-            "sync_from_external",
-            lambda self, org_id: contact,
-        )
-
-        def raise_roster(org_id):
-            raise RuntimeError("token")
-
-        monkeypatch.setattr(service, "sync_hr_roster", raise_roster)
-
-        first = service.sync_from_external(1)
-        second = service.sync_from_external(1)
-
-        assert any("token" in error for error in first.errors)
-        assert "正在进行中" not in "".join(second.errors)
+        assert result.success is True
+        assert result.errors == []

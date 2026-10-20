@@ -119,14 +119,6 @@ class WechatWorkSyncService(BaseSyncService):
 
             logger.info(f"开始全量同步: org_id={org_id}")
             result = super().sync_from_external(org_id)
-            try:
-                roster_errors = self.sync_hr_roster(org_id)
-            except Exception as exc:
-                logger.exception(f"花名册同步失败: org_id={org_id}")
-                roster_errors = [f"花名册同步失败: {exc}"]
-            for error in roster_errors:
-                result.add_error(error)
-            result.end_time = datetime.now()
             if result.success:
                 logger.info(
                     f"全量同步完成: org_id={org_id}, "
@@ -150,7 +142,8 @@ class WechatWorkSyncService(BaseSyncService):
     def sync_hr_roster(self, org_id: int) -> List[str]:
         """拉取本组织全部企微成员的花名册并写入 employee.hr_roster。
 
-        通讯录同步已经结束。这里的失败只返回错误信息，不回滚通讯录数据。
+        不由通讯录同步调用。由 scripts/sync_hr_roster.py 手动执行。
+        单人失败只记入返回的错误列表，不改该员工已有快照。
         """
         org = self.org_model.get(org_id) if self.org_model else None
         if org is None:

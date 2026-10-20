@@ -31,8 +31,8 @@ def create_hr_roster_router(employee_model: Type) -> APIRouter:
         summary="按用户名查询花名册",
         description=(
             "参数 username 是用户管理页的用户名，对应 user.username。"
-            "返回该用户关联员工在最近一次通讯录同步时保存的花名册 JSON。"
-            "花名册尚未同步、用户不存在或未关联员工时返回 404。"
+            "返回该用户关联员工最近一次执行花名册脚本时保存的 JSON。"
+            "花名册尚未拉取、用户不存在或未关联员工时返回 404。"
         ),
     )
     def get_employee_hr_roster(
