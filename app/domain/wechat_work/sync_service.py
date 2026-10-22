@@ -5,6 +5,7 @@
 功能：
 - 全量同步：从企微拉取完整组织架构（部门 + 成员 + 关系）
 - 增量事件：处理通讯录变更回调的单条事件
+- 单成员同步：按 userid 拉取成员，写入员工与部门，并创建系统用户
 - 同步锁：使用 threading.Lock 防止并发同步冲突
 
 使用示例::
@@ -427,26 +428,9 @@ class WechatWorkSyncService(BaseSyncService):
             logger.error(f"获取新成员详情失败: userid={user_id}")
             return
 
-        dept_ids = [
-            str(d) for d in user_detail.get("department", [])
-            if str(d) != WECHAT_WORK_ROOT_DEPT_ID
-        ]
-
-        data = {
-            "external_user_id": user_id,
-            "name": user_detail.get("name", name),
-            "mobile": normalize_mobile(user_detail),
-            "id_card": extract_id_card(user_detail),
-            "email": user_detail.get("email"),
-            "avatar": user_detail.get("avatar"),
-            "gender": user_detail.get("gender", 0),
-            "emp_no": user_detail.get("alias"),
-            "position": user_detail.get("position"),
-            "status": self._map_status(user_detail.get("status", 1)),
-            "department_ids": dept_ids,
-            "main_department": user_detail.get("main_department"),
-            "enterprise_wechat_user_id": user_detail.get("userid", None),
-        }
+        data = self._member_data_from_detail(
+            user_id, user_detail, fallback_name=name,
+        )
 
         # 创建员工 + 组织关联
         employee = self._create_employee_from_external(org, data)
@@ -482,26 +466,7 @@ class WechatWorkSyncService(BaseSyncService):
             logger.error(f"获取成员详情失败: userid={user_id}")
             return
 
-        dept_ids = [
-            str(d) for d in user_detail.get("department", [])
-            if str(d) != WECHAT_WORK_ROOT_DEPT_ID
-        ]
-
-        data = {
-            "external_user_id": user_id,
-            "name": user_detail.get("name", ""),
-            "mobile": normalize_mobile(user_detail),
-            "id_card": extract_id_card(user_detail),
-            "email": user_detail.get("email"),
-            "avatar": user_detail.get("avatar"),
-            "gender": user_detail.get("gender", 0),
-            "emp_no": user_detail.get("alias"),
-            "position": user_detail.get("position"),
-            "status": self._map_status(user_detail.get("status", 1)),
-            "department_ids": dept_ids,
-            "main_department": user_detail.get("main_department"),
-            "enterprise_wechat_user_id": user_detail.get("userid", None),
-        }
+        data = self._member_data_from_detail(user_id, user_detail)
 
         # 更新员工 + 组织关联
         self._update_employee_from_external(employee, rel, data)
@@ -541,6 +506,120 @@ class WechatWorkSyncService(BaseSyncService):
             self._on_employee_mark_resigned(employee, rel)
 
         logger.info(f"成员已标记离职: userid={user_id}, employee_id={rel.employee_id}")
+
+    def sync_user_by_userid(self, org, user_id: str) -> Dict[str, Any]:
+        """按 userid 拉取一名企微成员，同步员工、部门，并绑定系统用户。
+
+        同一组织的全量同步、增量回调和本方法共用一把锁。
+        拿不到锁时拒绝本次同步。结束时清掉本实例的部门/员工预拉取缓存。
+
+        Args:
+            org: Organization 实例
+            user_id: 企业微信 userid
+
+        Returns:
+            employee: 员工对象
+            is_new_employee: 本次是否新建员工
+            account_created: 本次是否新建系统用户
+            user_id: 系统用户 ID
+            username: 系统用户名
+
+        Raises:
+            ValueError: userid 为空、同步锁超时、企微接口失败或账号创建失败
+        """
+        user_id = str(user_id or "").strip()
+        if not user_id:
+            raise ValueError("缺少 userid 参数")
+
+        lock = self._get_lock(org.id)
+        if not lock.acquire(blocking=True, timeout=60):
+            raise ValueError("组织同步正在进行中，请稍后再试")
+
+        try:
+            user_detail = self.client.get_user(user_id)
+            if not isinstance(user_detail, dict) or not user_detail:
+                raise ValueError(f"获取企业微信成员详情失败: userid={user_id}")
+
+            data = self._member_data_from_detail(user_id, user_detail)
+            rel = self.emp_org_rel_model.query.filter(
+                self.emp_org_rel_model.org_id == org.id,
+                self.emp_org_rel_model.external_user_id == user_id,
+            ).first()
+            employee = self.employee_model.get(rel.employee_id) if rel else None
+            if rel is not None and employee is None:
+                raise ValueError(f"员工记录丢失: employee_id={rel.employee_id}")
+            if rel is not None and employee is not None:
+                self._update_employee_from_external(employee, rel, data)
+                is_new_employee = False
+            else:
+                employee = self._create_employee_from_external(org, data)
+                is_new_employee = True
+
+            self._sync_single_employee_dept_rels(org, employee, data)
+            account_created, bound_user_id, username = self._bind_user_account(employee)
+            logger.info(
+                f"单成员同步完成: org_id={org.id}, userid={user_id}, "
+                f"employee_id={employee.id}, is_new_employee={is_new_employee}, "
+                f"account_created={account_created}"
+            )
+            return {
+                "employee": employee,
+                "is_new_employee": is_new_employee,
+                "account_created": account_created,
+                "user_id": bound_user_id,
+                "username": username,
+            }
+        finally:
+            self._cached_departments = None
+            self._cached_employees = None
+            lock.release()
+
+    def _bind_user_account(self, employee):
+        """员工没有系统用户时创建账号。已有 user_id 时不重复创建。"""
+        bound_user_id = getattr(employee, "user_id", None)
+        if not bound_user_id:
+            from app.services.employee_app import EmployeeAccountService
+
+            account = EmployeeAccountService(
+                employee_model=self.employee_model,
+            ).create_account_for_employee(employee_id=employee.id)
+            employee.user_id = account["user_id"]
+            return True, account["user_id"], account.get("username") or ""
+
+        from app.domain.auth.model.user import User
+
+        user = User.get(bound_user_id)
+        username = getattr(user, "username", None) if user is not None else None
+        if not username:
+            username = str(bound_user_id)
+        return False, bound_user_id, username
+
+    def _member_data_from_detail(
+        self,
+        user_id: str,
+        user_detail: Dict[str, Any],
+        fallback_name: str = "",
+    ) -> Dict[str, Any]:
+        """把企微成员详情转成员工同步字典。"""
+        dept_ids = [
+            str(d) for d in user_detail.get("department", [])
+            if str(d) != WECHAT_WORK_ROOT_DEPT_ID
+        ]
+        return {
+            "external_user_id": user_id,
+            "name": user_detail.get("name", fallback_name),
+            "mobile": normalize_mobile(user_detail),
+            "id_card": extract_id_card(user_detail),
+            "email": user_detail.get("email"),
+            "avatar": user_detail.get("avatar"),
+            "gender": user_detail.get("gender", 0),
+            "emp_no": user_detail.get("alias"),
+            "position": user_detail.get("position"),
+            "status": self._map_status(user_detail.get("status", 1)),
+            "department_ids": dept_ids,
+            "main_department": user_detail.get("main_department"),
+            "enterprise_wechat_user_id": user_detail.get("userid", None),
+        }
 
     # ==================== 辅助方法 ====================
 
@@ -652,11 +731,85 @@ class WechatWorkSyncService(BaseSyncService):
         rel.enterprise_wechat_openid = employee.enterprise_wechat_openid
         rel.save(commit=True)
     
+    def _pick_wechat_department(self, payload, external_dept_id: str):
+        """从 get_department 的返回值里取出指定部门。
+
+        wechatpy 的 department.get 返回部门列表，测试或其它调用方也可能返回单个字典。
+        """
+        if isinstance(payload, dict) and "id" in payload:
+            items = [payload]
+        elif isinstance(payload, dict):
+            nested = payload.get("department")
+            items = nested if isinstance(nested, list) else []
+        elif isinstance(payload, list):
+            items = payload
+        else:
+            items = []
+        for item in items:
+            if isinstance(item, dict) and str(item.get("id", "")) == external_dept_id:
+                return item
+        return None
+
+    def _ensure_department_from_wechat(self, org, external_dept_id: str):
+        """本地没有该企微部门时，按部门详情补建。失败只记警告。"""
+        if not external_dept_id or external_dept_id == WECHAT_WORK_ROOT_DEPT_ID:
+            return None
+        try:
+            dept_id = int(external_dept_id)
+        except (TypeError, ValueError):
+            logger.warning(
+                f"补建部门失败，部门 ID 不是整数，员工同步继续: "
+                f"external_dept_id={external_dept_id}"
+            )
+            return None
+        try:
+            payload = self.client.get_department(dept_id)
+        except Exception as exc:
+            logger.warning(
+                f"补建部门失败，读取企微部门详情失败，员工同步继续: "
+                f"external_dept_id={external_dept_id}, error={exc}"
+            )
+            return None
+        raw = self._pick_wechat_department(payload, external_dept_id)
+        if raw is None:
+            logger.warning(
+                f"补建部门失败，企微返回中没有该部门，员工同步继续: "
+                f"external_dept_id={external_dept_id}"
+            )
+            return None
+        parent_id = str(raw.get("parentid", ""))
+        data = {
+            "external_dept_id": external_dept_id,
+            "external_parent_id": (
+                None if parent_id in ("", WECHAT_WORK_ROOT_DEPT_ID) else parent_id
+            ),
+            "name": raw.get("name") or external_dept_id,
+            "sort_order": raw.get("order", 0),
+        }
+        try:
+            dept = self._create_dept_from_external(org, data)
+            self._update_single_dept_parent(org, data)
+        except Exception as exc:
+            logger.warning(
+                f"补建部门失败，写入本地部门失败，员工同步继续: "
+                f"external_dept_id={external_dept_id}, error={exc}"
+            )
+            return None
+        logger.info(
+            f"已补建缺失部门: org_id={org.id}, "
+            f"external_dept_id={external_dept_id}, name={data['name']}"
+        )
+        return dept
+
     def _sync_single_employee_dept_rels(
         self, org, employee, data: Dict[str, Any]
     ):
-        """同步单个员工的部门关联关系"""
-        ext_dept_ids = data.get("department_ids", [])
+        """同步单个员工的部门关联关系。
+
+        成员所属部门在本地不存在时，先按企微部门详情补建再关联。
+        补建失败只记警告，不中断员工和系统用户创建。
+        """
+        ext_dept_ids = [str(item) for item in data.get("department_ids", []) if str(item)]
         main_dept_id = data.get("main_department")
 
         # 建立外部部门ID → 内部部门ID 的映射
@@ -664,8 +817,15 @@ class WechatWorkSyncService(BaseSyncService):
             self.dept_model.org_id == org.id,
         ).all()
         ext_to_dept_id = {
-            d.external_dept_id: d.id for d in depts if d.external_dept_id
+            str(d.external_dept_id): d.id for d in depts if d.external_dept_id
         }
+        for ext_id in ext_dept_ids:
+            if ext_id in ext_to_dept_id:
+                continue
+            created = self._ensure_department_from_wechat(org, ext_id)
+            if created is None or getattr(created, "id", None) is None:
+                continue
+            ext_to_dept_id[str(getattr(created, "external_dept_id", None) or ext_id)] = created.id
 
         target_dept_ids = {
             ext_to_dept_id[eid] for eid in ext_dept_ids

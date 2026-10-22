@@ -206,6 +206,7 @@ def register_all_routes(app):
         tags=["企业微信同步"],
     )
     perm_registry.exclude("/api/v1/wechat-work/webhook")  # 回调端点，企微验签保护
+    perm_registry.exclude("/api/v1/wechat-work/callback")  # 明文回调转发，公开
 
     # ------------------------------------------------------------------
     # 9. 项目特有认证路由（自助修改密码 + 企微登录，依赖 org）

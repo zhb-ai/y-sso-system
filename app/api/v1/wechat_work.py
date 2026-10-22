@@ -16,6 +16,8 @@
     回调端点：
     GET  /wechat-work/webhook/{org_id}  企微回调 URL 验证（公开）
     POST /wechat-work/webhook/{org_id}  接收企微通讯录变更回调（公开，验签）
+    POST /wechat-work/callback          接收明文回调并同步成员（公开）
+    POST /wechat-work/callback/{org_id} 接收明文回调并同步成员（公开）
 
 设计原则（DDD 分层）：
 - API 层只负责：参数验证、DTO 转换、异常处理、调用服务层
@@ -23,13 +25,16 @@
 - 同步逻辑由 WechatWorkSyncService / WebhookHandler 处理
 """
 
+import json
+import xml.etree.ElementTree as ET
 from typing import Optional
 
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
-from yweb.response import Resp, OkResponse
+from yweb import DTO
+from yweb.response import ItemResponse, OkResponse, Resp
 from yweb.log import get_logger
 from yweb.orm import async_db_call
 
@@ -67,6 +72,156 @@ class ManualSyncRequest(BaseModel):
     org_id: int = Field(..., description="组织 ID")
 
 
+class CallbackSyncUserResponse(DTO):
+    """明文回调同步一名成员的结果"""
+    org_id: int = Field(0, description="组织 ID")
+    userid: str = Field("", description="企业微信 userid")
+    employee_id: int = Field(0, description="员工 ID")
+    employee_name: str = Field("", description="员工姓名")
+    is_new_employee: bool = Field(False, description="本次是否新建员工")
+    user_id: int = Field(0, description="关联的系统用户 ID")
+    username: str = Field("", description="系统用户名")
+    account_created: bool = Field(False, description="本次是否新建系统用户")
+
+
+def _first_text(*values) -> str:
+    """返回第一个非空白文本。"""
+    for value in values:
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            return text
+    return ""
+
+
+_USERID_KEYS = ("UserID", "userid", "user_id", "UserId")
+_USERID_FALLBACK_KEYS = ("id",)
+_CORP_ID_KEYS = ("ToUserName", "corp_id", "CorpID")
+_NESTED_KEYS = ("data", "event")
+
+
+def _xml_node_to_data(element):
+    """把 XML 节点转成字符串或字典。子节点保留为嵌套字典。"""
+    children = list(element)
+    if not children:
+        return (element.text or "").strip()
+    data = {}
+    for child in children:
+        value = _xml_node_to_data(child)
+        current = data.get(child.tag)
+        if current is None:
+            data[child.tag] = value
+        elif isinstance(current, list):
+            current.append(value)
+        else:
+            data[child.tag] = [current, value]
+    return data
+
+
+def _parse_callback_payload(raw_text: str, content_type: str) -> dict:
+    """解析明文回调正文。支持企微 XML 和 JSON，保留一层嵌套对象。"""
+    text = (raw_text or "").lstrip("\ufeff").strip()
+    if not text:
+        return {}
+    content = (content_type or "").lower()
+    looks_xml = text.startswith("<")
+    looks_json = text.startswith("{") or text.startswith("[")
+    if looks_xml or ("xml" in content and not looks_json):
+        try:
+            root = ET.fromstring(text)
+        except ET.ParseError as exc:
+            raise ValueError(f"回调 XML 解析失败: {exc}") from exc
+        parsed = _xml_node_to_data(root)
+        if not isinstance(parsed, dict):
+            return {}
+        return parsed
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"回调 JSON 解析失败: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("回调 JSON 必须是对象")
+    return payload
+
+
+def _mapping_text(mapping, keys) -> str:
+    """按给定字段顺序读取第一个非空文本。"""
+    if not isinstance(mapping, dict):
+        return ""
+    for key in keys:
+        text = _first_text(mapping.get(key))
+        if text:
+            return text
+    return ""
+
+
+def _payload_sources(payload: dict) -> list:
+    """正文顶层，以及 data / event 嵌套对象。"""
+    sources = [payload]
+    for key in _NESTED_KEYS:
+        nested = payload.get(key)
+        if isinstance(nested, dict):
+            sources.append(nested)
+    return sources
+
+
+def _extract_by_key_order(payload: dict, query: dict, keys) -> str:
+    """按字段顺序读取。每个字段先看正文顶层和 data/event，全部字段之后再看 query。"""
+    for key in keys:
+        for source in _payload_sources(payload):
+            found = _mapping_text(source, (key,))
+            if found:
+                return found
+    return _mapping_text(query, keys)
+
+
+def _extract_userid(payload: dict, query: dict) -> str:
+    """读取成员 userid。
+
+    显式字段优先于通用 id，避免事件 id 盖住 data.userid。
+    顺序：UserID、userid、user_id、UserId，然后 id。
+    """
+    found = _extract_by_key_order(payload, query, _USERID_KEYS)
+    if found:
+        return found
+    return _extract_by_key_order(payload, query, _USERID_FALLBACK_KEYS)
+
+
+def _extract_corp_id(payload: dict, query: dict) -> str:
+    """读取 corp_id。正文 ToUserName、corp_id、CorpID 优先于 query。"""
+    return _extract_by_key_order(payload, query, _CORP_ID_KEYS)
+
+
+def _parse_org_id_text(raw, field_name: str = "org_id"):
+    """把 org_id 转成整数。空值返回 None。"""
+    text = _first_text(raw)
+    if not text:
+        return None
+    try:
+        return int(text)
+    except ValueError as exc:
+        raise ValueError(f"{field_name} 不是有效整数: {text}") from exc
+
+
+def _org_id_from_callback(path_org_id, query: dict, payload: dict):
+    """按路径、query、正文的顺序读取 org_id。"""
+    if path_org_id is not None:
+        return int(path_org_id)
+    query_org_id = _parse_org_id_text(
+        _first_text(query.get("org_id"), query.get("OrgId")) or None
+    )
+    if query_org_id is not None:
+        return query_org_id
+    for source in _payload_sources(payload):
+        body_org_id = _parse_org_id_text(
+            _first_text(source.get("org_id"), source.get("OrgId")) or None
+        )
+        if body_org_id is not None:
+            return body_org_id
+    return None
+
+
 # ==================== 路由工厂 ====================
 
 
@@ -76,7 +231,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
     Args:
         org_models: OrgModels 实例（setup_organization 的返回值）
         management_deps: 管理接口的依赖列表（如权限检查），
-                         仅应用于同步管理接口，不影响 webhook 端点
+                         仅应用于同步管理接口，不影响 webhook 与明文回调端点
 
     Returns:
         APIRouter 实例
@@ -333,5 +488,123 @@ def create_wechat_work_router(org_models, management_deps: list = None):
 
         # 无论成功失败，始终返回 success（handler 内部已记录详细日志）
         return PlainTextResponse(content="success")
+
+    # ==================== 明文回调转发（公开，无 JWT） ====================
+
+    async def _receive_plaintext_callback(
+        request: Request,
+        path_org_id: Optional[int],
+    ):
+        """解析明文回调，定位组织，并同步该成员。"""
+        raw_bytes = await request.body()
+        raw_text = raw_bytes.decode("utf-8", errors="replace")
+        content_type = request.headers.get("content-type", "")
+        query = dict(request.query_params)
+        logger.info(
+            f"收到企微转发回调请求: path={request.url.path}, "
+            f"query={query}, content_type={content_type}, raw_body={raw_text}"
+        )
+        try:
+            parsed = _parse_callback_payload(raw_text, content_type)
+            logger.info(f"企微转发回调解析结果: parsed_data={parsed}")
+            userid = _extract_userid(parsed, query)
+            corp_id = _extract_corp_id(parsed, query)
+            org_id_value = _org_id_from_callback(path_org_id, query, parsed)
+            logger.info(
+                f"企微转发回调解析字段: userid={userid}, "
+                f"org_id={org_id_value}, corp_id={corp_id}"
+            )
+            if not userid:
+                return Resp.BadRequest(message="缺少 userid 参数")
+
+            def _sync_member():
+                org = _resolve_callback_org(org_id_value, corp_id)
+                result = _build_sync_service(org).sync_user_by_userid(org, userid)
+                return org, result
+
+            org, result = await async_db_call(_sync_member)
+            employee = result["employee"]
+            account_created = bool(result["account_created"])
+            message = (
+                "成员同步并创建用户成功"
+                if account_created
+                else "成员同步成功（用户账号已存在）"
+            )
+            logger.info(
+                f"明文回调同步成员完成: org_id={org.id}, userid={userid}, "
+                f"employee_id={employee.id}, account_created={account_created}"
+            )
+            return Resp.OK(
+                data=CallbackSyncUserResponse(
+                    org_id=org.id,
+                    userid=userid,
+                    employee_id=employee.id,
+                    employee_name=employee.name or "",
+                    is_new_employee=bool(result["is_new_employee"]),
+                    user_id=int(result["user_id"]),
+                    username=str(result["username"] or ""),
+                    account_created=account_created,
+                ),
+                message=message,
+            )
+        except ValueError as exc:
+            logger.warning(f"明文回调同步被拒绝: {exc}")
+            return Resp.BadRequest(message=str(exc))
+
+    def _resolve_callback_org(org_id_value, corp_id: str):
+        """按 org_id、corp_id，或唯一的企微组织定位同步目标。"""
+        from yweb.organization import ExternalSource
+
+        if org_id_value is not None:
+            return _get_wechat_org(org_id_value)
+        if corp_id:
+            orgs = Organization.query.filter(
+                Organization.external_source == ExternalSource.WECHAT_WORK.value,
+                Organization.external_corp_id == corp_id,
+            ).all()
+            if len(orgs) == 1:
+                return orgs[0]
+            if not orgs:
+                raise ValueError(f"未找到 corp_id={corp_id} 对应的企业微信组织")
+            raise ValueError(
+                f"corp_id={corp_id} 匹配到多个企业微信组织。请在请求中提供 org_id。"
+            )
+
+        orgs = Organization.query.filter(
+            Organization.external_source == ExternalSource.WECHAT_WORK.value,
+        ).all()
+        if len(orgs) == 1:
+            return orgs[0]
+        if len(orgs) == 0:
+            raise ValueError("未找到已绑定企业微信的组织")
+        raise ValueError("存在多个已绑定企业微信的组织，请提供 org_id 或 corp_id")
+
+    callback_summary = "接收明文回调并同步成员"
+    callback_description = (
+        "接收外部系统转发的企业微信明文回调。正文可以是解密后的 XML，也可以是 JSON。"
+        "userid 从 UserID、userid、user_id、UserId、id，或 data/event 嵌套字段，或 query 读取。"
+        "org_id 优先级为路径、query、正文。corp_id 优先级为正文 ToUserName、corp_id、CorpID，然后是 query。"
+        "按 userid 拉取成员，写入员工、部门和系统用户。此接口不校验 JWT。"
+    )
+
+    @router.post(
+        "/callback",
+        response_model=ItemResponse[CallbackSyncUserResponse],
+        summary=callback_summary,
+        description=callback_description,
+    )
+    async def receive_plaintext_callback(request: Request):
+        """接收不带路径组织 ID 的明文回调。"""
+        return await _receive_plaintext_callback(request, None)
+
+    @router.post(
+        "/callback/{org_id}",
+        response_model=ItemResponse[CallbackSyncUserResponse],
+        summary=callback_summary,
+        description=callback_description + "路径中的 org_id 优先于 query 和正文。",
+    )
+    async def receive_plaintext_callback_for_org(org_id: int, request: Request):
+        """接收带路径组织 ID 的明文回调。"""
+        return await _receive_plaintext_callback(request, org_id)
 
     return router

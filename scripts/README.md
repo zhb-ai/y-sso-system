@@ -1,6 +1,6 @@
 # scripts
 
-一次性运维 / 数据迁移脚本。**不是线上定时任务**，按需在目标环境执行。
+运维脚本。除 `sync_wechat_work_contacts.py` 外，都是一次性数据迁移，按需在目标环境执行。`sync_wechat_work_contacts.py` 用于在生产机定时同步企业微信通讯录。
 
 连库的脚本都会读当前项目的 `config/settings.yaml`，因此拷到其他环境后，用该环境自己的配置直接跑即可。
 
@@ -16,6 +16,7 @@ python scripts/<脚本名>.py --help
 
 | 脚本 | 类型 | 用途 |
 |---|---|---|
+| `sync_wechat_work_contacts.py` | 写库（可定时） | 从企微全量同步部门、成员和任职关系 |
 | `export_wechat_work_users.py` | 只读导出 | 从企微拉全员通讯录，落 JSON，并标出缺手机号 / 身份证号的人 |
 | `backfill_employee_mobile_id_card.py` | 写库（可预览） | 用企微数据回填本地员工空着的手机号、身份证号 |
 | `sync_username_to_wechat_userid.py` | 写库（可预览） | 把已关联员工的登录名改成企微 userid |
@@ -23,6 +24,31 @@ python scripts/<脚本名>.py --help
 | `import_sqlite_applications.py` | 写库 | 把旧 SQLite 里的应用表迁到当前数据库 |
 
 `output/` 是导出产物目录，可重新生成，不要当源码维护。
+
+---
+
+## sync_wechat_work_contacts.py
+
+从已绑定企业微信的组织拉取部门、成员和任职关系，写入本地组织架构。
+
+效果与管理接口 `POST /api/v1/wechat-work/sync/manual` 相同。脚本直接调用同步服务，不请求 HTTP，因此不需要管理员 Token。
+
+本脚本不拉取花名册。花名册仍用 `sync_hr_roster.py`。
+
+```bash
+python scripts/sync_wechat_work_contacts.py
+python scripts/sync_wechat_work_contacts.py --org-id 1
+```
+
+未指定 `--org-id` 时，同步全部已绑定企业微信的组织。同一组织已有同步在进行时，本次失败并返回退出码 1。任一组织失败时，整次执行的退出码也是 1。
+
+Linux cron 示例（每天 02:10，只同步组织 1）：
+
+```cron
+10 2 * * * cd /opt/y-sso-system && /opt/y-sso-system/venv/bin/python scripts/sync_wechat_work_contacts.py --org-id 1 >> /var/log/sso-wechat-sync.log 2>&1
+```
+
+需要组织已绑定企微（`corp_id` + 通讯录 Secret）。
 
 ---
 
