@@ -15,7 +15,13 @@ from sqlalchemy import func
 from yweb.log import get_logger
 from yweb.auth.schemas import TokenData, TokenPayload
 from yweb.orm import transaction_manager as tm
-from .entities import Application, ApplicationPermission, OAuth2Token, AuthorizationCode
+from .entities import (
+    Application,
+    ApplicationPermission,
+    OAuth2Token,
+    AuthorizationCode,
+    BipLaunchRecord,
+)
 from app.config import settings
 from app.services.oauth2_security import (
     build_pkce_s256_challenge,
@@ -205,12 +211,16 @@ class ApplicationService:
             return
 
         current_time = now or datetime.now(timezone.utc)
-        counts_24h = self._get_authorization_counts_since(app_ids, current_time - timedelta(days=1))
-        counts_7d = self._get_authorization_counts_since(app_ids, current_time - timedelta(days=7))
+        since_24h = current_time - timedelta(days=1)
+        since_7d = current_time - timedelta(days=7)
+        counts_24h = self._get_authorization_counts_since(app_ids, since_24h)
+        counts_7d = self._get_authorization_counts_since(app_ids, since_7d)
+        bip_24h = self._get_bip_launch_counts_since(app_ids, since_24h)
+        bip_7d = self._get_bip_launch_counts_since(app_ids, since_7d)
 
         for app in apps:
-            app.call_count_24h = counts_24h.get(app.id, 0)
-            app.call_count_7d = counts_7d.get(app.id, 0)
+            app.call_count_24h = counts_24h.get(app.id, 0) + bip_24h.get(app.id, 0)
+            app.call_count_7d = counts_7d.get(app.id, 0) + bip_7d.get(app.id, 0)
 
     def _get_authorization_counts_since(self, app_ids: List[int], since: datetime) -> dict:
         """按应用统计指定时间之后生成的授权码数量"""
@@ -222,6 +232,20 @@ class ApplicationService:
                 AuthorizationCode.created_at >= since,
             )
             .group_by(AuthorizationCode.application_id)
+            .all()
+        )
+        return {application_id: count for application_id, count in rows}
+
+    def _get_bip_launch_counts_since(self, app_ids: List[int], since: datetime) -> dict:
+        """按应用统计指定时间之后成功发起的 BIP 登录次数"""
+        rows = (
+            BipLaunchRecord.query
+            .with_entities(BipLaunchRecord.application_id, func.count(BipLaunchRecord.id))
+            .filter(
+                BipLaunchRecord.application_id.in_(app_ids),
+                BipLaunchRecord.called_at >= since,
+            )
+            .group_by(BipLaunchRecord.application_id)
             .all()
         )
         return {application_id: count for application_id, count in rows}

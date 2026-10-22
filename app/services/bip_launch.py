@@ -8,6 +8,7 @@
 import base64
 import hashlib
 import time
+from datetime import datetime, timezone
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -16,6 +17,7 @@ import httpx
 from yweb.log import get_logger
 
 from app.config import settings
+from app.domain.application.entities import BipLaunchRecord
 
 logger = get_logger()
 
@@ -165,4 +167,20 @@ class BipLaunchService:
         config["base_url"] = base_url
         config["redirect_uri"] = redirect_uri
         token = request_access_token(usercode, config)
+        _record_launch(application)
         return build_login_url(base_url, token, redirect_uri)
+
+
+def _record_launch(application) -> None:
+    """成功换到令牌后记一次调用。写入失败不阻断登录。"""
+    application_id = getattr(application, "id", None)
+    if application_id is None:
+        return
+    try:
+        BipLaunchRecord.record(application_id, datetime.now(timezone.utc))
+    except Exception:
+        logger.warning(
+            "BIP 调用记录写入失败 application_id=%s",
+            application_id,
+            exc_info=True,
+        )

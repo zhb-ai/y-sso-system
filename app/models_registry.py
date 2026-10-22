@@ -22,6 +22,7 @@ from app.domain.auth.model.user import User                                     
 from app.domain.auth.model.login_record import LoginRecord                      # noqa: F401
 from app.domain.application.entities import (                                   # noqa: F401
     Application, ApplicationPermission, OAuth2Token, AuthorizationCode,
+    BipLaunchRecord,
 )
 from app.domain.permission.entities import Permission, RolePermission           # noqa: F401
 from app.domain.sso_role.entities import SSORole, UserSSORole                   # noqa: F401

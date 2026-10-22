@@ -3,7 +3,8 @@
 Application (SSO 客户端应用)
 ├── ApplicationPermission (应用-角色权限)
 ├── OAuth2Token (OAuth2 令牌)
-└── AuthorizationCode (OAuth2 授权码)
+├── AuthorizationCode (OAuth2 授权码)
+└── BipLaunchRecord (BIP 登录调用)
 
 使用 Active Record + DDD 思想：
 - 领域模型继承 BaseModel，具备数据访问能力
@@ -17,9 +18,9 @@ from ipaddress import ip_address, ip_network
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 
-from sqlalchemy import Text, String, Boolean, DateTime, Integer, ForeignKey
+from sqlalchemy import Text, String, Boolean, DateTime, Integer, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column
-from yweb.orm import BaseModel, fields
+from yweb.orm import BaseModel, CoreModel, fields
 
 from app.domain.auth.model.user import User
 
@@ -350,3 +351,38 @@ class AuthorizationCode(BaseModel):
             raise ValueError("授权码已被使用")
         if self.is_expired():
             raise ValueError("授权码已过期")
+
+
+class BipLaunchRecord(CoreModel):
+    """BIP 登录调用记录
+
+    应用编码为 bip 的系统不走授权码。每次成功换到登录令牌记一条，
+    供应用列表统计 24 小时和 7 天调用次数。
+    """
+    __tablename__ = "bip_launch_record"
+
+    application_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("application.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="应用ID",
+    )
+    called_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        comment="调用时间",
+    )
+
+    __table_args__ = (
+        Index("ix_bip_launch_record_app_called_at", "application_id", "called_at"),
+    )
+
+    @classmethod
+    def record(cls, application_id: int, called_at: datetime = None) -> "BipLaunchRecord":
+        """写入一次成功的 BIP 登录调用"""
+        row = cls(
+            application_id=application_id,
+            called_at=called_at or datetime.now(timezone.utc),
+        )
+        row.save(commit=True)
+        return row

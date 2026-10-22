@@ -1,10 +1,13 @@
 """ApplicationService 测试"""
 
-import pytest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 
-from app.domain.application.entities import Application
+import pytest
+
+from app.domain.application.entities import Application, BipLaunchRecord
 from app.domain.application.services import ApplicationService
+from app.services.bip_launch import BipLaunchService
 from yweb.orm import BaseModel, init_database
 
 
@@ -56,6 +59,75 @@ class TestApplicationService:
         assert apps[0].call_count_7d == 10
         assert apps[1].call_count_24h == 5
         assert apps[1].call_count_7d == 0
+
+    def test_bip_launch_counts_follow_24h_and_7d_windows(self, application_service):
+        """BIP 成功登录计入 24 小时和 7 天，窗口外和其他应用不计入"""
+        bip = application_service.create_application(
+            name="BIP",
+            code="bip",
+            redirect_uris=["http://10.0.0.8/nccloud"],
+        )
+        other = application_service.create_application(
+            name="Other",
+            code="other_app",
+            redirect_uris=["http://localhost/callback"],
+        )
+        now = datetime(2026, 10, 22, 8, 0, tzinfo=timezone.utc)
+        BipLaunchRecord.record(bip.id, now - timedelta(hours=1))
+        BipLaunchRecord.record(bip.id, now - timedelta(days=2))
+        BipLaunchRecord.record(bip.id, now - timedelta(days=8))
+        BipLaunchRecord.record(other.id, now - timedelta(hours=1))
+
+        page = type("PageStub", (), {"rows": [bip, other]})()
+        application_service._attach_call_counts_to_page(page, now=now)
+
+        assert bip.call_count_24h == 1
+        assert bip.call_count_7d == 2
+        assert other.call_count_24h == 1
+        assert other.call_count_7d == 1
+
+    def test_successful_bip_launch_is_counted(self, application_service, monkeypatch):
+        """启用的 bip 应用成功换到令牌后，列表中的调用次数加一"""
+        bip = application_service.create_application(
+            name="BIP",
+            code="bip",
+            redirect_uris=["http://10.0.0.8/nccloud"],
+        )
+        monkeypatch.setattr("app.services.bip_launch._require_config", lambda: {})
+        monkeypatch.setattr(
+            "app.services.bip_launch.request_access_token",
+            lambda usercode, config: "token-for-test",
+        )
+
+        url = BipLaunchService(Application).launch(SimpleNamespace(username="zhangsan"))
+
+        assert "accesstoken=token-for-test" in url
+        page = application_service.list_applications()
+        listed = next(row for row in page.rows if row.id == bip.id)
+        assert listed.call_count_24h == 1
+        assert listed.call_count_7d == 1
+
+    def test_rejected_bip_launch_is_not_counted(self, application_service, monkeypatch):
+        """BIP 拒绝签发令牌时不增加调用次数"""
+        bip = application_service.create_application(
+            name="BIP",
+            code="bip",
+            redirect_uris=["http://10.0.0.8/nccloud"],
+        )
+
+        def _reject(usercode, config):
+            raise ValueError("BIP 拒绝签发登录令牌")
+
+        monkeypatch.setattr("app.services.bip_launch._require_config", lambda: {})
+        monkeypatch.setattr("app.services.bip_launch.request_access_token", _reject)
+
+        with pytest.raises(ValueError, match="拒绝签发"):
+            BipLaunchService(Application).launch(SimpleNamespace(username="zhangsan"))
+
+        page = application_service.list_applications()
+        listed = next(row for row in page.rows if row.id == bip.id)
+        assert listed.call_count_24h == 0
+        assert listed.call_count_7d == 0
 
     def test_create_public_application_clears_secret(self, application_service):
         """创建公开客户端时不应保留客户端密钥"""
