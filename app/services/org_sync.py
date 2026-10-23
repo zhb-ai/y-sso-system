@@ -1,8 +1,8 @@
-"""下游系统拉取组织员工快照。
+"""下游系统拉取组织员工快照，并按企微 userid 确保一名员工可同步。
 
 部门树沿用 GET /api/v1/org/dept/tree，本模块只组员工行：
 企微 userid、登录名、在离职、职位、全部任职部门（含 external_dept_id）。
-不包含身份证号。
+不包含身份证号，也不返回密码。
 """
 
 from __future__ import annotations
@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from yweb.orm import Page
+
+from app.services.employee_app import EmployeeAccountService
 
 
 @dataclass
@@ -37,6 +39,14 @@ class SyncEmployeeRecord:
     primary_dept_id: Optional[int]
     primary_external_dept_id: Optional[str]
     departments: list[SyncDeptRecord] = field(default_factory=list)
+
+
+@dataclass
+class EnsuredSyncEmployee:
+    """ensure 接口的服务结果。record 与列表中的一行相同。"""
+
+    record: SyncEmployeeRecord
+    existed: bool
 
 
 def list_employees_for_sync(
@@ -205,4 +215,122 @@ def _build_record(emp, *, org_rel, dept_rels, dept_by_id, user) -> SyncEmployeeR
         primary_dept_id=stored_primary,
         primary_external_dept_id=primary_ext,
         departments=dept_rows,
+    )
+
+
+def ensure_employee_for_sync(
+    org_models,
+    *,
+    org_id: int,
+    enterprise_wechat_user_id: str,
+) -> EnsuredSyncEmployee:
+    """按企微 userid 返回该组织的一条员工同步行。
+
+    先查该组织关系表的 external_user_id，再查员工表的 enterprise_wechat_user_id。
+    已有员工且已关联 User 时，不请求企微，也不修改本地数据。
+    已有员工但没有 User 时，只调用 EmployeeAccountService.create_account_for_employee。
+    两处都没有时，调用 WechatWorkSyncService.sync_user_by_userid，
+    由该方法请求企微通讯录并在本地创建员工和用户。
+    响应不包含 create_account_for_employee 返回的明文密码。
+    """
+    userid = _text(enterprise_wechat_user_id)
+    if userid is None:
+        raise ValueError("enterprise_wechat_user_id 不能为空")
+
+    organization = org_models.Organization.get(org_id)
+    if organization is None:
+        raise ValueError(f"组织不存在: id={org_id}")
+
+    employee, org_rel = _find_employee_in_org(org_models, org_id, userid)
+    if employee is not None:
+        if getattr(employee, "user_id", None) is None:
+            EmployeeAccountService(
+                employee_model=org_models.Employee,
+            ).create_account_for_employee(employee_id=employee.id)
+            employee = org_models.Employee.get(employee.id)
+            if employee is None:
+                raise ValueError(f"创建用户账号后未找到员工: userid={userid}")
+        return EnsuredSyncEmployee(
+            record=_record_for_employee(org_models, employee, org_rel),
+            existed=True,
+        )
+
+    # 用户名冲突时先拒绝。sync_user_by_userid 会先写入员工再创建账号，
+    # 此处提前使用与 EmployeeAccountService 相同的错误文本，避免留下没有账号的员工。
+    _reject_username_taken(userid)
+    synced = _sync_wechat_member(org_models, organization, userid)
+    created = synced.get("employee")
+    employee_id = getattr(created, "id", None)
+    employee = org_models.Employee.get(employee_id) if employee_id is not None else None
+    if employee is None:
+        raise ValueError(f"企微成员同步后未找到员工: userid={userid}")
+    org_rel = org_models.EmployeeOrgRel.query.filter_by(
+        org_id=org_id,
+        employee_id=employee.id,
+    ).first()
+    return EnsuredSyncEmployee(
+        record=_record_for_employee(org_models, employee, org_rel),
+        existed=False,
+    )
+
+
+def _find_employee_in_org(org_models, org_id: int, userid: str):
+    """在指定组织中查找这个企微 userid。
+
+    关系表 external_user_id 优先。未命中时再查员工表 enterprise_wechat_user_id，
+    并且该员工必须已有本组织的关系。员工表已有、但不属于本组织时拒绝创建。
+    """
+    rel_model = org_models.EmployeeOrgRel
+    employee_model = org_models.Employee
+
+    rel = rel_model.query.filter_by(org_id=org_id, external_user_id=userid).first()
+    if rel is not None:
+        employee = employee_model.get(rel.employee_id)
+        if employee is None:
+            raise ValueError(f"员工记录丢失: employee_id={rel.employee_id}")
+        return employee, rel
+
+    matched = employee_model.query.filter_by(enterprise_wechat_user_id=userid).all()
+    for employee in matched:
+        rel = rel_model.query.filter_by(
+            org_id=org_id,
+            employee_id=employee.id,
+        ).first()
+        if rel is not None:
+            return employee, rel
+    if matched:
+        raise ValueError(
+            f"已有员工使用该企微 userid，但该员工不属于组织 id={org_id}: userid={userid}"
+        )
+    return None, None
+
+
+def _reject_username_taken(username: str) -> None:
+    from app.domain.auth.model.user import User
+
+    if User.get_by_username(username) is not None:
+        raise ValueError(f"用户名已存在: {username}")
+
+
+def _sync_wechat_member(org_models, organization, userid: str):
+    from app.domain.wechat_work.client import WechatWorkClient
+    from app.domain.wechat_work.sync_service import WechatWorkSyncService
+
+    client = WechatWorkClient.from_organization(organization)
+    return WechatWorkSyncService(client, org_models).sync_user_by_userid(
+        organization,
+        userid,
+    )
+
+
+def _record_for_employee(org_models, employee, org_rel) -> SyncEmployeeRecord:
+    dept_by_emp, dept_by_id = _load_dept_maps(org_models, [employee.id])
+    user_by_id = _load_users([employee])
+    user = user_by_id.get(employee.user_id) if employee.user_id else None
+    return _build_record(
+        employee,
+        org_rel=org_rel,
+        dept_rels=dept_by_emp.get(employee.id, []),
+        dept_by_id=dept_by_id,
+        user=user,
     )

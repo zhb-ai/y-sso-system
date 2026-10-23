@@ -16,8 +16,8 @@
     回调端点：
     GET  /wechat-work/webhook/{org_id}  企微回调 URL 验证（公开）
     POST /wechat-work/webhook/{org_id}  接收企微通讯录变更回调（公开，验签）
-    POST /wechat-work/callback          接收明文回调并同步成员（公开）
-    POST /wechat-work/callback/{org_id} 接收明文回调并同步成员（公开）
+    POST /wechat-work/callback          已关闭
+    POST /wechat-work/callback/{org_id} 已关闭
 
 设计原则（DDD 分层）：
 - API 层只负责：参数验证、DTO 转换、异常处理、调用服务层
@@ -231,7 +231,7 @@ def create_wechat_work_router(org_models, management_deps: list = None):
     Args:
         org_models: OrgModels 实例（setup_organization 的返回值）
         management_deps: 管理接口的依赖列表（如权限检查），
-                         仅应用于同步管理接口，不影响 webhook 与明文回调端点
+                         仅应用于同步管理接口，不影响 webhook 端点
 
     Returns:
         APIRouter 实例
@@ -579,32 +579,5 @@ def create_wechat_work_router(org_models, management_deps: list = None):
             raise ValueError("未找到已绑定企业微信的组织")
         raise ValueError("存在多个已绑定企业微信的组织，请提供 org_id 或 corp_id")
 
-    callback_summary = "接收明文回调并同步成员"
-    callback_description = (
-        "接收外部系统转发的企业微信明文回调。正文可以是解密后的 XML，也可以是 JSON。"
-        "userid 从 UserID、userid、user_id、UserId、id，或 data/event 嵌套字段，或 query 读取。"
-        "org_id 优先级为路径、query、正文。corp_id 优先级为正文 ToUserName、corp_id、CorpID，然后是 query。"
-        "按 userid 拉取成员，写入员工、部门和系统用户。此接口不校验 JWT。"
-    )
-
-    @router.post(
-        "/callback",
-        response_model=ItemResponse[CallbackSyncUserResponse],
-        summary=callback_summary,
-        description=callback_description,
-    )
-    async def receive_plaintext_callback(request: Request):
-        """接收不带路径组织 ID 的明文回调。"""
-        return await _receive_plaintext_callback(request, None)
-
-    @router.post(
-        "/callback/{org_id}",
-        response_model=ItemResponse[CallbackSyncUserResponse],
-        summary=callback_summary,
-        description=callback_description + "路径中的 org_id 优先于 query 和正文。",
-    )
-    async def receive_plaintext_callback_for_org(org_id: int, request: Request):
-        """接收带路径组织 ID 的明文回调。"""
-        return await _receive_plaintext_callback(request, org_id)
-
+    # POST /wechat-work/callback 与 /callback/{org_id} 已关闭，不再挂载。
     return router

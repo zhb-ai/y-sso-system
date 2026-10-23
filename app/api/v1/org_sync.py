@@ -1,22 +1,24 @@
-"""下游系统组织同步只读 API。
+"""下游系统组织同步 API。
 
-职责：给 HMind 等业务系统导出员工快照；本层只做参数校验、DTO 转换、调用 Service。
+职责：给 HMind 等业务系统导出员工快照，并按企微 userid 确保一名员工可同步。
+本层只做参数校验、DTO 转换、调用 Service。
 
 部门树沿用已有 GET /api/v1/org/dept/tree，不再另建。
 
 端点：
-| GET | /org/sync/employees | 分页导出员工同步行（含任职部门与岗位） |
+| GET  | /org/sync/employees        | 分页导出员工同步行（含任职部门与岗位） |
+| POST | /org/sync/employees/ensure | 按企微 userid 返回一名员工同步行 |
 """
 
 from typing import Optional
 
 from fastapi import APIRouter, Query
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from yweb import DTO
-from yweb.response import PageResponse, Resp
+from yweb.response import ItemResponse, PageResponse, Resp
 
-from app.services.org_sync import list_employees_for_sync
+from app.services.org_sync import ensure_employee_for_sync, list_employees_for_sync
 
 
 class SyncEmployeeDeptData(DTO):
@@ -74,8 +76,59 @@ class SyncEmployeeData(DTO):
     )
 
 
+class EnsureSyncEmployeeRequest(BaseModel):
+    """按企微 userid 确保一名员工，并返回同步行。"""
+
+    org_id: int = Field(..., description="组织 ID，当前生产一般为 1")
+    enterprise_wechat_user_id: str = Field(
+        ...,
+        description="企微 userid。服务会去掉首尾空白，空白则拒绝",
+    )
+
+
+class EnsureSyncEmployeeData(SyncEmployeeData):
+    """一名员工的同步行。字段与列表单行相同，并标明调用前是否已有该员工。"""
+
+    existed: bool = Field(
+        ...,
+        description=(
+            "调用前该组织是否已有这名员工。"
+            "已有员工、本次只创建用户账号时为 true；"
+            "本次从企微通讯录新建员工时为 false"
+        ),
+    )
+
+
+def _sync_employee_kwargs(row) -> dict:
+    """把服务层同步行转成与列表接口相同的 DTO 字段。"""
+    return {
+        "employee_id": row.employee_id,
+        "name": row.name,
+        "username": row.username,
+        "user_id": row.user_id,
+        "enterprise_wechat_user_id": row.enterprise_wechat_user_id,
+        "email": row.email,
+        "mobile": row.mobile,
+        "emp_status": row.emp_status,
+        "account_status": row.account_status,
+        "is_active": row.is_active,
+        "position": row.position,
+        "primary_dept_id": row.primary_dept_id,
+        "primary_external_dept_id": row.primary_external_dept_id,
+        "departments": [
+            SyncEmployeeDeptData(
+                dept_id=dept.dept_id,
+                dept_name=dept.dept_name,
+                external_dept_id=dept.external_dept_id,
+                is_primary=dept.is_primary,
+            )
+            for dept in row.departments
+        ],
+    }
+
+
 def create_org_sync_router(org_models) -> APIRouter:
-    """创建下游组织同步只读路由。"""
+    """创建下游组织同步路由。"""
     router = APIRouter()
 
     @router.get(
@@ -110,32 +163,37 @@ def create_org_sync_router(org_models) -> APIRouter:
             return Resp.BadRequest(message=str(exc))
 
         page_result.rows = [
-            SyncEmployeeData(
-                employee_id=row.employee_id,
-                name=row.name,
-                username=row.username,
-                user_id=row.user_id,
-                enterprise_wechat_user_id=row.enterprise_wechat_user_id,
-                email=row.email,
-                mobile=row.mobile,
-                emp_status=row.emp_status,
-                account_status=row.account_status,
-                is_active=row.is_active,
-                position=row.position,
-                primary_dept_id=row.primary_dept_id,
-                primary_external_dept_id=row.primary_external_dept_id,
-                departments=[
-                    SyncEmployeeDeptData(
-                        dept_id=dept.dept_id,
-                        dept_name=dept.dept_name,
-                        external_dept_id=dept.external_dept_id,
-                        is_primary=dept.is_primary,
-                    )
-                    for dept in row.departments
-                ],
-            )
+            SyncEmployeeData(**_sync_employee_kwargs(row))
             for row in page_result.rows
         ]
         return Resp.OK(data=page_result)
+
+    @router.post(
+        "/org/sync/employees/ensure",
+        response_model=ItemResponse[EnsureSyncEmployeeData],
+        summary="下游同步：按企微 userid 确保一名员工",
+        description=(
+            "给下游系统按企微 userid 取回与 GET /org/sync/employees 相同的一行，不放进 rows。"
+            "该组织已有员工且已关联 User 时直接返回，不请求企微，也不修改本地数据。"
+            "已有员工但没有 User 时，只创建用户账号，响应不返回明文密码。"
+            "员工和 User 都不存在时，按 userid 读取企微通讯录并创建员工和用户。"
+            "认证与 GET /org/sync/employees 相同：已登录且具备 organization:manage。"
+        ),
+    )
+    def ensure_sync_employee(body: EnsureSyncEmployeeRequest):
+        try:
+            result = ensure_employee_for_sync(
+                org_models,
+                org_id=body.org_id,
+                enterprise_wechat_user_id=body.enterprise_wechat_user_id,
+            )
+        except ValueError as exc:
+            return Resp.BadRequest(message=str(exc))
+        return Resp.OK(
+            data=EnsureSyncEmployeeData(
+                **_sync_employee_kwargs(result.record),
+                existed=result.existed,
+            )
+        )
 
     return router

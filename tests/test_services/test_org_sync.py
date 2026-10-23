@@ -6,7 +6,7 @@ from yweb.orm import BaseModel, init_database
 
 from app.domain.auth.model.user import User
 from app.models_registry import ensure_dynamic_models
-from app.services.org_sync import list_employees_for_sync
+from app.services.org_sync import ensure_employee_for_sync, list_employees_for_sync
 
 
 @pytest.fixture
@@ -187,3 +187,325 @@ class TestListEmployeesForSync:
         assert [row.employee_id for row in page.rows] == [first.id, second.id]
         assert page.total_records == 3
         assert page.has_next is True
+
+
+class RecordingWechatClient:
+    """记录 get_user 调用，不访问企业微信。"""
+
+    def __init__(self, detail=None, error=None):
+        self.get_user_calls = []
+        self.detail = dict(detail or {})
+        self.error = error
+
+    def get_user(self, user_id):
+        self.get_user_calls.append(user_id)
+        if self.error is not None:
+            raise self.error
+        payload = dict(self.detail)
+        payload.setdefault("userid", user_id)
+        return payload
+
+    def convert_userid_to_openid(self, user_id):
+        return f"openid-{user_id}"
+
+    def get_department(self, dept_id):
+        return {"id": dept_id, "name": "开发组", "parentid": 1, "order": 0}
+
+
+def _forbid_wechat(monkeypatch):
+    def _raise(org):
+        raise AssertionError("不应请求企微")
+
+    monkeypatch.setattr(
+        "app.domain.wechat_work.client.WechatWorkClient.from_organization",
+        _raise,
+    )
+
+
+def _use_wechat_client(monkeypatch, client):
+    monkeypatch.setattr(
+        "app.domain.wechat_work.client.WechatWorkClient.from_organization",
+        lambda org: client,
+    )
+
+
+def _bind_account_auth(monkeypatch):
+    """让创建用户能读到角色模型。本进程若尚未初始化认证，只在本测试内挂上。"""
+    from app.api import dependencies
+    from app.models_registry import ensure_dynamic_models
+
+    if dependencies.auth is None:
+        monkeypatch.setattr(
+            dependencies,
+            "auth",
+            ensure_dynamic_models()._auth,
+            raising=False,
+        )
+
+
+def _fixed_password(monkeypatch):
+    sentinel = "PwSentinel9!"
+    monkeypatch.setattr(
+        "app.services.employee_app.generate_strong_password",
+        lambda *args, **kwargs: sentinel,
+    )
+    return sentinel
+
+
+class TestEnsureEmployeeForSync:
+    """按企微 userid 确保员工：已有数据不请求企微，缺失时才创建。"""
+
+    def test_blank_userid_raises(self, org_models):
+        """去掉空白后为空时拒绝，并且不创建员工"""
+        organization = _seed_company(org_models)
+        with pytest.raises(ValueError, match="不能为空"):
+            ensure_employee_for_sync(
+                org_models,
+                org_id=organization.id,
+                enterprise_wechat_user_id="   ",
+            )
+        assert org_models.Employee.query.count() == 0
+
+    def test_existing_employee_and_user_skips_wechat_and_writes(
+        self, org_models, monkeypatch
+    ):
+        """员工和用户都在时，不请求企微，也不创建账号"""
+
+        class RejectAccountService:
+            def __init__(self, employee_model):
+                pass
+
+            def create_account_for_employee(self, employee_id, username=None):
+                raise AssertionError("已有用户时不应创建账号")
+
+        _forbid_wechat(monkeypatch)
+        monkeypatch.setattr(
+            "app.services.org_sync.EmployeeAccountService",
+            RejectAccountService,
+        )
+        organization = _seed_company(org_models)
+        dept = _add_dept(org_models, organization, name="开发组", external_dept_id="50")
+        user = _add_user(username="anhao", phone="13800001111", name="安浩")
+        employee = _add_employee(
+            org_models,
+            organization,
+            name="开发组-安浩-商务助理",
+            wecom="anhao",
+            position="商务助理",
+            user=user,
+            depts=[dept],
+            mobile="13800001111",
+            email="anhao@example.com",
+        )
+        user_count = User.query.count()
+
+        result = ensure_employee_for_sync(
+            org_models,
+            org_id=organization.id,
+            enterprise_wechat_user_id="  anhao  ",
+        )
+
+        assert result.existed is True
+        assert User.query.count() == user_count
+        reloaded = org_models.Employee.get(employee.id)
+        assert reloaded.user_id == user.id
+        assert reloaded.name == "开发组-安浩-商务助理"
+        row = result.record
+        assert row.enterprise_wechat_user_id == "anhao"
+        assert row.username == "anhao"
+        assert row.name == "开发组-安浩-商务助理"
+        assert row.email == "anhao@example.com"
+        assert row.mobile == "13800001111"
+        assert row.position == "商务助理"
+        assert row.emp_status == 3
+        assert row.account_status == 1
+        assert row.is_active is True
+        assert row.primary_external_dept_id == "50"
+        assert row.departments[0].external_dept_id == "50"
+        assert not hasattr(row, "id_card")
+
+    def test_employee_without_user_creates_account_without_wechat(
+        self, org_models, monkeypatch
+    ):
+        """员工在、用户不在时只创建用户，不请求企微，结果里没有明文密码"""
+        _forbid_wechat(monkeypatch)
+        _bind_account_auth(monkeypatch)
+        sentinel = _fixed_password(monkeypatch)
+        organization = _seed_company(org_models, code="ensure-account")
+        dept = _add_dept(org_models, organization, name="开发组", external_dept_id="50")
+        employee = _add_employee(
+            org_models,
+            organization,
+            name="陈五",
+            wecom="chenwu",
+            position="助理",
+            depts=[dept],
+            mobile="13800003333",
+            email="chenwu@example.com",
+        )
+        employee_count = org_models.Employee.query.count()
+
+        result = ensure_employee_for_sync(
+            org_models,
+            org_id=organization.id,
+            enterprise_wechat_user_id="chenwu",
+        )
+
+        assert result.existed is True
+        assert org_models.Employee.query.count() == employee_count
+        reloaded = org_models.Employee.get(employee.id)
+        assert reloaded.user_id is not None
+        assert reloaded.name == "陈五"
+        assert reloaded.enterprise_wechat_user_id == "chenwu"
+        row = result.record
+        assert row.username == "chenwu"
+        assert row.user_id == reloaded.user_id
+        assert row.account_status == 1
+        assert row.is_active is True
+        assert row.mobile == "13800003333"
+        assert row.position == "助理"
+        assert sentinel not in str(row)
+
+    def test_finds_employee_by_wechat_column_when_rel_userid_differs(
+        self, org_models, monkeypatch
+    ):
+        """关系表 external_user_id 不一致时，仍按员工表企微 userid 命中，且不请求企微"""
+        _forbid_wechat(monkeypatch)
+        organization = _seed_company(org_models, code="ensure-column")
+        user = _add_user(username="zhangsan", name="张三")
+        employee = _add_employee(
+            org_models,
+            organization,
+            name="张三",
+            wecom="zhangsan",
+            user=user,
+        )
+        rel = org_models.EmployeeOrgRel.query.filter_by(employee_id=employee.id).first()
+        rel.external_user_id = "legacy-id"
+        rel.save(commit=True)
+
+        result = ensure_employee_for_sync(
+            org_models,
+            org_id=organization.id,
+            enterprise_wechat_user_id="zhangsan",
+        )
+
+        assert result.existed is True
+        assert result.record.employee_id == employee.id
+        assert result.record.username == "zhangsan"
+
+    def test_missing_employee_syncs_from_wechat_and_returns_row(
+        self, org_models, monkeypatch
+    ):
+        """员工和用户都不在时，请求企微并创建后返回同步行"""
+        _bind_account_auth(monkeypatch)
+        sentinel = _fixed_password(monkeypatch)
+        organization = _seed_company(org_models, code="ensure-wechat")
+        _add_dept(org_models, organization, name="开发组", external_dept_id="50")
+        client = RecordingWechatClient(
+            detail={
+                "userid": "lisi",
+                "name": "李四",
+                "department": [50],
+                "main_department": 50,
+                "status": 1,
+                "email": "lisi@example.com",
+                "mobile": "13800002222",
+                "position": "开发",
+            }
+        )
+        _use_wechat_client(monkeypatch, client)
+
+        result = ensure_employee_for_sync(
+            org_models,
+            org_id=organization.id,
+            enterprise_wechat_user_id="  lisi  ",
+        )
+
+        assert client.get_user_calls == ["lisi"]
+        assert result.existed is False
+        row = result.record
+        assert row.enterprise_wechat_user_id == "lisi"
+        assert row.username == "lisi"
+        assert row.name == "李四"
+        assert row.email == "lisi@example.com"
+        assert row.mobile == "13800002222"
+        assert row.position == "开发"
+        assert row.emp_status == 3
+        assert row.account_status == 1
+        assert row.is_active is True
+        assert row.user_id is not None
+        assert row.primary_external_dept_id == "50"
+        assert row.departments[0].external_dept_id == "50"
+        assert sentinel not in str(row)
+        assert org_models.Employee.query.count() == 1
+        assert User.query.filter_by(username="lisi").count() == 1
+
+    def test_wechat_failure_does_not_persist(self, org_models, monkeypatch):
+        """企微读取失败时不写入员工或用户"""
+        organization = _seed_company(org_models, code="ensure-wechat-fail")
+        client = RecordingWechatClient(
+            error=ValueError("获取企业微信成员详情失败: userid=lisi")
+        )
+        _use_wechat_client(monkeypatch, client)
+
+        with pytest.raises(ValueError, match="获取企业微信成员详情失败: userid=lisi"):
+            ensure_employee_for_sync(
+                org_models,
+                org_id=organization.id,
+                enterprise_wechat_user_id="lisi",
+            )
+
+        assert client.get_user_calls == ["lisi"]
+        assert org_models.Employee.query.count() == 0
+        assert User.query.count() == 0
+
+    def test_missing_contact_secret_does_not_persist(self, org_models):
+        """组织未配置通讯录 Secret 时拒绝，并且不创建员工"""
+        organization = org_models.Organization(
+            name="测试组织",
+            code="ensure-no-secret",
+            is_active=True,
+            external_corp_id="ww-test",
+        )
+        organization.add(True)
+
+        with pytest.raises(ValueError, match="未配置企业微信 corp_secret"):
+            ensure_employee_for_sync(
+                org_models,
+                org_id=organization.id,
+                enterprise_wechat_user_id="lisi",
+            )
+
+        assert org_models.Employee.query.count() == 0
+
+    def test_taken_username_rejects_before_wechat(self, org_models, monkeypatch):
+        """用户名已被别人占用时返回服务错误文本，不请求企微，不新建员工"""
+        _forbid_wechat(monkeypatch)
+        organization = _seed_company(org_models, code="ensure-name-taken")
+        _add_user(username="lisi", name="别人")
+
+        with pytest.raises(ValueError, match="用户名已存在: lisi"):
+            ensure_employee_for_sync(
+                org_models,
+                org_id=organization.id,
+                enterprise_wechat_user_id="lisi",
+            )
+
+        assert org_models.Employee.query.count() == 0
+
+    def test_employee_in_other_org_is_not_created_again(self, org_models, monkeypatch):
+        """员工表已有该企微 userid 但不属于当前组织时，不请求企微，也不再建一名员工"""
+        _forbid_wechat(monkeypatch)
+        current_org = _seed_company(org_models, code="ensure-current")
+        other_org = _seed_company(org_models, code="ensure-other")
+        _add_employee(org_models, other_org, name="张三", wecom="zhangsan")
+
+        with pytest.raises(ValueError, match="不属于组织"):
+            ensure_employee_for_sync(
+                org_models,
+                org_id=current_org.id,
+                enterprise_wechat_user_id="zhangsan",
+            )
+
+        assert org_models.Employee.query.count() == 1

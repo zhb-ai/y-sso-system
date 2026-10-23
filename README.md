@@ -201,7 +201,12 @@ alembic upgrade head
 python init_db.py
 ```
 
+
 ### 6. 启动后端
+
+生产服务器使用
+cd /var/www/y-sso-system
+/root/conda/envs/yafo_sso/bin/python -m alembic upgrade head
 
 推荐使用开发启动脚本：
 
