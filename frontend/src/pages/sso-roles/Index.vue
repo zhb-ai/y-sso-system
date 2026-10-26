@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container has-mobile-bar">
     <div class="page-header">
       <h2>SSO 角色管理</h2>
       <el-button type="primary" class="btn-modern" @click="handleCreate">
@@ -21,7 +21,7 @@
     </el-alert>
 
     <!-- 筛选条件 -->
-    <el-card class="filter-card" shadow="hover">
+    <el-card class="filter-card desktop-block" shadow="hover">
       <el-form :inline="true" class="filter-form">
         <el-form-item label="搜索">
           <el-input
@@ -61,7 +61,7 @@
     </el-card>
 
     <!-- 数据表格 -->
-    <el-card class="data-card" shadow="hover">
+    <el-card class="data-card desktop-block" shadow="hover">
       <el-table
         v-if="filteredRoles.length > 0"
         v-loading="loading"
@@ -110,6 +110,49 @@
         @action="searchKeyword || filterStatus ? handleReset() : handleCreate()"
       />
     </el-card>
+
+    <MobileAdminList
+      v-model:keyword="searchKeyword"
+      search-placeholder="搜索角色名称或编码"
+      filterable
+      :filter-active="!!filterStatus"
+      :loading="loading"
+      :empty="!loading && filteredRoles.length === 0"
+      :page-actions="ssoRolePageActions"
+      @search="handleSearch"
+      @query="handleSearch"
+      @reset="handleReset"
+    >
+      <template #filter>
+        <el-form label-position="top" class="m-filter-form" @submit.prevent>
+          <el-form-item label="状态">
+            <el-select v-model="filterStatus" placeholder="请选择状态" clearable>
+              <el-option label="全部" value="" />
+              <el-option label="启用" value="active" />
+              <el-option label="禁用" value="inactive" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </template>
+      <MobileRecordCard
+        v-for="row in filteredRoles"
+        :key="row.id"
+        :row="row"
+        :fields="ssoRoleFields(row)"
+        :actions="ssoRoleActions(row)"
+      />
+      <template #empty>
+        <EmptyState
+          type="data"
+          :icon="Collection"
+          title="暂无 SSO 角色"
+          :description="searchKeyword || filterStatus ? '没有找到符合条件的角色，请调整搜索条件' : '还没有创建任何 SSO 角色，点击下方按钮创建第一个角色'"
+          :action-text="searchKeyword || filterStatus ? '重置筛选' : '新建SSO角色'"
+          :action-icon="searchKeyword || filterStatus ? RefreshRight : Plus"
+          @action="searchKeyword || filterStatus ? handleReset() : handleCreate()"
+        />
+      </template>
+    </MobileAdminList>
 
     <!-- 创建/编辑 SSO 角色对话框 -->
     <el-dialog
@@ -174,6 +217,8 @@ import { ssoRoleApi } from '@/api'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 import { Plus, Edit, Delete, Search, RefreshRight, Check, Close, Connection, Collection } from '@element-plus/icons-vue'
 import EmptyState from '@/components/EmptyState.vue'
+import MobileAdminList from '@/components/mobile/MobileAdminList.vue'
+import MobileRecordCard from '@/components/mobile/MobileRecordCard.vue'
 
 // ==================== 筛选条件 ====================
 
@@ -188,6 +233,30 @@ const handleReset = () => {
   searchKeyword.value = ''
   filterStatus.value = ''
 }
+
+const ssoRoleFields = (row) => [
+  { key: 'id', label: 'ID', value: row.id },
+  { key: 'name', label: '角色名称', value: row.name },
+  { key: 'code', label: '角色编码', value: row.code },
+  { key: 'description', label: '描述', value: row.description },
+  {
+    key: 'is_active',
+    label: '状态',
+    value: row.is_active ? '启用' : '禁用',
+    tone: row.is_active ? '' : 'status-danger',
+  },
+  { key: 'sort_order', label: '排序', value: row.sort_order },
+  { key: 'created_at', label: '创建时间', value: formatDate(row.created_at) },
+]
+
+const ssoRoleActions = (row) => [
+  { label: '编辑', icon: Edit, onClick: () => handleEdit(row) },
+  { label: '删除', icon: Delete, danger: true, onClick: () => handleDelete(row) },
+]
+
+const ssoRolePageActions = [
+  { label: '新建 SSO 角色', type: 'primary', icon: Plus, onClick: () => handleCreate() },
+]
 
 // ==================== SSO 角色列表 ====================
 

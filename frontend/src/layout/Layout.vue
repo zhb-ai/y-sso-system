@@ -663,6 +663,11 @@ onUnmounted(() => {
 
   .main-content {
     margin-left: 0;
+    width: 100%;
+  }
+
+  .content-wrapper {
+    padding: 10px;
   }
 
   /* 移动端应用授权按钮样式 */

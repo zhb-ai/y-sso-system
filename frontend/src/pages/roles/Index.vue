@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container has-mobile-bar">
     <div class="page-header">
       <h2>角色管理</h2>
       <el-button type="primary" class="btn-modern" @click="handleCreate">
@@ -8,7 +8,7 @@
     </div>
 
     <!-- 数据表格 -->
-    <el-card class="data-card" shadow="hover">
+    <el-card class="data-card desktop-block" shadow="hover">
       <el-table
         v-if="roles.length > 0"
         v-loading="loading"
@@ -62,6 +62,32 @@
         @action="handleCreate"
       />
     </el-card>
+
+    <MobileAdminList
+      :searchable="false"
+      :loading="loading"
+      :empty="!loading && roles.length === 0"
+      :page-actions="rolePageActions"
+    >
+      <MobileRecordCard
+        v-for="row in roles"
+        :key="row.id"
+        :row="row"
+        :fields="roleFields(row)"
+        :actions="roleActions(row)"
+      />
+      <template #empty>
+        <EmptyState
+          type="data"
+          :icon="Collection"
+          title="暂无角色"
+          description="角色用于定义用户的权限集合，创建角色后可以为用户分配相应的权限"
+          action-text="新建角色"
+          :action-icon="Plus"
+          @action="handleCreate"
+        />
+      </template>
+    </MobileAdminList>
 
     <!-- 创建/编辑角色对话框 -->
     <el-dialog
@@ -249,6 +275,8 @@ import { Plus, Edit, Delete, User, Key, Refresh, Remove, Medal, Collection } fro
 import { roleApi, permissionApi } from '@/api'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 import EmptyState from '@/components/EmptyState.vue'
+import MobileAdminList from '@/components/mobile/MobileAdminList.vue'
+import MobileRecordCard from '@/components/mobile/MobileRecordCard.vue'
 
 // ==================== 角色列表 ====================
 
@@ -270,6 +298,31 @@ const getRoles = async () => {
 
 // 系统内置角色不可删除
 const isSystemRole = (code) => ['admin', 'user', 'external'].includes(code)
+
+const roleFields = (row) => [
+  { key: 'id', label: 'ID', value: row.id },
+  { key: 'name', label: '角色名称', value: row.name },
+  { key: 'code', label: '角色编码', value: row.code },
+  { key: 'description', label: '角色描述', value: row.description },
+  { key: 'created_at', label: '创建时间', value: formatDate(row.created_at) },
+]
+
+const roleActions = (row) => [
+  { label: '编辑', icon: Edit, onClick: () => handleEdit(row) },
+  { label: '权限', icon: Key, onClick: () => handlePermissions(row) },
+  { label: '用户', icon: User, onClick: () => handleViewUsers(row) },
+  {
+    label: '删除',
+    icon: Delete,
+    danger: true,
+    disabled: isSystemRole(row.code),
+    onClick: () => handleDelete(row),
+  },
+]
+
+const rolePageActions = [
+  { label: '新建角色', type: 'primary', icon: Plus, onClick: () => handleCreate() },
+]
 
 // ==================== 创建 / 编辑 ====================
 

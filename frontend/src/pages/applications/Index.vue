@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container has-mobile-bar">
     <div class="page-header">
       <h2>应用管理</h2>
       <el-button type="primary" class="btn-modern" @click="handleCreate">
@@ -8,7 +8,7 @@
     </div>
     
     <!-- 筛选条件 -->
-    <el-card class="filter-card" shadow="hover">
+    <el-card class="filter-card desktop-block" shadow="hover">
       <el-form :inline="true" class="filter-form">
         <el-form-item label="搜索">
           <el-input
@@ -49,7 +49,7 @@
     </el-card>
     
     <!-- 数据表格 -->
-    <el-card class="data-card" shadow="hover">
+    <el-card class="data-card desktop-block" shadow="hover">
       <el-table
         v-if="applications.length > 0"
         v-loading="loading"
@@ -165,6 +165,63 @@
         />
       </div>
     </el-card>
+
+    <MobileAdminList
+      v-model:keyword="searchKeyword"
+      search-placeholder="搜索应用名称或编码"
+      filterable
+      :filter-active="!!filterStatus"
+      :loading="loading"
+      :empty="!loading && mobileApplications.length === 0"
+      infinite
+      :loading-more="applicationLoadingMore"
+      :finished="applicationFinished"
+      :page-actions="applicationPageActions"
+      @search="handleSearch"
+      @query="handleSearch"
+      @reset="handleReset"
+      @load-more="loadMoreApplications"
+    >
+      <template #filter>
+        <el-form label-position="top" class="m-filter-form" @submit.prevent>
+          <el-form-item label="状态">
+            <el-select v-model="filterStatus" placeholder="请选择状态" clearable>
+              <el-option label="全部" value="" />
+              <el-option label="启用" value="true" />
+              <el-option label="禁用" value="false" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </template>
+      <MobileRecordCard
+        v-for="row in mobileApplications"
+        :key="row.id"
+        :row="row"
+        :fields="applicationFields(row)"
+        :actions="applicationActions(row)"
+      >
+        <template #value="{ field }">
+          <span v-if="field.key === 'client_id'" class="m-copy-line">
+            <span>{{ field.value }}</span>
+            <el-button size="small" link @click="handleCopy(row.client_id)">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+          </span>
+          <span v-else :class="field.tone">{{ field.value === 0 ? 0 : (field.value || '—') }}</span>
+        </template>
+      </MobileRecordCard>
+      <template #empty>
+        <EmptyState
+          type="data"
+          :icon="Collection"
+          title="暂无应用"
+          :description="searchKeyword || filterStatus ? '没有找到符合条件的应用，请调整搜索条件' : '还没有创建任何应用，点击下方按钮创建第一个应用'"
+          :action-text="searchKeyword || filterStatus ? '重置筛选' : '新建应用'"
+          :action-icon="searchKeyword || filterStatus ? RefreshRight : Plus"
+          @action="searchKeyword || filterStatus ? handleReset() : handleCreate()"
+        />
+      </template>
+    </MobileAdminList>
     
     <!-- 新建/编辑抽屉 -->
     <el-drawer
@@ -546,6 +603,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid, Collection } from '@element-plus/icons-vue'
 import { applicationApi, configApi } from '@/api'
 import EmptyState from '@/components/EmptyState.vue'
+import MobileAdminList from '@/components/mobile/MobileAdminList.vue'
+import MobileRecordCard from '@/components/mobile/MobileRecordCard.vue'
+import { useMobileInfinite } from '@/composables/useMobileInfinite'
 import { handleApiError, getDefaultErrorMessage } from '@/utils/errorHandler'
 
 // 表格数据
@@ -780,6 +840,30 @@ const getApplications = async () => {
     loading.value = false
   }
 }
+
+const fetchApplicationPage = async (page) => {
+  const params = {
+    page,
+    page_size: pagination.pageSize,
+    keyword: searchKeyword.value || undefined,
+    is_active: filterStatus.value === '' ? undefined : filterStatus.value,
+  }
+  const response = await applicationApi.list(params)
+  const data = response.data || {}
+  pagination.total = data.total_records || 0
+  return data.rows || []
+}
+
+const {
+  items: mobileApplications,
+  loadingMore: applicationLoadingMore,
+  finished: applicationFinished,
+  loadMore: loadMoreApplications,
+} = useMobileInfinite(applications, {
+  pageSize: () => pagination.pageSize,
+  total: () => pagination.total,
+  fetchPage: fetchApplicationPage,
+})
 
 // 新建应用
 const handleCreate = async () => {
@@ -1016,6 +1100,37 @@ const handleReset = () => {
   pagination.currentPage = 1
   getApplications()
 }
+
+const applicationFields = (row) => [
+  { key: 'name', label: '应用名称', value: row.name },
+  { key: 'description', label: '描述', value: row.description || '暂无描述' },
+  { key: 'code', label: '应用编码', value: row.code },
+  { key: 'client_id', label: '客户端ID', value: row.client_id },
+  { key: 'client_type', label: '客户端类型', value: row.client_type === 'public' ? '公开' : '机密' },
+  { key: 'call_count_24h', label: '24小时调用', value: row.call_count_24h || 0 },
+  { key: 'call_count_7d', label: '一周调用', value: row.call_count_7d || 0 },
+  { key: 'is_active', label: '状态', value: row.is_active ? '启用' : '禁用' },
+  { key: 'created_at', label: '创建时间', value: formatDate(row.created_at) },
+]
+
+const applicationActions = (row) => [
+  { label: '对接配置', icon: Document, onClick: () => handleShowIntegrationConfig(row) },
+  { label: '编辑', icon: Edit, onClick: () => handleEdit(row) },
+  { label: '密钥', icon: RefreshRight, onClick: () => handleResetSecret(row) },
+  {
+    label: row.is_active ? '禁用' : '启用',
+    danger: !!row.is_active,
+    onClick: () => {
+      row.is_active = !row.is_active
+      handleStatusChange(row)
+    },
+  },
+  { label: '删除', icon: Delete, danger: true, onClick: () => handleDelete(row) },
+]
+
+const applicationPageActions = [
+  { label: '新建应用', type: 'primary', icon: Plus, onClick: () => handleCreate() },
+]
 
 // 分页大小变化
 const handleSizeChange = (size) => {

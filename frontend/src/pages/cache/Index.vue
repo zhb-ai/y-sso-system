@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container has-mobile-bar">
     <div class="page-header">
       <h2>
         缓存管理
@@ -93,7 +93,7 @@
       description="建议先通过“函数列表/统计”定位目标，再查看“缓存条目”详情。条目值只展示脱敏预览。"
     />
 
-    <el-card class="filter-card" shadow="hover">
+    <el-card class="filter-card desktop-block" shadow="hover">
       <el-form :inline="true" class="filter-form">
         <el-form-item>
           <template #label
@@ -136,7 +136,7 @@
       </el-form>
     </el-card>
 
-    <el-card class="data-card" shadow="hover">
+    <el-card class="data-card desktop-block" shadow="hover">
       <el-table
         v-loading="loading"
         :data="functions"
@@ -228,6 +228,49 @@
         </el-table-column>
       </el-table>
     </el-card>
+
+    <MobileAdminList
+      :searchable="false"
+      filterable
+      :filter-active="!!selectedFunctionName"
+      :loading="loading"
+      :empty="!loading && functions.length === 0"
+      :page-actions="cachePageActions"
+      @query="applyCacheFilter"
+      @reset="resetCacheFilter"
+    >
+      <template #leading>函数列表</template>
+      <template #filter>
+        <el-form label-position="top" class="m-filter-form" @submit.prevent>
+          <el-form-item label="函数名">
+            <el-select v-model="selectedFunctionName" filterable clearable placeholder="请选择缓存函数">
+              <el-option
+                v-for="item in functions"
+                :key="item[CACHE_FUNCTION_COLUMNS.NAME]"
+                :label="item[CACHE_FUNCTION_COLUMNS.NAME]"
+                :value="item[CACHE_FUNCTION_COLUMNS.NAME]"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </template>
+      <MobileRecordCard
+        v-for="row in functions"
+        :key="row[CACHE_FUNCTION_COLUMNS.NAME]"
+        :row="row"
+        :fields="cacheFields(row)"
+        :actions="cacheActions(row)"
+      />
+      <template #empty>
+        <EmptyState
+          type="data"
+          :icon="Collection"
+          title="暂无缓存函数"
+          description="当前没有已注册的缓存函数"
+          compact
+        />
+      </template>
+    </MobileAdminList>
 
     <el-card class="data-card registrations-card" shadow="hover">
       <template #header>
@@ -458,6 +501,8 @@ import "vue-json-pretty/lib/styles.css";
 import { cacheApi } from "@/api";
 import { handleApiError, getDefaultErrorMessage } from "@/utils/errorHandler";
 import EmptyState from "@/components/EmptyState.vue";
+import MobileAdminList from "@/components/mobile/MobileAdminList.vue";
+import MobileRecordCard from "@/components/mobile/MobileRecordCard.vue";
 import {
   CACHE_BACKEND_TAG_TYPE,
   CACHE_FUNCTION_COLUMNS,
@@ -564,6 +609,47 @@ const handleClearOne = async (functionName) => {
       handleApiError(error, getDefaultErrorMessage("delete"));
     }
   }
+};
+
+const cacheFields = (row) => [
+  { key: "name", label: "函数名", value: row[CACHE_FUNCTION_COLUMNS.NAME] },
+  { key: "module", label: "模块", value: row[CACHE_FUNCTION_COLUMNS.MODULE] },
+  { key: "backend", label: "后端", value: row[CACHE_FUNCTION_COLUMNS.BACKEND] },
+  { key: "ttl", label: "TTL(秒)", value: row[CACHE_FUNCTION_COLUMNS.TTL] },
+  { key: "prefix", label: "Key 前缀", value: row[CACHE_FUNCTION_COLUMNS.KEY_PREFIX] },
+  {
+    key: "hits",
+    label: "命中/未命中",
+    value: `${getFunctionHits(row)}/${getFunctionMisses(row)}`,
+  },
+];
+
+const cacheActions = (row) => {
+  const name = row[CACHE_FUNCTION_COLUMNS.NAME];
+  return [
+    { label: "条目", onClick: () => handleViewEntries(name) },
+    { label: "统计", onClick: () => handleViewSingleStats(name) },
+    { label: "清空", danger: true, onClick: () => handleClearOne(name) },
+  ];
+};
+
+const cachePageActions = computed(() => [
+  { label: "刷新", icon: RefreshRight, loading: loading.value, onClick: loadAllData },
+  {
+    label: "清空全部缓存",
+    type: "danger",
+    icon: Delete,
+    loading: clearingAll.value,
+    onClick: handleClearAll,
+  },
+]);
+
+const applyCacheFilter = () => {
+  if (selectedFunctionName.value) handleViewSingleStats();
+};
+
+const resetCacheFilter = () => {
+  selectedFunctionName.value = "";
 };
 
 const handleClearAll = async () => {

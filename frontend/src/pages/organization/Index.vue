@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container has-mobile-bar">
     <div class="page-header">
       <h2>组织架构</h2>
       <div class="header-actions">
@@ -14,7 +14,7 @@
 
 
     <!-- 组织选择 -->
-    <el-card class="filter-card" shadow="hover">
+    <el-card class="filter-card desktop-block" shadow="hover">
       <el-form :inline="true" class="filter-form">
         <el-form-item label="当前组织">
           <el-select
@@ -99,12 +99,12 @@
     </el-card>
 
     <!-- 空状态：没有组织 -->
-    <el-card v-if="!currentOrgId && organizations.length === 0" class="empty-org-card" shadow="hover">
+    <el-card v-if="!currentOrgId && organizations.length === 0" class="empty-org-card desktop-block" shadow="hover">
       <EmptyState type="data" :icon="OfficeBuilding" title="暂无组织" description="还没有创建任何组织，点击下方按钮创建第一个组织" action-text="新建组织" :action-icon="Plus" @action="handleCreateOrg" />
     </el-card>
 
     <!-- 主内容区：左右布局 -->
-    <div v-else class="main-content-row">
+    <div v-else class="main-content-row desktop-block">
       <!-- 左侧：部门树 -->
       <el-card class="department-card" shadow="hover" :style="{ '--card-max-height': cardMaxHeight + 'px' }">
         <div class="dept-card-stack">
@@ -280,6 +280,145 @@
         </div>
       </el-card>
     </div>
+
+    <MobileAdminList
+      :searchable="false"
+      filterable
+      :filter-active="orgFilterActive"
+      :loading="mobileOrgTab === 'staff' ? employeeLoading : deptLoading"
+      :empty="orgMobileEmpty"
+      :infinite="mobileOrgTab === 'staff' && !!currentOrgId"
+      :loading-more="orgEmployeeLoadingMore"
+      :finished="orgEmployeeFinished"
+      :page-actions="orgPageActions"
+      @query="applyOrgMobileFilter"
+      @reset="resetOrgMobileFilter"
+      @load-more="loadMoreOrgEmployees"
+    >
+      <template #leading>{{ currentOrg ? currentOrg.name : "组织架构" }}</template>
+      <template #filter>
+        <el-form label-position="top" class="m-filter-form" @submit.prevent>
+          <el-form-item label="当前组织">
+            <el-select v-model="currentOrgId" placeholder="请选择组织" @change="handleOrgChange">
+              <el-option v-for="org in organizations" :key="org.id" :label="org.name" :value="org.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="雇佣状态">
+            <el-select v-model="empStatusFilter" placeholder="全部" clearable>
+              <el-option label="在职" :value="3" />
+              <el-option label="试用期" :value="2" />
+              <el-option label="待入职" :value="1" />
+              <el-option label="停职" :value="0" />
+              <el-option label="离职" :value="-1" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="账号状态">
+            <el-select v-model="accountStatusFilter" placeholder="全部" clearable>
+              <el-option label="已激活" :value="1" />
+              <el-option label="未激活" :value="0" />
+              <el-option label="已禁用" :value="-1" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </template>
+      <template #tabs>
+        <div v-if="currentOrgId" class="m-seg">
+          <button type="button" :class="{ 'is-active': mobileOrgTab === 'dept' }" @click="mobileOrgTab = 'dept'">部门</button>
+          <button type="button" :class="{ 'is-active': mobileOrgTab === 'staff' }" @click="mobileOrgTab = 'staff'">员工</button>
+        </div>
+      </template>
+      <template v-if="mobileOrgTab === 'dept' && currentOrgId">
+        <MobileRecordCard
+          v-for="dept in flatDepartments"
+          :key="dept.id"
+          :row="dept"
+          :fields="deptFields(dept)"
+          :actions="deptActions(dept)"
+        />
+      </template>
+      <template v-else-if="currentOrgId">
+        <div class="m-context">
+          <span>{{ selectedDept ? selectedDept.name + " - 员工" : currentOrg.name + " - 全部员工" }}</span>
+          <el-button v-if="selectedDept" link type="primary" @click="clearDeptSelection">查看全部</el-button>
+        </div>
+        <MobileRecordCard
+          v-for="row in mobileDeptEmployees"
+          :key="row.id"
+          :row="row"
+          :fields="orgEmployeeFields(row)"
+          :actions="orgEmployeeActions(row)"
+        >
+          <template #value="{ field }">
+            <el-dropdown
+              v-if="field.key === 'emp_status'"
+              trigger="click"
+              @command="(cmd) => handleChangeEmpStatus(row, cmd)"
+            >
+              <span class="status-text-wrapper" :class="{ 'status-danger': (row.status ?? row.emp_status) === 0 }">
+                {{ empStatusLabel(row.status ?? row.emp_status) }}
+                <el-icon class="status-arrow"><ArrowDown /></el-icon>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item :command="3" :disabled="(row.status ?? row.emp_status) === 3">在职</el-dropdown-item>
+                  <el-dropdown-item :command="2" :disabled="(row.status ?? row.emp_status) === 2">试用期</el-dropdown-item>
+                  <el-dropdown-item :command="1" :disabled="(row.status ?? row.emp_status) === 1">待入职</el-dropdown-item>
+                  <el-dropdown-item :command="0" :disabled="(row.status ?? row.emp_status) === 0" divided>停职</el-dropdown-item>
+                  <el-dropdown-item :command="-1" :disabled="(row.status ?? row.emp_status) === -1">离职</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-dropdown
+              v-else-if="field.key === 'account' && row.user_id"
+              trigger="click"
+              @command="(cmd) => handleChangeAccountStatus(row, cmd)"
+            >
+              <span class="status-text-wrapper" :class="{ 'status-danger': row.account_status === -1 }">
+                {{ accountStatusLabel(row.account_status) }}
+                <el-icon class="status-arrow"><ArrowDown /></el-icon>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item :command="1" :disabled="row.account_status === 1">已激活</el-dropdown-item>
+                  <el-dropdown-item :command="-1" :disabled="row.account_status === -1">已禁用</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <span v-else :class="field.tone">{{ field.value || "—" }}</span>
+          </template>
+        </MobileRecordCard>
+      </template>
+      <template #empty>
+        <EmptyState
+          v-if="!currentOrgId"
+          type="data"
+          :icon="OfficeBuilding"
+          :title="organizations.length === 0 ? '暂无组织' : '请选择组织'"
+          :description="organizations.length === 0 ? '还没有创建任何组织，点击下方按钮创建第一个组织' : '打开右上角筛选，选择要查看的组织'"
+          :action-text="organizations.length === 0 ? '新建组织' : ''"
+          :action-icon="Plus"
+          @action="handleCreateOrg"
+        />
+        <EmptyState
+          v-else-if="mobileOrgTab === 'dept'"
+          type="data"
+          :icon="Folder"
+          title="暂无部门"
+          description="当前组织下还没有创建任何部门"
+          action-text="添加部门"
+          :action-icon="Plus"
+          @action="handleCreateDept(null)"
+        />
+        <EmptyState
+          v-else
+          type="data"
+          :icon="Collection"
+          title="暂无员工"
+          :description="selectedDept ? '当前部门下暂无员工' : '当前组织下暂无员工'"
+          compact
+        />
+      </template>
+    </MobileAdminList>
 
     <!-- 组织编辑对话框 -->
     <el-dialog v-model="orgDialogVisible" :title="orgForm.id ? '编辑组织' : '新建组织'" width="500px" align-center destroy-on-close>
@@ -826,6 +965,9 @@ import {
   Collection,
 } from "@element-plus/icons-vue";
 import EmptyState from "@/components/EmptyState.vue";
+import MobileAdminList from "@/components/mobile/MobileAdminList.vue";
+import MobileRecordCard from "@/components/mobile/MobileRecordCard.vue";
+import { useMobileInfinite } from "@/composables/useMobileInfinite";
 import {
   organizationApi,
   departmentApi,
@@ -1264,6 +1406,47 @@ const loadDeptEmployees = async () => {
   }
 };
 
+const fetchDeptEmployeePage = async (page) => {
+  if (!currentOrgId.value) return [];
+  const params = {
+    page,
+    page_size: employeePagination.pageSize,
+  };
+  if (empStatusFilter.value !== null && empStatusFilter.value !== "") {
+    params.emp_status = empStatusFilter.value;
+  }
+  if (accountStatusFilter.value !== null && accountStatusFilter.value !== "") {
+    params.account_status = accountStatusFilter.value;
+  }
+  let res;
+  if (selectedDept.value) {
+    res = await departmentApi.getEmployees(selectedDept.value.id, params);
+  } else {
+    res = await employeeApi.list({
+      ...params,
+      org_id: currentOrgId.value,
+      include: "primary_org_name,primary_dept_name",
+    });
+  }
+  const rows = (res.data?.rows || []).map((r) => ({
+    ...r,
+    status: r.status ?? r.emp_status ?? null,
+  }));
+  employeePagination.total = res.data?.total_records || 0;
+  return rows;
+};
+
+const {
+  items: mobileDeptEmployees,
+  loadingMore: orgEmployeeLoadingMore,
+  finished: orgEmployeeFinished,
+  loadMore: loadMoreOrgEmployees,
+} = useMobileInfinite(deptEmployees, {
+  pageSize: () => employeePagination.pageSize,
+  total: () => employeePagination.total,
+  fetchPage: fetchDeptEmployeePage,
+});
+
 const clearDeptSelection = () => {
   selectedDept.value = null;
   employeePagination.page = 1;
@@ -1660,6 +1843,127 @@ const accountStatusLabel = (status) => {
   const map = { "-1": "已禁用", 0: "未激活", 1: "已激活" };
   return map[status] ?? "未知";
 };
+
+const mobileOrgTab = ref("staff");
+
+const orgFilterActive = computed(
+  () =>
+    (empStatusFilter.value !== null && empStatusFilter.value !== "") ||
+    (accountStatusFilter.value !== null && accountStatusFilter.value !== ""),
+);
+
+const flatDepartments = computed(() => {
+  const list = [];
+  const walk = (nodes, parentName) => {
+    for (const node of nodes || []) {
+      list.push({
+        id: node.id,
+        name: node.name,
+        parentName: parentName || "—",
+        employee_count: node.employee_count || 0,
+        raw: node,
+      });
+      if (node.children?.length) walk(node.children, node.name);
+    }
+  };
+  walk(departmentTree.value, "");
+  return list;
+});
+
+const orgMobileEmpty = computed(() => {
+  if (!currentOrgId.value) return true;
+  if (mobileOrgTab.value === "dept") return !deptLoading.value && flatDepartments.value.length === 0;
+  return !employeeLoading.value && deptEmployees.value.length === 0;
+});
+
+const deptFields = (dept) => [
+  { key: "name", label: "部门", value: dept.name },
+  { key: "parent", label: "上级部门", value: dept.parentName },
+  { key: "count", label: "人数", value: dept.employee_count },
+];
+
+const openDeptEmployees = (dept) => {
+  handleDeptClick(dept.raw);
+  mobileOrgTab.value = "staff";
+};
+
+const deptActions = (dept) => [
+  { label: "查看员工", icon: User, onClick: () => openDeptEmployees(dept) },
+  { label: "编辑", icon: Edit, onClick: () => handleEditDept(dept.raw) },
+  { label: "子部门", icon: Plus, onClick: () => handleCreateDept(dept.raw) },
+  { label: "删除", icon: Delete, danger: true, onClick: () => handleDeleteDept(dept.raw) },
+];
+
+const orgEmployeeFields = (row) => [
+  { key: "name", label: "姓名", value: row.name },
+  { key: "code", label: "员工编码", value: row.code || "未设置" },
+  { key: "wechat", label: "用户Id", value: row.enterprise_wechat_user_id || "未设置" },
+  { key: "emp_no", label: "工号", value: row.emp_no },
+  { key: "position", label: "职位", value: row.position },
+  { key: "mobile", label: "手机", value: row.mobile },
+  { key: "emp_status", label: "雇佣状态", value: empStatusLabel(row.status ?? row.emp_status) },
+  {
+    key: "account",
+    label: "账号",
+    value: row.user_id ? accountStatusLabel(row.account_status) : "无账号",
+    tone: row.account_status === -1 ? "status-danger" : "",
+  },
+];
+
+const orgEmployeeActions = (row) => {
+  const actions = [{ label: "编辑", icon: Edit, onClick: () => handleEditEmployee(row) }];
+  if (selectedDept.value) {
+    actions.push({
+      label: "移出",
+      icon: Remove,
+      danger: true,
+      onClick: () => handleRemoveFromDept(row),
+    });
+  }
+  return actions;
+};
+
+const applyOrgMobileFilter = () => {
+  employeePagination.page = 1;
+  loadDeptEmployees();
+};
+
+const resetOrgMobileFilter = () => {
+  empStatusFilter.value = null;
+  accountStatusFilter.value = null;
+  employeePagination.page = 1;
+  loadDeptEmployees();
+};
+
+const orgPageActions = computed(() => {
+  const actions = [
+    { label: "新建组织", type: "primary", icon: Plus, onClick: handleCreateOrg },
+    { label: "新建员工", icon: User, onClick: handleCreateEmployee },
+  ];
+  if (!currentOrg.value) return actions.slice(0, 1);
+  actions.push(
+    { label: "编辑组织", icon: Edit, onClick: handleEditOrg },
+    { label: "添加部门", icon: Folder, onClick: () => handleCreateDept(null) },
+    {
+      label: "同步通讯录",
+      disabled: !wechatBound.value,
+      loading: wechatSyncLoading.value,
+      onClick: handleWechatSync,
+    },
+  );
+  if (wechatBound.value) {
+    actions.push(
+      { label: "查看配置", onClick: showWechatConfigDialog },
+      { label: "解绑企业微信", onClick: handleWechatUnbind },
+    );
+  } else {
+    actions.push({ label: "绑定企业微信", onClick: showWechatBindDialog });
+  }
+  if (selectedDept.value) {
+    actions.push({ label: "添加员工到部门", icon: UserFilled, onClick: handleAddEmployeeToDept });
+  }
+  return actions;
+});
 
 const accountStatusType = (status) => {
   const map = { "-1": "danger", 0: "warning", 1: "success" };

@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container has-mobile-bar">
     <div class="page-header">
       <h2>用户管理</h2>
       <el-button type="primary" class="btn-modern" @click="handleCreate">
@@ -8,7 +8,7 @@
     </div>
 
     <!-- 筛选条件 -->
-    <el-card class="filter-card" shadow="hover">
+    <el-card class="filter-card desktop-block" shadow="hover">
       <el-form :inline="true" :model="filterForm" class="filter-form">
         <el-form-item label="用户名/姓名/邮箱">
           <el-input
@@ -68,7 +68,7 @@
       </el-form>
     </el-card>
 
-    <el-card class="data-card" shadow="hover">
+    <el-card class="data-card desktop-block" shadow="hover">
       <el-table
         v-if="userList.length > 0"
         v-loading="loading"
@@ -197,6 +197,59 @@
         ></el-pagination>
       </div>
     </el-card>
+
+    <MobileAdminList
+      v-model:keyword="searchKeyword"
+      search-placeholder="请输入用户名、姓名或邮箱"
+      filterable
+      :filter-active="!!(filterForm.status || filterForm.role)"
+      :loading="loading"
+      :empty="!loading && mobileUsers.length === 0"
+      infinite
+      :loading-more="userLoadingMore"
+      :finished="userFinished"
+      :page-actions="userPageActions"
+      @search="handleSearch"
+      @query="handleSearch"
+      @reset="handleReset"
+      @load-more="loadMoreUsers"
+    >
+      <template #filter>
+        <el-form label-position="top" class="m-filter-form" @submit.prevent>
+          <el-form-item label="状态">
+            <el-select v-model="filterForm.status" placeholder="请选择状态" clearable>
+              <el-option label="全部" value="" />
+              <el-option label="启用" value="active" />
+              <el-option label="禁用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="角色">
+            <el-select v-model="filterForm.role" placeholder="请选择角色" clearable>
+              <el-option label="全部" value="" />
+              <el-option v-for="role in allRoles" :key="role.code" :label="role.name" :value="role.code" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </template>
+      <MobileRecordCard
+        v-for="row in mobileUsers"
+        :key="row.id"
+        :row="row"
+        :fields="userFields(row)"
+        :actions="userActions(row)"
+      />
+      <template #empty>
+        <EmptyState
+          type="data"
+          :icon="Collection"
+          title="暂无用户"
+          :description="searchKeyword || filterForm.status || filterForm.role ? '没有找到符合条件的用户，请调整搜索条件' : '还没有创建任何用户，点击下方按钮创建第一个用户'"
+          :action-text="searchKeyword || filterForm.status || filterForm.role ? '重置筛选' : '新建用户'"
+          :action-icon="searchKeyword || filterForm.status || filterForm.role ? RefreshRight : Plus"
+          @action="searchKeyword || filterForm.status || filterForm.role ? handleReset() : handleCreate()"
+        />
+      </template>
+    </MobileAdminList>
 
     <!-- 新建用户对话框 -->
     <UserCreateDialog
@@ -499,6 +552,9 @@ import { handleApiError, getDefaultErrorMessage } from "@/utils/errorHandler";
 import UserCreateDialog from "./Create.vue";
 import UserEditDialog from "./Edit.vue";
 import EmptyState from "@/components/EmptyState.vue";
+import MobileAdminList from "@/components/mobile/MobileAdminList.vue";
+import MobileRecordCard from "@/components/mobile/MobileRecordCard.vue";
+import { useMobileInfinite } from "@/composables/useMobileInfinite";
 
 const router = useRouter();
 
@@ -724,6 +780,35 @@ const getUsersList = async () => {
   }
 };
 
+const fetchUserPage = async (page) => {
+  const params = {
+    page,
+    page_size: pagination.pageSize,
+    keyword: searchKeyword.value || undefined,
+  };
+  if (filterForm.status !== undefined && filterForm.status !== "") {
+    params.status = filterForm.status;
+  }
+  if (filterForm.role !== undefined && filterForm.role !== "") {
+    params.role = filterForm.role;
+  }
+  const response = await userApi.list(params);
+  const data = response.data || {};
+  pagination.total = data.total_records || 0;
+  return data.rows || [];
+};
+
+const {
+  items: mobileUsers,
+  loadingMore: userLoadingMore,
+  finished: userFinished,
+  loadMore: loadMoreUsers,
+} = useMobileInfinite(userList, {
+  pageSize: () => pagination.pageSize,
+  total: () => pagination.total,
+  fetchPage: fetchUserPage,
+});
+
 // 搜索
 const handleSearch = () => {
   pagination.currentPage = 1;
@@ -738,6 +823,43 @@ const handleReset = () => {
   pagination.currentPage = 1;
   getUsersList();
 };
+
+const userFields = (row) => [
+  { key: "id", label: "ID", value: row.id },
+  { key: "username", label: "用户名", value: row.username },
+  { key: "name", label: "姓名", value: row.name },
+  { key: "email", label: "邮箱", value: row.email },
+  { key: "phone", label: "手机号", value: row.phone },
+  {
+    key: "roles",
+    label: "角色",
+    value: (row.roles || []).map((role) => role.name).join("、") || "无角色",
+  },
+  {
+    key: "status",
+    label: "状态",
+    value: row.status === "active" ? "启用" : "禁用",
+    tone: row.status === "active" ? "" : "status-danger",
+  },
+  { key: "created_at", label: "创建时间", value: formatDate(row.created_at) },
+];
+
+const userActions = (row) => [
+  { label: "编辑", icon: Edit, onClick: () => handleEdit(row) },
+  { label: "角色", icon: Medal, onClick: () => handleAssignRole(row) },
+  { label: "SSO", icon: Connection, onClick: () => handleAssignSSORole(row) },
+  {
+    label: row.status === "active" ? "禁用" : "启用",
+    icon: row.status === "active" ? Lock : Unlock,
+    danger: row.status === "active",
+    onClick: () => handleToggleStatus(row),
+  },
+  { label: "重置密码", icon: Key, onClick: () => handleResetPassword(row) },
+];
+
+const userPageActions = [
+  { label: "新建用户", type: "primary", icon: Plus, onClick: () => handleCreate() },
+];
 
 // 分页大小改变
 const handleSizeChange = (val) => {

@@ -72,7 +72,7 @@
     </div>
     
     <!-- 最近登录记录筛选条件 -->
-    <el-card class="filter-card" shadow="hover">
+    <el-card class="filter-card desktop-block" shadow="hover">
       <el-form :inline="true" :model="loginFilterForm" class="filter-form">
         <el-form-item label="用户名">
           <el-input
@@ -126,7 +126,7 @@
     </el-card>
 
     <!-- 登录记录 -->
-    <el-card class="data-card login-record-card" shadow="hover">
+    <el-card class="data-card login-record-card desktop-block" shadow="hover">
       <template #header>
         <div class="login-record-header">
           <div class="header-title">
@@ -190,6 +190,58 @@
         ></el-pagination>
       </div>
     </el-card>
+
+    <MobileAdminList
+      v-model:keyword="searchUsername"
+      search-placeholder="请输入用户名"
+      filterable
+      :filter-active="!!(searchIp || loginFilterForm.status)"
+      :loading="loginLoading"
+      :empty="!loginLoading && mobileLogins.length === 0"
+      infinite
+      :loading-more="loginLoadingMore"
+      :finished="loginFinished"
+      @search="handleSearch"
+      @query="handleSearch"
+      @reset="handleReset"
+      @load-more="loadMoreLogins"
+    >
+      <template #filter>
+        <el-form label-position="top" class="m-filter-form" @submit.prevent>
+          <el-form-item label="登录IP">
+            <el-input v-model="searchIp" placeholder="请输入登录IP" clearable />
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="loginFilterForm.status" placeholder="请选择状态" clearable>
+              <el-option label="全部" value="" />
+              <el-option label="成功" value="success" />
+              <el-option label="失败" value="failed" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </template>
+      <template #header>
+        <div class="m-section-title">
+          登录记录
+          <span v-if="pagination.total">共 {{ pagination.total }} 条</span>
+        </div>
+      </template>
+      <MobileRecordCard
+        v-for="row in mobileLogins"
+        :key="row.id || `${row.username}-${row.created_at}`"
+        :row="row"
+        :fields="loginFields(row)"
+      />
+      <template #empty>
+        <EmptyState
+          type="data"
+          :icon="Clock"
+          title="暂无登录记录"
+          description="系统还没有记录任何登录行为，当有用户登录后，这里将显示最近的登录活动"
+          compact
+        />
+      </template>
+    </MobileAdminList>
   </div>
 </template>
 
@@ -199,6 +251,9 @@ import { dashboardApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { Grid, User, Management, OfficeBuilding, Monitor, Search, RefreshRight, Check, Close, Clock } from '@element-plus/icons-vue'
 import EmptyState from '@/components/EmptyState.vue'
+import MobileAdminList from '@/components/mobile/MobileAdminList.vue'
+import MobileRecordCard from '@/components/mobile/MobileRecordCard.vue'
+import { useMobileInfinite } from '@/composables/useMobileInfinite'
 
 const authStore = useAuthStore()
 const userInfo = computed(() => authStore.userInfo)
@@ -228,6 +283,20 @@ const loginFilterForm = reactive({
 })
 const searchUsername = ref('')
 const searchIp = ref('')
+
+const loginFields = (row) => [
+  { key: 'username', label: '用户名', value: row.username },
+  { key: 'ip', label: '登录IP', value: row.ip_address },
+  { key: 'ua', label: '浏览器信息', value: row.user_agent },
+  { key: 'time', label: '登录时间', value: formatDate(row.created_at) },
+  {
+    key: 'status',
+    label: '状态',
+    value: row.status === 'success' ? '成功' : '失败',
+    tone: row.status === 'success' ? 'status-success' : '',
+  },
+  { key: 'reason', label: '失败原因', value: row.failure_reason || '—' },
+]
 
 // 获取统计数据
 const fetchStatistics = async () => {
@@ -297,6 +366,38 @@ const fetchRecentLogins = async (page = 1) => {
     loginLoading.value = false
   }
 }
+
+const fetchLoginPage = async (page) => {
+  const params = {
+    page,
+    page_size: pagination.value.pageSize,
+  }
+  if (searchUsername.value) params.username = searchUsername.value
+  if (searchIp.value) params.ip_address = searchIp.value
+  if (loginFilterForm.status) params.status = loginFilterForm.status
+  const response = await dashboardApi.getRecentLogins(params)
+  const data = response.data || {}
+  if (data.rows) {
+    pagination.value.total = data.total_records || 0
+    return data.rows
+  }
+  if (Array.isArray(data)) {
+    pagination.value.total = data.length
+    return data
+  }
+  return []
+}
+
+const {
+  items: mobileLogins,
+  loadingMore: loginLoadingMore,
+  finished: loginFinished,
+  loadMore: loadMoreLogins,
+} = useMobileInfinite(recentLogins, {
+  pageSize: () => pagination.value.pageSize,
+  total: () => pagination.value.total,
+  fetchPage: fetchLoginPage,
+})
 
 // 分页相关方法
 const handleSizeChange = (size) => {

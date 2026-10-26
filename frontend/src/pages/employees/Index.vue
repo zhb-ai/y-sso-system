@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container has-mobile-bar">
     <div class="page-header">
       <h2>员工管理</h2>
       <el-button type="primary" class="btn-modern" @click="handleCreate">
@@ -8,7 +8,7 @@
     </div>
     
     <!-- 筛选 -->
-    <el-card class="filter-card" shadow="hover">
+    <el-card class="filter-card desktop-block" shadow="hover">
       <el-form :inline="true" class="filter-form">
         <el-form-item label="组织">
           <el-select v-model="filter.org_id" placeholder="全部组织" clearable @change="handleSearch">
@@ -48,7 +48,7 @@
     </el-card>
     
     <!-- 员工列表 -->
-    <el-card class="data-card" shadow="hover">
+    <el-card class="data-card desktop-block" shadow="hover">
    
       <el-table v-if="employees.length > 0" v-loading="loading" :data="employees" style="width: 100%" tooltip-effect="dark">
         <el-table-column prop="name" label="姓名" min-width="160">
@@ -172,6 +172,106 @@
         />
       </div>
     </el-card>
+
+    <MobileAdminList
+      v-model:keyword="filter.keyword"
+      search-placeholder="姓名/手机号"
+      filterable
+      :filter-active="employeeFilterActive"
+      :loading="loading"
+      :empty="!loading && mobileEmployees.length === 0"
+      infinite
+      :loading-more="employeeLoadingMore"
+      :finished="employeeFinished"
+      :page-actions="employeePageActions"
+      @search="handleSearch"
+      @query="handleSearch"
+      @reset="handleReset"
+      @load-more="loadMoreEmployees"
+    >
+      <template #filter>
+        <el-form label-position="top" class="m-filter-form" @submit.prevent>
+          <el-form-item label="组织">
+            <el-select v-model="filter.org_id" placeholder="全部组织" clearable>
+              <el-option v-for="org in organizations" :key="org.id" :label="org.name" :value="org.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="雇佣状态">
+            <el-select v-model="filter.emp_status" placeholder="全部" clearable>
+              <el-option label="在职" :value="3" />
+              <el-option label="试用期" :value="2" />
+              <el-option label="待入职" :value="1" />
+              <el-option label="停职" :value="0" />
+              <el-option label="离职" :value="-1" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="账号状态">
+            <el-select v-model="filter.account_status" placeholder="全部" clearable>
+              <el-option label="已激活" :value="1" />
+              <el-option label="未激活" :value="0" />
+              <el-option label="已禁用" :value="-1" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </template>
+      <MobileRecordCard
+        v-for="row in mobileEmployees"
+        :key="row.id"
+        :row="row"
+        :fields="employeeFields(row)"
+        :actions="employeeActions(row)"
+      >
+        <template #value="{ field }">
+          <el-dropdown
+            v-if="field.key === 'emp_status' && row.emp_status !== undefined && row.emp_status !== null"
+            trigger="click"
+            @command="(cmd) => handleChangeEmpStatus(row, cmd)"
+          >
+            <span class="status-text-wrapper" :class="{ 'status-danger': row.emp_status === 0 }">
+              {{ empStatusLabel(row.emp_status) }}
+              <el-icon class="status-arrow"><ArrowDown /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item :command="3" :disabled="row.emp_status === 3">在职</el-dropdown-item>
+                <el-dropdown-item :command="2" :disabled="row.emp_status === 2">试用期</el-dropdown-item>
+                <el-dropdown-item :command="1" :disabled="row.emp_status === 1">待入职</el-dropdown-item>
+                <el-dropdown-item :command="0" :disabled="row.emp_status === 0" divided>停职</el-dropdown-item>
+                <el-dropdown-item :command="-1" :disabled="row.emp_status === -1">离职</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <template v-else-if="field.key === 'account'">
+            <el-dropdown v-if="row.user_id" trigger="click" @command="(cmd) => handleChangeAccountStatus(row, cmd)">
+              <span class="status-text-wrapper">
+                {{ accountStatusLabel(row.account_status) }}
+                <el-icon class="status-arrow"><ArrowDown /></el-icon>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item :command="1" :disabled="row.account_status === 1">已激活</el-dropdown-item>
+                  <el-dropdown-item :command="-1" :disabled="row.account_status === -1">已禁用</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-button v-else-if="row.emp_status > 0" size="small" link @click="handleCreateAccount(row)">创建账号</el-button>
+            <span v-else>无账号</span>
+          </template>
+          <span v-else :class="field.tone">{{ field.value || '—' }}</span>
+        </template>
+      </MobileRecordCard>
+      <template #empty>
+        <EmptyState
+          type="data"
+          :icon="Collection"
+          title="暂无员工"
+          :description="filter.keyword || filter.org_id || filter.emp_status || filter.account_status ? '没有找到符合条件的员工，请调整搜索条件' : '还没有创建任何员工，点击下方按钮创建第一个员工'"
+          :action-text="filter.keyword || filter.org_id || filter.emp_status || filter.account_status ? '重置筛选' : '新建员工'"
+          :action-icon="filter.keyword || filter.org_id || filter.emp_status || filter.account_status ? RefreshRight : Plus"
+          @action="filter.keyword || filter.org_id || filter.emp_status || filter.account_status ? handleReset() : handleCreate()"
+        />
+      </template>
+    </MobileAdminList>
     
     <!-- 员工编辑抽屉 -->
     <el-drawer v-model="dialogVisible" :title="form.id ? '编辑员工' : '新建员工'" size="880px" destroy-on-close>
@@ -800,6 +900,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, RefreshRight, ArrowDown, OfficeBuilding, Folder, User, Key, Edit, Delete, Collection, DocumentCopy } from '@element-plus/icons-vue'
 import { employeeApi, organizationApi, departmentApi } from '@/api'
 import EmptyState from '@/components/EmptyState.vue'
+import MobileAdminList from '@/components/mobile/MobileAdminList.vue'
+import MobileRecordCard from '@/components/mobile/MobileRecordCard.vue'
+import { useMobileInfinite } from '@/composables/useMobileInfinite'
 
 const router = useRouter()
 
@@ -813,6 +916,11 @@ const submitLoading = ref(false)
 
 // 筛选
 const filter = reactive({ org_id: null, keyword: '', emp_status: null, account_status: null })
+const employeeFilterActive = computed(() =>
+  filter.org_id != null ||
+  (filter.emp_status !== null && filter.emp_status !== '') ||
+  (filter.account_status !== null && filter.account_status !== '')
+)
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 
 // 对话框
@@ -975,6 +1083,36 @@ const loadEmployees = async () => {
   }
 }
 
+const fetchEmployeePage = async (page) => {
+  const params = {
+    org_id: filter.org_id || undefined,
+    keyword: filter.keyword || undefined,
+    include: 'primary_org_name,primary_dept_name',
+    page,
+    page_size: pagination.pageSize,
+  }
+  if (filter.emp_status !== null && filter.emp_status !== '') {
+    params.emp_status = filter.emp_status
+  }
+  if (filter.account_status !== null && filter.account_status !== '') {
+    params.account_status = filter.account_status
+  }
+  const res = await employeeApi.list(params)
+  pagination.total = res.data?.total_records || 0
+  return res.data?.rows || []
+}
+
+const {
+  items: mobileEmployees,
+  loadingMore: employeeLoadingMore,
+  finished: employeeFinished,
+  loadMore: loadMoreEmployees,
+} = useMobileInfinite(employees, {
+  pageSize: () => pagination.pageSize,
+  total: () => pagination.total,
+  fetchPage: fetchEmployeePage,
+})
+
 // 加载组织列表
 const loadOrganizations = async () => {
   try {
@@ -1024,6 +1162,30 @@ const handleReset = () => {
   pagination.page = 1
   loadEmployees()
 }
+
+const employeeFields = (row) => [
+  { key: 'name', label: '姓名', value: row.name },
+  { key: 'code', label: '员工编码', value: row.code || '未设置' },
+  { key: 'wechat', label: '用户Id', value: row.enterprise_wechat_user_id || '未设置' },
+  { key: 'mobile', label: '手机号', value: row.mobile },
+  { key: 'email', label: '邮箱', value: row.email },
+  { key: 'gender', label: '性别', value: row.gender === 1 ? '男' : row.gender === 2 ? '女' : '未知' },
+  { key: 'org', label: '主组织', value: row.primary_org_name || '未分配' },
+  { key: 'dept', label: '主部门', value: row.primary_dept_name || '未分配' },
+  { key: 'emp_status', label: '雇佣状态', value: row.emp_status !== undefined && row.emp_status !== null ? empStatusLabel(row.emp_status) : '未分配' },
+  { key: 'account', label: '账号', value: row.user_id ? accountStatusLabel(row.account_status) : '无账号' },
+]
+
+const employeeActions = (row) => [
+  { label: '编辑', icon: Edit, onClick: () => handleEdit(row) },
+  { label: '组织', icon: OfficeBuilding, onClick: () => handleManageOrg(row) },
+  { label: '部门', icon: Folder, onClick: () => handleManageDept(row) },
+  { label: '删除', icon: Delete, danger: true, onClick: () => handleDelete(row) },
+]
+
+const employeePageActions = [
+  { label: '新建员工', type: 'primary', icon: Plus, onClick: () => handleCreate() },
+]
 
 // 创建员工时选择组织变化
 const handleOrgSelectChange = async (orgId) => {
