@@ -936,4 +936,69 @@ async function handlePortalLogin() {
   display: flex;
   justify-content: center;
 }
+
+/* 移动端：单列应用列表，在卡片内滚动 */
+@media (max-width: 768px) {
+  .login-container {
+    align-items: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 12px;
+    min-height: 100dvh;
+  }
+
+  .sso-login-box,
+  .sso-login-box.columns-2,
+  .sso-login-box.columns-3,
+  .sso-login-box.columns-4 {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .sso-portal-header {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .sso-user-info {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sso-user-detail {
+    min-width: 0;
+  }
+
+  .sso-username,
+  .sso-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sso-header-actions {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .sso-app-list,
+  .sso-app-list.columns-2,
+  .sso-app-list.columns-3,
+  .sso-app-list.columns-4 {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    max-height: max(200px, calc(100dvh - 300px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sso-app-card {
+    min-height: 64px;
+  }
+}
 </style>
