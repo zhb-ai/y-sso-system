@@ -6,7 +6,21 @@
 
 @media (max-width: 768px) {
   .mobile-admin {
-    display: block;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* 移动端管理页：仅中间列表区滚动，顶部栏常驻可视区 */
+  .page-container:has(> .mobile-admin) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .page-container:has(> .mobile-admin) > .page-header {
+    display: none;
   }
 
   .desktop-block {
@@ -18,17 +32,71 @@
     display: none !important;
   }
 
+  body {
+    --m-bottom-bar-height: calc(56px + env(safe-area-inset-bottom));
+  }
+
+  /* 有固定底部操作栏时，页容器底部与栏体高度一致，避免出现空白 */
+  body .content-wrapper:has(.mobile-admin) {
+    padding-bottom: 0;
+  }
+
   body.has-mobile-action-bar .page-container.has-mobile-bar {
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    padding-bottom: var(--m-bottom-bar-height);
   }
 
-  body.has-mobile-action-bar .app-footer {
-    margin-bottom: calc(68px + env(safe-area-inset-bottom));
+  /* 移动端弹窗统一改为全屏侧栏式（删除确认使用的 message-box 不受影响） */
+  body .el-dialog {
+    --el-dialog-width: 100%;
+    --el-dialog-margin-top: 0;
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0 !important;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
   }
 
-  .el-dialog {
-    width: calc(100vw - 24px) !important;
-    max-width: calc(100vw - 24px);
+  body .el-dialog__header {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: calc(14px + env(safe-area-inset-top)) 56px 14px 16px;
+    border-bottom: 1px solid var(--border_color);
+  }
+
+  body .el-dialog__headerbtn {
+    top: env(safe-area-inset-top);
+    right: 4px;
+  }
+
+  body .el-dialog__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 14px 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body .el-dialog__footer {
+    flex: 0 0 auto;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border_color);
+  }
+
+  .dialog-fade-enter-active .el-overlay-dialog {
+    animation: m-dialog-slide-in 0.3s var(--ease-out-expo) both;
+  }
+
+  .dialog-fade-leave-active .el-overlay-dialog {
+    animation: m-dialog-slide-out 0.22s cubic-bezier(0.4, 0, 1, 1) both;
   }
 
   .el-drawer {
@@ -42,11 +110,24 @@
   }
 }
 
+.m-head {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.m-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 .m-toolbar {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .m-load-status {
@@ -62,34 +143,66 @@
 }
 
 .m-toolbar__search {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
+/* 标题不压缩，搜索框占剩余空间，筛选按钮固定宽度 */
 .m-toolbar__leading {
-  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  margin-right: auto;
   min-width: 0;
+  font-size: var(--text-sm);
+  color: var(--el-text-color-secondary);
+}
+
+.m-toolbar__heading {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.m-toolbar__title {
+  font-size: 15px;
   font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
   color: var(--font-title-color);
+  white-space: nowrap;
+}
+
+.m-toolbar__subtitle {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
 }
 
 .m-filter-btn {
   position: relative;
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  height: 32px;
+  padding: 0 4px;
+  font-size: 20px;
+  color: var(--el-text-color-regular);
+  background: transparent;
+  border: 0;
 }
 
 .m-filter-btn.is-active {
   color: var(--el-color-primary);
-  border-color: var(--el-color-primary);
+  background: transparent;
+  border: 0;
 }
 
 .m-filter-btn.is-active::after {
   content: "";
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 2px;
+  right: 0;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -113,29 +226,9 @@
   color: var(--el-text-color-secondary);
 }
 
-.m-seg {
-  display: flex;
-  gap: 0;
-  padding: 3px;
-  margin-bottom: 12px;
-  background: var(--el-fill-color-light);
-  border-radius: var(--app-border-radius);
-}
-
-.m-seg button {
-  flex: 1;
-  height: 34px;
-  border: 0;
-  border-radius: calc(var(--app-border-radius) - 2px);
-  background: transparent;
-  color: var(--el-text-color-regular);
-  font-size: var(--text-base);
-  cursor: pointer;
-}
-
-.m-seg button.is-active {
-  background: var(--el-color-primary);
-  color: var(--el-color-white);
+.m-tab-select {
+  flex-shrink: 0;
+  width: 92px;
 }
 
 .m-context {
@@ -143,7 +236,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   color: var(--el-text-color-regular);
   font-size: var(--text-sm);
 }
@@ -154,7 +247,6 @@
 
 .m-card {
   background: var(--el-bg-color);
-  border: 1px solid var(--border_color);
   border-radius: var(--app-border-radius);
   margin-bottom: 12px;
   overflow: hidden;
@@ -224,6 +316,10 @@
   padding: 4px 0 2px;
 }
 
+.m-card__fold .el-icon {
+  transform: rotate(180deg);
+}
+
 .m-card__ops {
   display: flex;
   align-items: stretch;
@@ -239,6 +335,10 @@
 
 .m-card__ops .el-button + .el-button {
   border-left: 1px solid var(--border_color);
+}
+
+.m-card__ops .el-button.m-op--more {
+  flex: 0 0 56px;
 }
 
 .m-op.is-danger:active,
@@ -270,8 +370,11 @@
   bottom: 0;
   z-index: 1010;
   display: flex;
+  align-items: center;
   gap: 10px;
-  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  height: var(--m-bottom-bar-height);
+  padding: 0 16px env(safe-area-inset-bottom);
   background: var(--el-bg-color);
   border-top: 1px solid var(--border_color);
   box-shadow: var(--box-shadow);
@@ -280,6 +383,15 @@
 .m-bottom-bar .el-button {
   flex: 1;
   margin: 0;
+}
+
+.m-bottom-bar .el-button.m-bottom-bar__more {
+  flex: 0 0 72px;
+}
+
+/* 更多图标：竖向三点（More 默认横向，旋转 90deg） */
+.m-more-icon {
+  transform: rotate(90deg);
 }
 
 .m-filter-form .el-form-item {
@@ -459,6 +571,24 @@
 .mobile-sheet.is-active .mobile-sheet__item:nth-child(6) { animation-delay: 160ms; }
 .mobile-sheet.is-active .mobile-sheet__item:nth-child(n + 7) { animation-delay: 190ms; }
 
+@keyframes m-dialog-slide-in {
+  from {
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes m-dialog-slide-out {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
 @keyframes mobile-sheet-item {
   from {
     opacity: 0;
@@ -478,7 +608,9 @@ body.mobile-sheet-open {
   .mobile-sheet__mask,
   .mobile-sheet__panel,
   .mobile-sheet__item,
-  .m-field--reveal {
+  .m-field--reveal,
+  .dialog-fade-enter-active .el-overlay-dialog,
+  .dialog-fade-leave-active .el-overlay-dialog {
     transition: none !important;
     animation: none !important;
   }

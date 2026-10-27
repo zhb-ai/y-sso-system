@@ -113,6 +113,7 @@
 
     <MobileAdminList
       v-model:keyword="searchKeyword"
+      title="SSO 角色管理"
       search-placeholder="搜索角色名称或编码"
       filterable
       :filter-active="!!filterStatus"

@@ -670,6 +670,11 @@ onUnmounted(() => {
     padding: 10px;
   }
 
+  /* 移动端隐藏页脚 */
+  .app-footer {
+    display: none;
+  }
+
   /* 移动端应用授权按钮样式 */
   .app-auth-btn {
     font-size: 12px;

@@ -64,6 +64,7 @@
     </el-card>
 
     <MobileAdminList
+      title="角色管理"
       :searchable="false"
       :loading="loading"
       :empty="!loading && roles.length === 0"

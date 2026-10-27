@@ -175,6 +175,7 @@
 
     <MobileAdminList
       v-model:keyword="filter.keyword"
+      title="员工管理"
       search-placeholder="姓名/手机号"
       filterable
       :filter-active="employeeFilterActive"

@@ -230,6 +230,7 @@
     </el-card>
 
     <MobileAdminList
+      title="缓存管理"
       :searchable="false"
       filterable
       :filter-active="!!selectedFunctionName"
@@ -627,9 +628,9 @@ const cacheFields = (row) => [
 const cacheActions = (row) => {
   const name = row[CACHE_FUNCTION_COLUMNS.NAME];
   return [
-    { label: "条目", onClick: () => handleViewEntries(name) },
-    { label: "统计", onClick: () => handleViewSingleStats(name) },
-    { label: "清空", danger: true, onClick: () => handleClearOne(name) },
+    { label: "条目", icon: Collection, onClick: () => handleViewEntries(name) },
+    { label: "统计", icon: DataLine, onClick: () => handleViewSingleStats(name) },
+    { label: "清空", icon: Delete, danger: true, onClick: () => handleClearOne(name) },
   ];
 };
 

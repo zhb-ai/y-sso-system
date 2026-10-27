@@ -168,6 +168,7 @@
 
     <MobileAdminList
       v-model:keyword="searchKeyword"
+      title="应用管理"
       search-placeholder="搜索应用名称或编码"
       filterable
       :filter-active="!!filterStatus"
@@ -600,7 +601,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid, Collection } from '@element-plus/icons-vue'
+import { Plus, Search, RefreshRight, Edit, Delete, Document, Check, Close, CopyDocument, Grid, Collection, Lock, Unlock } from '@element-plus/icons-vue'
 import { applicationApi, configApi } from '@/api'
 import EmptyState from '@/components/EmptyState.vue'
 import MobileAdminList from '@/components/mobile/MobileAdminList.vue'
@@ -1119,6 +1120,7 @@ const applicationActions = (row) => [
   { label: '密钥', icon: RefreshRight, onClick: () => handleResetSecret(row) },
   {
     label: row.is_active ? '禁用' : '启用',
+    icon: row.is_active ? Lock : Unlock,
     danger: !!row.is_active,
     onClick: () => {
       row.is_active = !row.is_active

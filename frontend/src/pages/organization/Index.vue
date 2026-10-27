@@ -282,6 +282,7 @@
     </div>
 
     <MobileAdminList
+      title="组织架构"
       :searchable="false"
       filterable
       :filter-active="orgFilterActive"
@@ -295,7 +296,13 @@
       @reset="resetOrgMobileFilter"
       @load-more="loadMoreOrgEmployees"
     >
-      <template #leading>{{ currentOrg ? currentOrg.name : "组织架构" }}</template>
+      <template v-if="currentOrg" #leading>{{ currentOrg.name }}</template>
+      <template #actions>
+        <el-select v-if="currentOrgId" v-model="mobileOrgTab" class="m-tab-select">
+          <el-option label="部门" value="dept" />
+          <el-option label="员工" value="staff" />
+        </el-select>
+      </template>
       <template #filter>
         <el-form label-position="top" class="m-filter-form" @submit.prevent>
           <el-form-item label="当前组织">
@@ -321,10 +328,10 @@
           </el-form-item>
         </el-form>
       </template>
-      <template #tabs>
-        <div v-if="currentOrgId" class="m-seg">
-          <button type="button" :class="{ 'is-active': mobileOrgTab === 'dept' }" @click="mobileOrgTab = 'dept'">部门</button>
-          <button type="button" :class="{ 'is-active': mobileOrgTab === 'staff' }" @click="mobileOrgTab = 'staff'">员工</button>
+      <template #header>
+        <div v-if="currentOrgId && mobileOrgTab === 'staff'" class="m-context">
+          <span>{{ selectedDept ? selectedDept.name + " - 员工" : currentOrg.name + " - 全部员工" }}</span>
+          <el-button v-if="selectedDept" link type="primary" @click="clearDeptSelection">查看全部</el-button>
         </div>
       </template>
       <template v-if="mobileOrgTab === 'dept' && currentOrgId">
@@ -337,10 +344,6 @@
         />
       </template>
       <template v-else-if="currentOrgId">
-        <div class="m-context">
-          <span>{{ selectedDept ? selectedDept.name + " - 员工" : currentOrg.name + " - 全部员工" }}</span>
-          <el-button v-if="selectedDept" link type="primary" @click="clearDeptSelection">查看全部</el-button>
-        </div>
         <MobileRecordCard
           v-for="row in mobileDeptEmployees"
           :key="row.id"
@@ -963,6 +966,8 @@ import {
   InfoFilled,
   Remove,
   Collection,
+  Refresh,
+  View,
 } from "@element-plus/icons-vue";
 import EmptyState from "@/components/EmptyState.vue";
 import MobileAdminList from "@/components/mobile/MobileAdminList.vue";
@@ -1946,6 +1951,7 @@ const orgPageActions = computed(() => {
     { label: "添加部门", icon: Folder, onClick: () => handleCreateDept(null) },
     {
       label: "同步通讯录",
+      icon: Refresh,
       disabled: !wechatBound.value,
       loading: wechatSyncLoading.value,
       onClick: handleWechatSync,
@@ -1953,11 +1959,11 @@ const orgPageActions = computed(() => {
   );
   if (wechatBound.value) {
     actions.push(
-      { label: "查看配置", onClick: showWechatConfigDialog },
-      { label: "解绑企业微信", onClick: handleWechatUnbind },
+      { label: "查看配置", icon: View, onClick: showWechatConfigDialog },
+      { label: "解绑企业微信", icon: Link, onClick: handleWechatUnbind },
     );
   } else {
-    actions.push({ label: "绑定企业微信", onClick: showWechatBindDialog });
+    actions.push({ label: "绑定企业微信", icon: Link, onClick: showWechatBindDialog });
   }
   if (selectedDept.value) {
     actions.push({ label: "添加员工到部门", icon: UserFilled, onClick: handleAddEmployeeToDept });

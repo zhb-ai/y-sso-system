@@ -200,6 +200,7 @@
 
     <MobileAdminList
       v-model:keyword="searchKeyword"
+      title="用户管理"
       search-placeholder="请输入用户名、姓名或邮箱"
       filterable
       :filter-active="!!(filterForm.status || filterForm.role)"

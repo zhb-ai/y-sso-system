@@ -14,17 +14,23 @@
           </slot>
         </div>
       </div>
-      <button v-if="clipped" type="button" class="m-card__expand" @click="expanded = true">
+      <button
+        v-if="clipped"
+        type="button"
+        class="m-card__expand"
+        aria-label="展开更多"
+        @click="expanded = true"
+      >
         <el-icon><ArrowDown /></el-icon>
-        <span>展开更多</span>
       </button>
       <button
         v-else-if="expanded && fields.length > 5"
         type="button"
         class="m-card__fold"
+        aria-label="收起"
         @click="expanded = false"
       >
-        收起
+        <el-icon><ArrowDown /></el-icon>
       </button>
     </div>
 
@@ -42,9 +48,15 @@
         <el-icon v-if="action.icon"><component :is="action.icon" /></el-icon>
         {{ action.label }}
       </el-button>
-      <el-button v-if="overflowActions.length" link size="small" class="m-op" @click="moreOpen = true">
-        <el-icon><MoreFilled /></el-icon>
-        更多
+      <el-button
+        v-if="overflowActions.length"
+        link
+        size="small"
+        class="m-op m-op--more"
+        aria-label="更多"
+        @click="moreOpen = true"
+      >
+        <el-icon class="m-more-icon"><More /></el-icon>
       </el-button>
     </div>
 
@@ -54,7 +66,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
-import { ArrowDown, MoreFilled } from "@element-plus/icons-vue";
+import { ArrowDown, More } from "@element-plus/icons-vue";
 import MobileActionSheet from "./MobileActionSheet.vue";
 
 const props = defineProps({

@@ -1,52 +1,66 @@
 <template>
   <div class="mobile-admin" v-loading="loading">
-    <div v-if="searchable || filterable || $slots.leading" class="m-toolbar">
-      <div v-if="$slots.leading" class="m-toolbar__leading">
-        <slot name="leading" />
+    <div
+      v-if="title || searchable || filterable || $slots.leading || $slots.actions || $slots.tabs || $slots.header"
+      class="m-head"
+    >
+      <div v-if="title || searchable || filterable || $slots.leading || $slots.actions" class="m-toolbar">
+        <div v-if="title || subtitle || $slots.leading" class="m-toolbar__leading">
+          <div v-if="title || subtitle" class="m-toolbar__heading">
+            <span v-if="title" class="m-toolbar__title">{{ title }}</span>
+            <span v-if="subtitle" class="m-toolbar__subtitle">{{ subtitle }}</span>
+          </div>
+          <slot name="leading" />
+        </div>
+        <el-input
+          v-if="searchable"
+          v-model="keyword"
+          class="m-toolbar__search"
+          :placeholder="searchPlaceholder"
+          clearable
+          @clear="emit('search')"
+          @keyup.enter="emit('search')"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+        <slot name="actions" />
+        <el-button
+          v-if="filterable"
+          text
+          class="m-filter-btn"
+          :class="{ 'is-active': filterActive }"
+          aria-label="筛选"
+          @click="filterOpen = true"
+        >
+          <el-icon><Filter /></el-icon>
+        </el-button>
       </div>
-      <el-input
-        v-if="searchable"
-        v-model="keyword"
-        class="m-toolbar__search"
-        :placeholder="searchPlaceholder"
-        clearable
-        @clear="emit('search')"
-        @keyup.enter="emit('search')"
-      >
-        <template #prefix>
-          <el-icon><Search /></el-icon>
-        </template>
-      </el-input>
-      <el-button
-        v-if="filterable"
-        circle
-        class="m-filter-btn"
-        :class="{ 'is-active': filterActive }"
-        aria-label="筛选"
-        @click="filterOpen = true"
-      >
-        <el-icon><Filter /></el-icon>
-      </el-button>
+
+      <slot name="tabs" />
+      <slot name="header" />
     </div>
 
-    <slot name="tabs" />
-    <slot name="header" />
+    <div class="m-scroll">
+      <slot name="scroll-top" />
 
-    <div v-if="empty" class="m-list">
-      <slot name="empty" />
-    </div>
-    <div v-else class="m-list">
-      <slot />
-    </div>
+      <div v-if="empty" class="m-list">
+        <slot name="empty" />
+      </div>
+      <div v-else class="m-list">
+        <slot />
+      </div>
 
-    <div v-if="infinite && !empty" class="m-load-status">
-      <span v-if="loadingMore">加载中...</span>
-      <span v-else-if="finished">没有更多了</span>
-    </div>
-    <div v-if="infinite && !empty" ref="sentinelRef" class="m-load-sentinel"></div>
+      <div v-if="infinite && !empty" class="m-load-status">
+        <span v-if="loadingMore">加载中...</span>
+        <span v-else-if="finished">没有更多了</span>
+      </div>
+      <div v-if="infinite && !empty" ref="sentinelRef" class="m-load-sentinel"></div>
 
-    <div v-if="$slots.footer && !infinite" class="m-pager">
-      <slot name="footer" />
+      <div v-if="$slots.footer && !infinite" class="m-pager">
+        <slot name="footer" />
+      </div>
     </div>
 
     <div v-if="pageActions.length" class="m-bottom-bar">
@@ -62,9 +76,13 @@
         <el-icon v-if="action.icon"><component :is="action.icon" /></el-icon>
         {{ action.label }}
       </el-button>
-      <el-button v-if="overflowPageActions.length" class="btn-modern" @click="pageMoreOpen = true">
-        <el-icon><MoreFilled /></el-icon>
-        更多
+      <el-button
+        v-if="overflowPageActions.length"
+        class="btn-modern m-bottom-bar__more"
+        aria-label="更多"
+        @click="pageMoreOpen = true"
+      >
+        <el-icon class="m-more-icon"><More /></el-icon>
       </el-button>
     </div>
 
@@ -87,10 +105,12 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
-import { Filter, MoreFilled, Search } from "@element-plus/icons-vue";
+import { Filter, More, Search } from "@element-plus/icons-vue";
 import MobileActionSheet from "./MobileActionSheet.vue";
 
 const props = defineProps({
+  title: { type: String, default: "" },
+  subtitle: { type: String, default: "" },
   searchable: { type: Boolean, default: true },
   searchPlaceholder: { type: String, default: "搜索" },
   filterable: { type: Boolean, default: false },

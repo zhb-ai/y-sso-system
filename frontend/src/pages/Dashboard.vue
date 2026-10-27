@@ -5,72 +5,17 @@
       <h5>欢迎回来，{{ userInfo?.username || '管理员' }}！</h5>
     </div>
 
-    <!-- 统计卡片 -->
-    <div class="stats-cards">
-      <template v-if="loading">
-        <el-card shadow="hover" class="stat-card" v-for="i in 4" :key="i">
-          <div class="stat-content">
-            <div class="stat-info">
-              <el-skeleton animated :rows="1" />
-              <el-skeleton animated :rows="1" />
-            </div>
-            <div class="stat-icon skeleton-icon">
-              <el-skeleton animated :rows="1" />
-            </div>
-          </div>
-        </el-card>
-      </template>
-      <template v-else>
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-info">
-              <h3>{{ applicationCount }}</h3>
-              <p>已注册应用</p>
-            </div>
-            <div class="stat-icon application">
-              <el-icon><Grid /></el-icon>
-            </div>
-          </div>
-        </el-card>
-        
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-info">
-              <h3>{{ userCount }}/{{ totalUserCount }}</h3>
-              <p>日活用户/总用户</p>
-            </div>
-            <div class="stat-icon user">
-              <el-icon><User /></el-icon>
-            </div>
-          </div>
-        </el-card>
-        
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-info">
-              <h3>{{ employeeCount }}</h3>
-              <p>员工数量</p>
-            </div>
-            <div class="stat-icon role">
-              <el-icon><Management /></el-icon>
-            </div>
-          </div>
-        </el-card>
-        
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-info">
-              <h3>{{ departmentCount }}</h3>
-              <p>部门数量</p>
-            </div>
-            <div class="stat-icon department">
-              <el-icon><OfficeBuilding /></el-icon>
-            </div>
-          </div>
-        </el-card>
-      </template>
-    </div>
-    
+    <!-- 统计卡片（桌面端） -->
+    <StatsCards
+      class="desktop-block"
+      :loading="loading"
+      :application-count="applicationCount"
+      :user-count="userCount"
+      :total-user-count="totalUserCount"
+      :employee-count="employeeCount"
+      :department-count="departmentCount"
+    />
+
     <!-- 最近登录记录筛选条件 -->
     <el-card class="filter-card desktop-block" shadow="hover">
       <el-form :inline="true" :model="loginFilterForm" class="filter-form">
@@ -193,6 +138,8 @@
 
     <MobileAdminList
       v-model:keyword="searchUsername"
+      title="仪表盘"
+      :subtitle="`欢迎回来，${userInfo?.username || '管理员'}！`"
       search-placeholder="请输入用户名"
       filterable
       :filter-active="!!(searchIp || loginFilterForm.status)"
@@ -220,7 +167,15 @@
           </el-form-item>
         </el-form>
       </template>
-      <template #header>
+      <template #scroll-top>
+        <StatsCards
+          :loading="loading"
+          :application-count="applicationCount"
+          :user-count="userCount"
+          :total-user-count="totalUserCount"
+          :employee-count="employeeCount"
+          :department-count="departmentCount"
+        />
         <div class="m-section-title">
           登录记录
           <span v-if="pagination.total">共 {{ pagination.total }} 条</span>
@@ -249,8 +204,9 @@
 import { ref, onMounted, computed, reactive } from 'vue'
 import { dashboardApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
-import { Grid, User, Management, OfficeBuilding, Monitor, Search, RefreshRight, Check, Close, Clock } from '@element-plus/icons-vue'
+import { User, Monitor, Search, RefreshRight, Check, Close, Clock } from '@element-plus/icons-vue'
 import EmptyState from '@/components/EmptyState.vue'
+import StatsCards from '@/components/dashboard/StatsCards.vue'
 import MobileAdminList from '@/components/mobile/MobileAdminList.vue'
 import MobileRecordCard from '@/components/mobile/MobileRecordCard.vue'
 import { useMobileInfinite } from '@/composables/useMobileInfinite'
