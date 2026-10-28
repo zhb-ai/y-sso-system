@@ -28,65 +28,11 @@
       </div>
     </div>
 
-    <!-- 统计卡片 -->
-    <div class="stats-cards">
-      <el-card class="stat-card" shadow="hover">
-        <div class="stat-content">
-          <div class="stat-info">
-            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_FUNCTIONS] }}</h3>
-            <p>缓存函数数</p>
-          </div>
-          <div class="stat-icon function">
-            <el-icon><Collection /></el-icon>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card class="stat-card" shadow="hover">
-        <div class="stat-content">
-          <div class="stat-info">
-            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HITS] }}</h3>
-            <p>总命中次数</p>
-          </div>
-          <div class="stat-icon hit">
-            <el-icon><CircleCheck /></el-icon>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card class="stat-card" shadow="hover">
-        <div class="stat-content">
-          <div class="stat-info">
-            <h3>{{ summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_MISSES] }}</h3>
-            <p>总未命中次数</p>
-          </div>
-          <div class="stat-icon miss">
-            <el-icon><CircleClose /></el-icon>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card class="stat-card" shadow="hover">
-        <div class="stat-content">
-          <div class="stat-info">
-            <h3>
-              {{
-                formatSummaryHitRate(
-                  summary[CACHE_PAGE_KEYS.SUMMARY_TOTAL_HIT_RATE],
-                )
-              }}
-            </h3>
-            <p>总命中率</p>
-          </div>
-          <div class="stat-icon rate">
-            <el-icon><TrendCharts /></el-icon>
-          </div>
-        </div>
-      </el-card>
-    </div>
+    <!-- 统计卡片（桌面端） -->
+    <CacheStatsCards class="desktop-block" :summary="summary" />
 
     <el-alert
-      class="page-hint-alert compact-hint-alert"
+      class="page-hint-alert compact-hint-alert desktop-block"
       type="info"
       :closable="false"
       show-icon
@@ -255,12 +201,28 @@
           </el-form-item>
         </el-form>
       </template>
+      <template #scroll-top>
+        <CacheStatsCards :summary="summary" />
+        <el-alert
+          class="page-hint-alert compact-hint-alert"
+          type="info"
+          :closable="false"
+          show-icon
+          description="建议先通过“函数列表/统计”定位目标，再查看“缓存条目”详情。条目值只展示脱敏预览。"
+        />
+      </template>
       <MobileRecordCard
         v-for="row in functions"
         :key="row[CACHE_FUNCTION_COLUMNS.NAME]"
         :row="row"
         :fields="cacheFields(row)"
         :actions="cacheActions(row)"
+      />
+      <CacheRegistrationsCard
+        :registrations="registrations"
+        :enabled="invalidatorEnabled"
+        :loading="toggleLoading"
+        @toggle="handleToggleInvalidator"
       />
       <template #empty>
         <EmptyState
@@ -273,66 +235,13 @@
       </template>
     </MobileAdminList>
 
-    <el-card class="data-card registrations-card" shadow="hover">
-      <template #header>
-        <div class="card-header-with-switch">
-          <div class="card-title">
-            自动失效注册
-            <el-tooltip
-              content="启用后，ORM 模型发生 update/delete/insert 事件时会自动触发对应缓存失效。"
-              placement="top"
-            >
-              <el-icon class="hint-icon"><QuestionFilled /></el-icon>
-            </el-tooltip>
-          </div>
-          <div class="switch-area">
-            <span class="switch-label">自动失效</span>
-            <el-switch
-              :model-value="invalidatorEnabled"
-              :loading="toggleLoading"
-              @change="handleToggleInvalidator"
-            />
-          </div>
-        </div>
-      </template>
-
-      <EmptyState
-        v-if="registrationModelList.length === 0"
-        type="data"
-        :icon="DataLine"
-        title="暂无自动失效注册"
-        description="当数据模型配置了自动失效缓存时，相关注册信息将显示在这里"
-        compact
-      />
-
-      <el-collapse v-else>
-        <el-collapse-item
-          v-for="modelName in registrationModelList"
-          :key="modelName"
-          :title="`${modelName}（${registrations[modelName].length}）`"
-          :name="modelName"
-        >
-          <div
-            v-for="(reg, idx) in registrations[modelName]"
-            :key="`${modelName}-${reg.func}-${idx}`"
-            class="registration-item"
-          >
-            <el-tag type="info" effect="plain">{{ reg.func }}</el-tag>
-            <div class="events-wrap">
-              <el-tag
-                v-for="eventName in reg.events"
-                :key="`${modelName}-${reg.func}-${eventName}`"
-                type="success"
-                effect="light"
-                size="small"
-              >
-                {{ eventName }}
-              </el-tag>
-            </div>
-          </div>
-        </el-collapse-item>
-      </el-collapse>
-    </el-card>
+    <CacheRegistrationsCard
+      class="desktop-block"
+      :registrations="registrations"
+      :enabled="invalidatorEnabled"
+      :loading="toggleLoading"
+      @toggle="handleToggleInvalidator"
+    />
 
     <el-dialog
       v-model="singleStatsDialogVisible"
@@ -496,7 +405,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, QuestionFilled, RefreshRight, Collection, DataLine, CircleCheck, CircleClose, TrendCharts } from "@element-plus/icons-vue";
+import { Delete, QuestionFilled, RefreshRight, Collection, DataLine } from "@element-plus/icons-vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import { cacheApi } from "@/api";
@@ -504,6 +413,8 @@ import { handleApiError, getDefaultErrorMessage } from "@/utils/errorHandler";
 import EmptyState from "@/components/EmptyState.vue";
 import MobileAdminList from "@/components/mobile/MobileAdminList.vue";
 import MobileRecordCard from "@/components/mobile/MobileRecordCard.vue";
+import CacheStatsCards from "@/components/cache/CacheStatsCards.vue";
+import CacheRegistrationsCard from "@/components/cache/CacheRegistrationsCard.vue";
 import {
   CACHE_BACKEND_TAG_TYPE,
   CACHE_FUNCTION_COLUMNS,
@@ -536,9 +447,6 @@ const summary = reactive({
 
 const perFunctionStats = ref({});
 
-const registrationModelList = computed(() => Object.keys(registrations.value));
-
-const formatSummaryHitRate = (value) => `${Number(value || 0).toFixed(2)}%`;
 const formatPreview = (value) => JSON.stringify(value ?? null, null, 2);
 const formatSize = (size) => {
   const bytes = Number(size || 0);
@@ -820,149 +728,6 @@ onMounted(() => {
   font-size: var(--el-font-size-xxl);
   font-weight: var(--el-font-weight-extra-bold);
   line-height: var(--c-line-height-xs);
-}
-
-/* 统计卡片样式 - 参考仪表盘 */
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.stats-cards .stat-card {
-  border-radius: var(--app-border-radius);
-  border: 1px solid var(--border_color);
-  transition: var(--app-transition);
-  background: rgb(var(--white));
-  box-shadow: none;
-}
-
-.stats-cards .stat-card:hover {
-  border-color: var(--el-color-primary-light-5);
-}
-
-.stat-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
-}
-
-.stat-info h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--font-title-color);
-  line-height: 1.2;
-}
-
-.stat-info p {
-  margin: 0;
-  color: var(--font-light-color);
-  font-size: var(--text-xs);
-  font-weight: 500;
-}
-
-.stat-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  flex-shrink: 0;
-  transition: var(--app-transition);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-icon.function {
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-}
-
-.stat-icon.hit {
-  background: var(--el-color-success-light-9);
-  color: var(--el-color-success);
-}
-
-.stat-icon.miss {
-  background: var(--el-color-warning-light-9);
-  color: var(--el-color-warning);
-}
-
-.stat-icon.rate {
-  background: var(--el-color-info-light-9);
-  color: var(--el-color-info);
-}
-
-.stat-icon:hover {
-  transform: translateY(-2px);
-}
-
-.stat-icon.function:hover {
-  background: var(--el-color-primary-light-8);
-}
-
-.stat-icon.hit:hover {
-  background: var(--el-color-success-light-8);
-}
-
-.stat-icon.miss:hover {
-  background: var(--el-color-warning-light-8);
-}
-
-.stat-icon.rate:hover {
-  background: var(--el-color-info-light-8);
-}
-
-.registrations-card {
-  margin-top: var(--spacing-medium);
-}
-
-.card-header-with-switch {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-}
-
-.card-title {
-  color: var(--font-title-color);
-  font-size: var(--el-font-size-base);
-  font-weight: var(--el-font-weight-extra-bold);
-  margin-bottom: 0px;
-}
-
-.switch-area {
-  align-items: center;
-  display: flex;
-  gap: 8px;
-}
-
-.switch-label {
-  color: var(--font-medium-color);
-  font-size: var(--el-font-size-sm);
-}
-
-.registration-item {
-  align-items: center;
-  border-bottom: 1px dashed var(--border_color);
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-  padding: 10px 0;
-}
-
-.registration-item:last-child {
-  border-bottom: none;
-}
-
-.events-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 
 .dialog-hint-alert {

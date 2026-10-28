@@ -1,5 +1,8 @@
 <template>
-  <div class="login-container">
+  <div
+    class="login-container"
+    :class="{ 'sso-portal-active': isLoggedIn && !isOAuth2Mode }"
+  >
     <div class="login-box sso-login-box" :class="`columns-${!isOAuth2Mode && isLoggedIn ? Math.min(Math.ceil(availableApps.length / 3), 4) : 1}`">
       <!-- SSO 头部 -->
       <div class="login-header" :class="{ 'has-logo': !!siteStore.systemLogo }">
@@ -956,6 +959,39 @@ async function handlePortalLogin() {
     min-width: 0;
   }
 
+  /* 已登录门户：整页不滚动，仅应用列表区滚动 */
+  .login-container.sso-portal-active {
+    align-items: stretch;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .login-container.sso-portal-active .sso-login-box,
+  .login-container.sso-portal-active .sso-login-box:hover {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    padding: 16px;
+    overflow: hidden;
+    transform: none;
+  }
+
+  .login-container.sso-portal-active .sso-portal-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .login-container.sso-portal-active .sso-portal-header,
+  .login-container.sso-portal-active .el-divider--horizontal,
+  .login-container.sso-portal-active .sso-portal-title {
+    flex-shrink: 0;
+  }
+
   .sso-portal-header {
     flex-wrap: wrap;
     row-gap: 8px;
@@ -988,9 +1024,11 @@ async function handlePortalLogin() {
   .sso-app-list.columns-4 {
     display: flex;
     flex-direction: column;
+    flex: 1;
     width: 100%;
     min-width: 0;
-    max-height: max(200px, calc(100dvh - 300px));
+    min-height: 0;
+    max-height: none;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -998,6 +1036,7 @@ async function handlePortalLogin() {
   }
 
   .sso-app-card {
+    flex-shrink: 0;
     min-height: 64px;
   }
 }
